@@ -24,17 +24,17 @@ export function Navigation() {
         <div className="flex items-center justify-between gap-4 h-16">
           {/* Logo/Name */}
           <Link href="/">
-            <a className="text-xl font-bold text-foreground hover-elevate active-elevate-2 px-2 py-1 rounded-md transition-colors" data-testid="link-home-logo">
+            <span className="text-xl font-bold text-foreground hover-elevate active-elevate-2 px-2 py-1 rounded-md transition-colors cursor-pointer" data-testid="link-home-logo">
               Chrispine Mndala
-            </a>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => (
               <Link key={item.path} href={item.path}>
-                <a
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors hover-elevate active-elevate-2 ${
+                <span
+                  className={`block px-4 py-2 text-sm font-medium rounded-md transition-colors hover-elevate active-elevate-2 cursor-pointer ${
                     location === item.path
                       ? "text-foreground"
                       : "text-muted-foreground"
@@ -45,7 +45,7 @@ export function Navigation() {
                   {location === item.path && (
                     <div className="h-0.5 bg-primary mt-1 rounded-full" />
                   )}
-                </a>
+                </span>
               </Link>
             ))}
           </nav>
@@ -81,9 +81,9 @@ export function Navigation() {
                 <nav className="flex flex-col gap-2">
                   {navItems.map((item) => (
                     <Link key={item.path} href={item.path}>
-                      <a
+                      <span
                         onClick={() => setMobileMenuOpen(false)}
-                        className={`px-4 py-3 text-base font-medium rounded-md transition-colors hover-elevate active-elevate-2 ${
+                        className={`block px-4 py-3 text-base font-medium rounded-md transition-colors hover-elevate active-elevate-2 cursor-pointer ${
                           location === item.path
                             ? "bg-accent text-accent-foreground"
                             : "text-muted-foreground"
@@ -91,7 +91,7 @@ export function Navigation() {
                         data-testid={`link-mobile-nav-${item.label.toLowerCase()}`}
                       >
                         {item.label}
-                      </a>
+                      </span>
                     </Link>
                   ))}
                 </nav>
