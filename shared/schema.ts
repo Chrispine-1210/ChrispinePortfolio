@@ -27,6 +27,7 @@ export const sessions = pgTable(
 // User storage table (required for Replit Auth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  replitSub: varchar("replit_sub").unique(),
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
@@ -38,14 +39,22 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const upsertUserSchema = createInsertSchema(users).pick({
   id: true,
+  replitSub: true,
   email: true,
   firstName: true,
   lastName: true,
   profileImageUrl: true,
 });
 
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 
@@ -60,6 +69,7 @@ export const blogPosts = pgTable("blog_posts", {
   category: text("category").notNull(), // MEL, Programming, Career, Networking
   tags: text("tags").array().default(sql`ARRAY[]::text[]`),
   isPremium: boolean("is_premium").default(false),
+  isPublished: boolean("is_published").default(true),
   readTimeMinutes: integer("read_time_minutes").default(5),
   publishedAt: timestamp("published_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),

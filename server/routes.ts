@@ -1,15 +1,456 @@
-import type { Express } from "express";
-import { createServer, type Server } from "http";
+import { Router, type Request, type Response } from "express";
 import { storage } from "./storage";
+import { getAuthUrl, handleCallback, type AuthData } from "./replitAuth";
+import {
+  insertBlogPostSchema,
+  insertPortfolioProjectSchema,
+  insertNewsletterSubscriberSchema,
+  insertContactRequestSchema,
+  insertUserSchema,
+} from "@shared/schema";
+import Stripe from "stripe";
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+const router = Router();
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
-
-  const httpServer = createServer(app);
-
-  return httpServer;
+// Middleware to check authentication
+function requireAuth(req: Request, res: Response, next: Function) {
+  if (!req.session?.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  next();
 }
+
+// Middleware to check premium status
+function requirePremium(req: Request, res: Response, next: Function) {
+  if (!req.session?.user?.isPremium) {
+    return res.status(403).json({ message: "Premium subscription required" });
+  }
+  next();
+}
+
+// Authentication routes
+router.get("/api/login", async (req: Request, res: Response) => {
+  const callbackUrl = `${req.protocol}://${req.get("host")}/api/auth/callback`;
+  const { url, authData } = await getAuthUrl(callbackUrl);
+  
+  // Store auth data in session
+  req.session!.authData = authData;
+  
+  res.redirect(url);
+});
+
+router.get("/api/auth/callback", async (req: Request, res: Response) => {
+  try {
+    const { code, state } = req.query;
+    if (!code || typeof code !== "string") {
+      return res.status(400).send("Missing authorization code");
+    }
+    if (!state || typeof state !== "string") {
+      return res.status(400).send("Missing state parameter");
+    }
+
+    const authData = req.session!.authData as AuthData;
+    if (!authData) {
+      return res.status(400).send("Missing auth data in session");
+    }
+
+    const callbackUrl = `${req.protocol}://${req.get("host")}/api/auth/callback`;
+    const user = await handleCallback(code, state, callbackUrl, authData);
+
+    req.session!.user = user;
+    delete req.session!.authData; // Clean up auth data
+    res.redirect("/dashboard");
+  } catch (error) {
+    console.error("Auth callback error:", error);
+    res.status(500).send("Authentication failed");
+  }
+});
+
+router.get("/api/auth/user", (req: Request, res: Response) => {
+  if (!req.session?.user) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  res.json(req.session.user);
+});
+
+router.get("/api/logout", (req: Request, res: Response) => {
+  req.session?.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: "Logout failed" });
+    }
+    res.redirect("/");
+  });
+});
+
+// User profile routes
+router.get("/api/user/profile", requireAuth, (req: Request, res: Response) => {
+  res.json(req.session!.user);
+});
+
+router.put("/api/user/profile", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const updateSchema = insertUserSchema.pick({
+      firstName: true,
+      lastName: true,
+      profileImageUrl: true,
+    });
+    
+    const data = updateSchema.parse(req.body);
+    const userId = req.session!.user!.id;
+    
+    const updatedUser = await storage.updateUser(userId, data);
+
+    if (updatedUser) {
+      req.session!.user = updatedUser;
+      res.json(updatedUser);
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error: any) {
+    console.error("Error updating user profile:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+});
+
+// Blog routes
+router.get("/api/blog", async (req: Request, res: Response) => {
+  try {
+    let posts = await storage.getPublishedBlogPosts();
+    
+    // Apply filters
+    const { category, search, premium } = req.query;
+    
+    if (category && typeof category === "string") {
+      posts = posts.filter(p => p.category === category);
+    }
+    
+    if (search && typeof search === "string") {
+      const searchLower = search.toLowerCase();
+      posts = posts.filter(p => 
+        p.title.toLowerCase().includes(searchLower) ||
+        p.excerpt.toLowerCase().includes(searchLower) ||
+        p.tags.some(tag => tag.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    if (premium === "true") {
+      posts = posts.filter(p => p.isPremium);
+    } else if (premium === "false") {
+      posts = posts.filter(p => !p.isPremium);
+    }
+    
+    // For premium posts in collection, omit content entirely (use excerpt for preview)
+    if (!req.session?.user?.isPremium) {
+      posts = posts.map(post => {
+        if (post.isPremium) {
+          const { content, ...postWithoutContent } = post;
+          return postWithoutContent as any; // Omit full content, excerpt is preview
+        }
+        return post;
+      });
+    }
+    
+    res.json(posts);
+  } catch (error) {
+    console.error("Error fetching blog posts:", error);
+    res.status(500).json({ message: "Failed to fetch blog posts" });
+  }
+});
+
+router.get("/api/blog/recent", async (req: Request, res: Response) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
+    let posts = await storage.getRecentBlogPosts(limit);
+    
+    // For premium posts, omit content entirely (use excerpt for preview)
+    if (!req.session?.user?.isPremium) {
+      posts = posts.map(post => {
+        if (post.isPremium) {
+          const { content, ...postWithoutContent } = post;
+          return postWithoutContent as any; // Omit full content, excerpt is preview
+        }
+        return post;
+      });
+    }
+    
+    res.json(posts);
+  } catch (error) {
+    console.error("Error fetching recent posts:", error);
+    res.status(500).json({ message: "Failed to fetch recent posts" });
+  }
+});
+
+router.get("/api/blog/:slug", async (req: Request, res: Response) => {
+  try {
+    const post = await storage.getBlogPostBySlug(req.params.slug);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Enforce premium content access control
+    if (post.isPremium && !req.session?.user?.isPremium) {
+      return res.status(403).json({ 
+        message: "Premium subscription required to access this content",
+        isPremium: true,
+        excerpt: post.excerpt,
+      });
+    }
+
+    res.json(post);
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    res.status(500).json({ message: "Failed to fetch blog post" });
+  }
+});
+
+router.post("/api/blog", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const data = insertBlogPostSchema.parse(req.body);
+    const post = await storage.createBlogPost(data);
+    res.json(post);
+  } catch (error: any) {
+    console.error("Error creating blog post:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to create blog post" });
+  }
+});
+
+router.put("/api/blog/:id", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const data = insertBlogPostSchema.partial().parse(req.body);
+    const post = await storage.updateBlogPost(req.params.id, data);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    res.json(post);
+  } catch (error: any) {
+    console.error("Error updating blog post:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to update blog post" });
+  }
+});
+
+router.delete("/api/blog/:id", requireAuth, async (req: Request, res: Response) => {
+  try {
+    await storage.deleteBlogPost(req.params.id);
+    res.json({ message: "Blog post deleted" });
+  } catch (error) {
+    console.error("Error deleting blog post:", error);
+    res.status(500).json({ message: "Failed to delete blog post" });
+  }
+});
+
+// Portfolio routes
+router.get("/api/portfolio", async (req: Request, res: Response) => {
+  try {
+    let projects = await storage.getAllProjects();
+    
+    // Apply filters
+    const { category, search, featured } = req.query;
+    
+    if (category && typeof category === "string") {
+      projects = projects.filter(p => p.category === category);
+    }
+    
+    if (search && typeof search === "string") {
+      const searchLower = search.toLowerCase();
+      projects = projects.filter(p =>
+        p.title.toLowerCase().includes(searchLower) ||
+        p.description.toLowerCase().includes(searchLower) ||
+        p.techStack.some(tech => tech.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    if (featured === "true") {
+      projects = projects.filter(p => p.featured);
+    } else if (featured === "false") {
+      projects = projects.filter(p => !p.featured);
+    }
+    
+    res.json(projects);
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    res.status(500).json({ message: "Failed to fetch projects" });
+  }
+});
+
+router.get("/api/portfolio/featured", async (req: Request, res: Response) => {
+  try {
+    const projects = await storage.getFeaturedProjects();
+    res.json(projects);
+  } catch (error) {
+    console.error("Error fetching featured projects:", error);
+    res.status(500).json({ message: "Failed to fetch featured projects" });
+  }
+});
+
+router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
+  try {
+    const project = await storage.getProjectBySlug(req.params.slug);
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    res.json(project);
+  } catch (error) {
+    console.error("Error fetching project:", error);
+    res.status(500).json({ message: "Failed to fetch project" });
+  }
+});
+
+router.post("/api/portfolio", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const data = insertPortfolioProjectSchema.parse(req.body);
+    const project = await storage.createProject(data);
+    res.json(project);
+  } catch (error: any) {
+    console.error("Error creating project:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to create project" });
+  }
+});
+
+router.put("/api/portfolio/:id", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const data = insertPortfolioProjectSchema.partial().parse(req.body);
+    const project = await storage.updateProject(req.params.id, data);
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    res.json(project);
+  } catch (error: any) {
+    console.error("Error updating project:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to update project" });
+  }
+});
+
+router.delete("/api/portfolio/:id", requireAuth, async (req: Request, res: Response) => {
+  try {
+    await storage.deleteProject(req.params.id);
+    res.json({ message: "Project deleted" });
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    res.status(500).json({ message: "Failed to delete project" });
+  }
+});
+
+// Newsletter routes
+router.post("/api/newsletter/subscribe", async (req: Request, res: Response) => {
+  try {
+    const data = insertNewsletterSubscriberSchema.parse(req.body);
+
+    // Check if already subscribed
+    const existing = await storage.getNewsletterSubscriberByEmail(data.email);
+    if (existing) {
+      if (!existing.isActive) {
+        // Resubscribe
+        await storage.updateNewsletterSubscriberStatus(data.email, true);
+        return res.json({ message: "Resubscribed successfully" });
+      }
+      return res.status(400).json({ message: "Already subscribed" });
+    }
+
+    const subscriber = await storage.createNewsletterSubscriber(data);
+    res.json(subscriber);
+  } catch (error: any) {
+    console.error("Error subscribing to newsletter:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to subscribe" });
+  }
+});
+
+// Contact routes
+router.post("/api/contact", async (req: Request, res: Response) => {
+  try {
+    const data = insertContactRequestSchema.parse(req.body);
+    const request = await storage.createContactRequest(data);
+    res.json(request);
+  } catch (error: any) {
+    console.error("Error creating contact request:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to submit contact request" });
+  }
+});
+
+// Stripe routes
+router.post("/api/create-payment-intent", requireAuth, async (req: Request, res: Response) => {
+  try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ message: "Stripe not configured" });
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    
+    // Server-side pricing - don't trust client
+    const amount = 9; // $9/month
+
+    // Create payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount * 100, // Convert to cents
+      currency: "usd",
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        userId: req.session!.user!.id.toString(),
+      },
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error) {
+    console.error("Error creating payment intent:", error);
+    res.status(500).json({ message: "Failed to create payment intent" });
+  }
+});
+
+// Webhook to handle successful payments (raw body required)
+router.post("/api/stripe-webhook", async (req: Request, res: Response) => {
+  try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ message: "Stripe not configured" });
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const sig = req.headers["stripe-signature"];
+
+    if (!sig) {
+      return res.status(400).send("Missing signature");
+    }
+
+    const event = stripe.webhooks.constructEvent(
+      (req as any).rawBody,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET || ""
+    );
+
+    if (event.type === "payment_intent.succeeded") {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      const userId = paymentIntent.metadata.userId;
+
+      // Upgrade user to premium
+      await storage.updateUserPremiumStatus(userId, true);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error("Webhook error:", error);
+    res.status(400).send("Webhook error");
+  }
+});
+
+export default router;
