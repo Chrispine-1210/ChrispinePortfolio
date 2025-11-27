@@ -132,7 +132,7 @@ router.get("/api/blog", async (req: Request, res: Response) => {
       posts = posts.filter(p => 
         p.title.toLowerCase().includes(searchLower) ||
         p.excerpt.toLowerCase().includes(searchLower) ||
-        p.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        (p.tags || []).some(tag => tag.toLowerCase().includes(searchLower))
       );
     }
     
@@ -264,7 +264,7 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
       projects = projects.filter(p =>
         p.title.toLowerCase().includes(searchLower) ||
         p.description.toLowerCase().includes(searchLower) ||
-        p.techStack.some(tech => tech.toLowerCase().includes(searchLower))
+        (p.techStack || []).some(tech => tech.toLowerCase().includes(searchLower))
       );
     }
     
