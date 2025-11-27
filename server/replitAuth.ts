@@ -1,7 +1,10 @@
-import { Issuer, type Client, generators } from "openid-client";
+import * as openidClient from "openid-client";
+const { Issuer, generators } = openidClient as any;
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
 import type { Request } from "express";
+
+type Client = any;
 
 let client: Client | null = null;
 
