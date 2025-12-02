@@ -30,13 +30,18 @@ function requirePremium(req: Request, res: Response, next: Function) {
 
 // Authentication routes
 router.get("/api/login", async (req: Request, res: Response) => {
-  const callbackUrl = `${req.protocol}://${req.get("host")}/api/auth/callback`;
-  const { url, authData } = await getAuthUrl(callbackUrl);
-  
-  // Store auth data in session
-  req.session!.authData = authData;
-  
-  res.redirect(url);
+  try {
+    const callbackUrl = `${req.protocol}://${req.get("host")}/api/auth/callback`;
+    const { url, authData } = await getAuthUrl(callbackUrl);
+    
+    // Store auth data in session
+    req.session!.authData = authData;
+    
+    res.redirect(url);
+  } catch (error: any) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Authentication not configured" });
+  }
 });
 
 router.get("/api/auth/callback", async (req: Request, res: Response) => {
