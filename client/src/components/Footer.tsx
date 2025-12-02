@@ -78,10 +78,8 @@ export function Footer() {
             <ul className="space-y-2">
               {footerLinks.navigation.map((link) => (
                 <li key={link.path}>
-                  <Link href={link.path}>
-                    <a className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-footer-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {link.label}
-                    </a>
+                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-footer-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {link.label}
                   </Link>
                 </li>
               ))}
@@ -94,10 +92,8 @@ export function Footer() {
             <ul className="space-y-2">
               {footerLinks.categories.map((link) => (
                 <li key={link.path}>
-                  <Link href={link.path}>
-                    <a className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-category-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {link.label}
-                    </a>
+                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-category-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {link.label}
                   </Link>
                 </li>
               ))}
@@ -110,10 +106,8 @@ export function Footer() {
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.path}>
-                  <Link href={link.path}>
-                    <a className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-legal-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {link.label}
-                    </a>
+                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-legal-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {link.label}
                   </Link>
                 </li>
               ))}

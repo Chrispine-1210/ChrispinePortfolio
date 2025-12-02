@@ -1,5 +1,4 @@
 import * as openidClient from "openid-client";
-const { Issuer, generators } = openidClient as any;
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
 import type { Request } from "express";
@@ -12,7 +11,7 @@ async function getClient(): Promise<Client> {
   if (client) return client;
 
   const issuerUrl = process.env.ISSUER_URL || "https://replit.com";
-  const issuer = await Issuer.discover(issuerUrl);
+  const issuer = await (openidClient as any).Issuer.discover(issuerUrl);
 
   client = new issuer.Client({
     client_id: process.env.REPL_ID!,
@@ -29,6 +28,7 @@ export interface AuthData {
 
 export async function getAuthUrl(callbackUrl: string): Promise<{ url: string; authData: AuthData }> {
   const authClient = await getClient();
+  const { generators } = openidClient as any;
   const codeVerifier = generators.codeVerifier();
   const codeChallenge = generators.codeChallenge(codeVerifier);
   const state = generators.state();
