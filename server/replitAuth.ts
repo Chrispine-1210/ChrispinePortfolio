@@ -1,51 +1,59 @@
 import * as openidClient from "openid-client";
 import { storage } from "./storage";
 import type { User } from "@shared/schema";
-import type { Request } from "express";
 
-type Client = any;
+let clientConfig: openidClient.Configuration | null = null;
 
-let client: Client | null = null;
+async function getClientConfig(): Promise<openidClient.Configuration> {
+  if (clientConfig) return clientConfig;
 
-async function getClient(): Promise<Client> {
-  if (client) return client;
+  const issuerUrl = new URL("https://replit.com/.well-known/openid-configuration");
+  
+  clientConfig = await openidClient.discovery(
+    issuerUrl,
+    process.env.REPL_ID!,
+    undefined,
+    undefined,
+    {
+      execute: [openidClient.allowInsecureRequests],
+    }
+  );
 
-  const issuerUrl = process.env.ISSUER_URL || "https://replit.com";
-  const issuer = await (openidClient as any).Issuer.discover(issuerUrl);
-
-  client = new issuer.Client({
-    client_id: process.env.REPL_ID!,
-    token_endpoint_auth_method: "none",
-  });
-
-  return client;
+  return clientConfig;
 }
 
 export interface AuthData {
   codeVerifier: string;
   state: string;
+  nonce: string;
 }
 
 export async function getAuthUrl(callbackUrl: string): Promise<{ url: string; authData: AuthData }> {
-  const authClient = await getClient();
-  const { generators } = openidClient as any;
-  const codeVerifier = generators.codeVerifier();
-  const codeChallenge = generators.codeChallenge(codeVerifier);
-  const state = generators.state();
+  const config = await getClientConfig();
+  
+  const codeVerifier = openidClient.randomPKCECodeVerifier();
+  const codeChallenge = await openidClient.calculatePKCECodeChallenge(codeVerifier);
+  const state = openidClient.randomState();
+  const nonce = openidClient.randomNonce();
 
-  const url = authClient.authorizationUrl({
+  const parameters: Record<string, string> = {
     redirect_uri: callbackUrl,
     scope: "openid email profile",
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
     state,
-  });
+    nonce,
+    response_type: "code",
+  };
+
+  const url = openidClient.buildAuthorizationUrl(config, parameters);
 
   return {
-    url,
+    url: url.href,
     authData: {
       codeVerifier,
       state,
+      nonce,
     },
   };
 }
@@ -56,48 +64,45 @@ export async function handleCallback(
   callbackUrl: string,
   authData: AuthData
 ): Promise<User> {
-  // Verify state matches
   if (state !== authData.state) {
     throw new Error("Invalid state parameter");
   }
 
-  const authClient = await getClient();
+  const config = await getClientConfig();
 
-  const tokenSet = await authClient.callback(
-    callbackUrl,
-    { code, state },
+  const tokens = await openidClient.authorizationCodeGrant(
+    config,
+    new URL(`${callbackUrl}?code=${code}&state=${state}`),
     {
-      code_verifier: authData.codeVerifier,
-      state: authData.state,
+      pkceCodeVerifier: authData.codeVerifier,
+      expectedState: authData.state,
+      expectedNonce: authData.nonce,
     }
   );
 
-  if (!tokenSet.access_token) {
-    throw new Error("No access token received");
+  const claims = tokens.claims();
+  
+  if (!claims || !claims.sub) {
+    throw new Error("No user claims received");
   }
 
-  const userInfo = await authClient.userinfo(tokenSet.access_token);
-
-  // Check if user exists by replitSub
-  let user = await storage.getUserByReplitSub(userInfo.sub);
+  let user = await storage.getUserByReplitSub(claims.sub);
 
   if (!user) {
-    // Create new user
     user = await storage.createUser({
-      replitSub: userInfo.sub,
-      email: userInfo.email as string,
-      firstName: userInfo.given_name as string,
-      lastName: userInfo.family_name as string,
-      profileImageUrl: userInfo.picture as string,
+      replitSub: claims.sub,
+      email: claims.email as string || null,
+      firstName: claims.given_name as string || null,
+      lastName: claims.family_name as string || null,
+      profileImageUrl: claims.picture as string || null,
       isPremium: false,
     });
   } else {
-    // Update user info if changed
     await storage.updateUser(user.id, {
-      email: userInfo.email as string,
-      firstName: userInfo.given_name as string,
-      lastName: userInfo.family_name as string,
-      profileImageUrl: userInfo.picture as string,
+      email: claims.email as string || null,
+      firstName: claims.given_name as string || null,
+      lastName: claims.family_name as string || null,
+      profileImageUrl: claims.picture as string || null,
     });
     user = await storage.getUser(user.id);
   }
