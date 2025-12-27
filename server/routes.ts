@@ -1,91 +1,22 @@
 import { Router, type Request, type Response } from "express";
 import { storage } from "./storage";
-import { getAuthUrl, handleCallback, type AuthData } from "./replitAuth";
+import { isAuthenticated } from "./replit_integrations/auth";
 import {
   insertBlogPostSchema,
   insertPortfolioProjectSchema,
   insertNewsletterSubscriberSchema,
   insertContactRequestSchema,
-  insertUserSchema,
 } from "@shared/schema";
 import Stripe from "stripe";
 
 const router = Router();
 
-// Middleware to check authentication
-function requireAuth(req: Request, res: Response, next: Function) {
-  if (!req.session?.user) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  next();
-}
-
 // Middleware to check premium status
 function requirePremium(req: Request, res: Response, next: Function) {
-  if (!req.session?.user?.isPremium) {
-    return res.status(403).json({ message: "Premium subscription required" });
-  }
+  const user = req.user as any;
+  // TODO: Check premium status from database once implemented
   next();
 }
-
-// Authentication routes
-router.get("/api/login", async (req: Request, res: Response) => {
-  try {
-    const callbackUrl = `${req.protocol}://${req.get("host")}/api/auth/callback`;
-    const { url, authData } = await getAuthUrl(callbackUrl);
-    
-    // Store auth data in session
-    req.session!.authData = authData;
-    
-    res.redirect(url);
-  } catch (error: any) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Authentication not configured" });
-  }
-});
-
-router.get("/api/auth/callback", async (req: Request, res: Response) => {
-  try {
-    const { code, state } = req.query;
-    if (!code || typeof code !== "string") {
-      return res.status(400).send("Missing authorization code");
-    }
-    if (!state || typeof state !== "string") {
-      return res.status(400).send("Missing state parameter");
-    }
-
-    const authData = req.session!.authData as AuthData;
-    if (!authData) {
-      return res.status(400).send("Missing auth data in session");
-    }
-
-    const callbackUrl = `${req.protocol}://${req.get("host")}/api/auth/callback`;
-    const user = await handleCallback(code, state, callbackUrl, authData);
-
-    req.session!.user = user;
-    delete req.session!.authData; // Clean up auth data
-    res.redirect("/dashboard");
-  } catch (error) {
-    console.error("Auth callback error:", error);
-    res.status(500).send("Authentication failed");
-  }
-});
-
-router.get("/api/auth/user", (req: Request, res: Response) => {
-  if (!req.session?.user) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
-  res.json(req.session.user);
-});
-
-router.get("/api/logout", (req: Request, res: Response) => {
-  req.session?.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ message: "Logout failed" });
-    }
-    res.redirect("/");
-  });
-});
 
 // User profile routes
 router.get("/api/user/profile", requireAuth, (req: Request, res: Response) => {
