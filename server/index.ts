@@ -1,22 +1,26 @@
 import express, { type Request, type Response, type NextFunction } from "express";
-import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
-import { Pool } from "@neondatabase/serverless";
+import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import routes from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import type { User } from "@shared/schema";
-import type { AuthData } from "./replitAuth";
 
-declare module "express-session" {
-  interface SessionData {
-    user?: User;
-    authData?: AuthData;
+declare global {
+  namespace Express {
+    interface User {
+      claims: {
+        sub: string;
+        email?: string;
+        given_name?: string;
+        family_name?: string;
+        picture?: string;
+      };
+      access_token?: string;
+      refresh_token?: string;
+      expires_at?: number;
+    }
   }
 }
 
 const app = express();
-const pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
-const PgSession = connectPgSimple(session);
 
 // Raw body handling for Stripe webhooks
 app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
@@ -60,24 +64,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Session middleware
-app.use(
-  session({
-    store: new PgSession({
-      pool: pgPool,
-      tableName: "sessions",
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SESSION_SECRET || "your-secret-key-change-in-production",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    },
-  })
-);
+// Setup Replit Auth (BEFORE registering other routes)
+(async () => {
+  await setupAuth(app);
+  registerAuthRoutes(app);
+})();
 
 // Serve static files from attached_assets
 app.use("/attached_assets", express.static("attached_assets"));
