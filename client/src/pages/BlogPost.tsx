@@ -1,21 +1,68 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { NewsletterForm } from "@/components/NewsletterForm";
-import { Calendar, Clock, Lock, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, Lock, ArrowLeft, ThumbsUp, MessageSquare, Send, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import type { BlogPost } from "@shared/schema";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { BlogPost, BlogComment, User } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+
+type CommentWithUser = BlogComment & { user: User };
 
 export default function BlogPost() {
   const { slug } = useParams();
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [readProgress, setReadProgress] = useState(0);
+  const [commentContent, setCommentContent] = useState("");
 
   const { data: post, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", slug],
+  });
+
+  const { data: likesData } = useQuery<{ count: number; isLiked: boolean }>({
+    queryKey: ["/api/blog", post?.id, "likes"],
+    enabled: !!post?.id,
+  });
+
+  const { data: comments } = useQuery<CommentWithUser[]>({
+    queryKey: ["/api/blog", post?.id, "comments"],
+    enabled: !!post?.id,
+  });
+
+  const toggleLikeMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", `/api/blog/${post?.id}/likes/toggle`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/blog", post?.id, "likes"] });
+    },
+  });
+
+  const postCommentMutation = useMutation({
+    mutationFn: async (content: string) => {
+      await apiRequest("POST", `/api/blog/${post?.id}/comments`, { content });
+    },
+    onSuccess: () => {
+      setCommentContent("");
+      queryClient.invalidateQueries({ queryKey: ["/api/blog", post?.id, "comments"] });
+      toast({ title: "Comment posted" });
+    },
+  });
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/blog/comments/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/blog", post?.id, "comments"] });
+      toast({ title: "Comment deleted" });
+    },
   });
 
   useEffect(() => {
@@ -159,6 +206,85 @@ export default function BlogPost() {
                 data-testid="text-full-content"
               />
             )}
+          </div>
+
+          {/* Engagement Section */}
+          <div className="mt-12 pt-8 border-t space-y-8">
+            <div className="flex items-center gap-4">
+              <Button
+                variant={likesData?.isLiked ? "default" : "outline"}
+                size="sm"
+                onClick={() => isAuthenticated ? toggleLikeMutation.mutate() : toast({ title: "Please login to like", variant: "destructive" })}
+                disabled={toggleLikeMutation.isPending}
+                data-testid="button-like"
+              >
+                <ThumbsUp className={`h-4 w-4 mr-2 ${likesData?.isLiked ? "fill-current" : ""}`} />
+                {likesData?.count || 0} Likes
+              </Button>
+              <div className="flex items-center text-muted-foreground text-sm">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                {comments?.length || 0} Comments
+              </div>
+            </div>
+
+            {/* Comments Section */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold">Comments</h3>
+              
+              {isAuthenticated ? (
+                <div className="space-y-4">
+                  <Textarea
+                    placeholder="Write a comment..."
+                    value={commentContent}
+                    onChange={(e) => setCommentContent(e.target.value)}
+                    className="min-h-[100px]"
+                    data-testid="input-comment"
+                  />
+                  <Button 
+                    onClick={() => postCommentMutation.mutate(commentContent)}
+                    disabled={!commentContent.trim() || postCommentMutation.isPending}
+                    data-testid="button-post-comment"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Post Comment
+                  </Button>
+                </div>
+              ) : (
+                <div className="bg-muted p-4 rounded-lg text-center">
+                  <p className="text-muted-foreground mb-2">Please login to join the conversation</p>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="/api/login">Login</a>
+                  </Button>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                {comments?.map((comment) => (
+                  <div key={comment.id} className="bg-card border rounded-lg p-4 space-y-2" data-testid={`comment-${comment.id}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">{comment.user.username}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(comment.createdAt!), "MMM d, yyyy")}
+                        </span>
+                      </div>
+                      {user?.claims?.sub === comment.userId && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive"
+                          onClick={() => deleteCommentMutation.mutate(comment.id)}
+                          data-testid={`button-delete-comment-${comment.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-sm">{comment.content}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Newsletter CTA */}
