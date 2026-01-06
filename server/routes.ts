@@ -385,6 +385,10 @@ router.get("/api/admin/stats", isAuthenticated, async (req, res) => {
 });
 
 router.post("/api/create-payment-intent", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ message: "Stripe not configured" });
+    }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     
