@@ -19,34 +19,24 @@ function requirePremium(req: Request, res: Response, next: Function) {
 }
 
 // User profile routes
-router.get("/api/user/profile", requireAuth, (req: Request, res: Response) => {
-  res.json(req.session!.user);
+router.get("/api/user/profile", isAuthenticated, (req: Request, res: Response) => {
+  res.json((req as any).user);
 });
 
-router.put("/api/user/profile", requireAuth, async (req: Request, res: Response) => {
+router.put("/api/user/profile", isAuthenticated, async (req: Request, res: Response) => {
   try {
-    const updateSchema = insertUserSchema.pick({
-      firstName: true,
-      lastName: true,
-      profileImageUrl: true,
-    });
-    
-    const data = updateSchema.parse(req.body);
-    const userId = req.session!.user!.id;
+    const data = req.body;
+    const userId = (req as any).user.claims.sub;
     
     const updatedUser = await storage.updateUser(userId, data);
 
     if (updatedUser) {
-      req.session!.user = updatedUser;
       res.json(updatedUser);
     } else {
       res.status(404).json({ message: "User not found" });
     }
   } catch (error: any) {
     console.error("Error updating user profile:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
-    }
     res.status(500).json({ message: "Failed to update profile" });
   }
 });
@@ -142,7 +132,7 @@ router.get("/api/blog/:slug", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/api/blog", requireAuth, async (req: Request, res: Response) => {
+router.post("/api/blog", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const data = insertBlogPostSchema.parse(req.body);
     const post = await storage.createBlogPost(data);
@@ -156,7 +146,7 @@ router.post("/api/blog", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-router.put("/api/blog/:id", requireAuth, async (req: Request, res: Response) => {
+router.put("/api/blog/:id", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const data = insertBlogPostSchema.partial().parse(req.body);
     const post = await storage.updateBlogPost(req.params.id, data);
@@ -173,7 +163,7 @@ router.put("/api/blog/:id", requireAuth, async (req: Request, res: Response) => 
   }
 });
 
-router.delete("/api/blog/:id", requireAuth, async (req: Request, res: Response) => {
+router.delete("/api/blog/:id", isAuthenticated, async (req: Request, res: Response) => {
   try {
     await storage.deleteBlogPost(req.params.id);
     res.json({ message: "Blog post deleted" });
@@ -240,7 +230,7 @@ router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/api/portfolio", requireAuth, async (req: Request, res: Response) => {
+router.post("/api/portfolio", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const data = insertPortfolioProjectSchema.parse(req.body);
     const project = await storage.createProject(data);
@@ -254,7 +244,7 @@ router.post("/api/portfolio", requireAuth, async (req: Request, res: Response) =
   }
 });
 
-router.put("/api/portfolio/:id", requireAuth, async (req: Request, res: Response) => {
+router.put("/api/portfolio/:id", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const data = insertPortfolioProjectSchema.partial().parse(req.body);
     const project = await storage.updateProject(req.params.id, data);
@@ -271,7 +261,7 @@ router.put("/api/portfolio/:id", requireAuth, async (req: Request, res: Response
   }
 });
 
-router.delete("/api/portfolio/:id", requireAuth, async (req: Request, res: Response) => {
+router.delete("/api/portfolio/:id", isAuthenticated, async (req: Request, res: Response) => {
   try {
     await storage.deleteProject(req.params.id);
     res.json({ message: "Project deleted" });
@@ -324,7 +314,7 @@ router.post("/api/contact", async (req: Request, res: Response) => {
 });
 
 // Stripe routes
-router.post("/api/create-payment-intent", requireAuth, async (req: Request, res: Response) => {
+router.post("/api/create-payment-intent", isAuthenticated, async (req: Request, res: Response) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
       return res.status(500).json({ message: "Stripe not configured" });
@@ -343,7 +333,7 @@ router.post("/api/create-payment-intent", requireAuth, async (req: Request, res:
         enabled: true,
       },
       metadata: {
-        userId: req.session!.user!.id.toString(),
+        userId: (req as any).user.claims.sub.toString(),
       },
     });
 
