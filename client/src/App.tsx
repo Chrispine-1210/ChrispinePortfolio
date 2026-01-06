@@ -17,9 +17,10 @@ import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Subscribe from "@/pages/Subscribe";
 import Dashboard from "@/pages/Dashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/contact" component={Contact} />
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/admin" component={AdminDashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>

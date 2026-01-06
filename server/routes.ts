@@ -365,12 +365,26 @@ router.delete("/api/blog/comments/:id", isAuthenticated, async (req, res) => {
   res.json({ success: true });
 });
 
-// Stripe routes
+// Admin Routes
+router.get("/api/admin/stats", isAuthenticated, async (req, res) => {
+  const user = (req as any).user;
+  const dbUser = await storage.getUserByReplitSub(user.claims.sub);
+  if (!dbUser?.isAdmin) {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+
+  const posts = await storage.getAllBlogPosts();
+  const subscribers = await storage.getNewsletterSubscribers();
+  const contacts = await storage.getAllContactRequests();
+
+  res.json({
+    totalPosts: posts.length,
+    totalSubscribers: subscribers.length,
+    totalContacts: contacts.length,
+  });
+});
+
 router.post("/api/create-payment-intent", isAuthenticated, async (req: Request, res: Response) => {
-  try {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ message: "Stripe not configured" });
-    }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     
