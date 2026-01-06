@@ -6,6 +6,7 @@ import {
   insertPortfolioProjectSchema,
   insertNewsletterSubscriberSchema,
   insertContactRequestSchema,
+  insertBlogCommentSchema,
 } from "@shared/schema";
 import Stripe from "stripe";
 
@@ -314,6 +315,54 @@ router.post("/api/contact", async (req: Request, res: Response) => {
     }
     res.status(500).json({ message: "Failed to submit contact request" });
   }
+});
+
+// Blog Engagement Routes
+router.get("/api/blog/:id/likes", async (req, res) => {
+  const count = await storage.getBlogLikes(req.params.id);
+  const user = (req as any).user;
+  let isLiked = false;
+  if (user?.claims?.sub) {
+    const like = await storage.getUserBlogLike(req.params.id, user.claims.sub);
+    isLiked = !!like;
+  }
+  res.json({ count, isLiked });
+});
+
+router.post("/api/blog/:id/likes/toggle", isAuthenticated, async (req, res) => {
+  const userId = (req as any).user.claims.sub;
+  await storage.toggleBlogLike(req.params.id, userId);
+  const count = await storage.getBlogLikes(req.params.id);
+  res.json({ count, isLiked: true }); // Client can refine state
+});
+
+router.get("/api/blog/:id/comments", async (req, res) => {
+  const comments = await storage.getBlogComments(req.params.id);
+  res.json(comments);
+});
+
+router.post("/api/blog/:id/comments", isAuthenticated, async (req, res) => {
+  try {
+    const userId = (req as any).user.claims.sub;
+    const data = insertBlogCommentSchema.parse({
+      ...req.body,
+      blogPostId: req.params.id,
+      userId,
+    });
+    const comment = await storage.createBlogComment(data);
+    res.json(comment);
+  } catch (error: any) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to post comment" });
+  }
+});
+
+router.delete("/api/blog/comments/:id", isAuthenticated, async (req, res) => {
+  const userId = (req as any).user.claims.sub;
+  await storage.deleteBlogComment(req.params.id, userId);
+  res.json({ success: true });
 });
 
 // Stripe routes
