@@ -124,12 +124,12 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async createBlogPost(data: InsertBlogPost): Promise<BlogPost> {
+  async createBlogPost(data: any): Promise<BlogPost> {
     const result = await db.insert(blogPosts).values(data).returning();
     return result[0];
   }
 
-  async updateBlogPost(id: string, data: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+  async updateBlogPost(id: string, data: any): Promise<BlogPost | undefined> {
     const result = await db.update(blogPosts).set(data).where(eq(blogPosts.id, id)).returning();
     return result[0];
   }

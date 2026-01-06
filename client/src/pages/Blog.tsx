@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
 import type { BlogPost } from "@shared/schema";
 
-const categories = ["All", "MEL", "Programming", "Career", "Networking"];
+const categories = ["All", "MEL", "Programming", "Career", "Networking", "AI & Data", "Leadership"];
 
 export default function Blog() {
   const searchParams = new URLSearchParams(useSearch());
@@ -31,7 +31,7 @@ export default function Blog() {
       searchQuery === "" ||
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      (post.tags || []).some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
 

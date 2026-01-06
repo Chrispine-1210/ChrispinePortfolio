@@ -56,7 +56,7 @@ async function upsertUser(claims: any) {
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
-    profileImageUrl: claims["profile_image_url"],
+    profileImageUrl: claims["picture"],
   });
 }
 
@@ -72,9 +72,23 @@ export async function setupAuth(app: Express) {
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
+    const claims = tokens.claims();
+    if (!claims) {
+      return verified(new Error("No claims found in tokens"));
+    }
+    const user: Express.User = {
+      claims: {
+        sub: claims.sub,
+        email: claims.email as string,
+        given_name: claims.given_name as string,
+        family_name: claims.family_name as string,
+        picture: claims.picture as string,
+      },
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expires_at: claims.exp,
+    };
+    await upsertUser(claims);
     verified(null, user);
   };
 
