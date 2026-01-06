@@ -110,5 +110,38 @@ export const insertContactRequestSchema = createInsertSchema(contactRequests).om
   createdAt: true,
 });
 
-export type InsertContactRequest = z.infer<typeof insertContactRequestSchema>;
 export type ContactRequest = typeof contactRequests.$inferSelect;
+
+// Blog Likes
+export const blogLikes = pgTable("blog_likes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  blogPostId: varchar("blog_post_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertBlogLikeSchema = createInsertSchema(blogLikes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type BlogLike = typeof blogLikes.$inferSelect;
+
+// Blog Comments
+export const blogComments = pgTable("blog_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  blogPostId: varchar("blog_post_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  parentId: varchar("parent_id"), // For replies
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertBlogCommentSchema = createInsertSchema(blogComments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type BlogComment = typeof blogComments.$inferSelect;
