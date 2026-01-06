@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Lock } from "lucide-react";
@@ -12,66 +12,62 @@ interface BlogCardProps {
 
 export function BlogCard({ post }: BlogCardProps) {
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col" data-testid={`card-blog-${post.id}`}>
-      {post.featuredImage && (
-        <div className="relative h-48 overflow-hidden bg-muted rounded-t-lg">
-          <img
-            src={post.featuredImage}
-            alt={post.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            data-testid={`img-blog-${post.id}`}
-          />
-          {post.isPremium && (
-            <div className="absolute top-4 right-4">
-              <Badge className="bg-primary/90 backdrop-blur-sm" data-testid={`badge-premium-${post.id}`}>
-                <Lock className="h-3 w-3 mr-1" />
-                Premium
-              </Badge>
+    <Card className="flex flex-col h-full overflow-hidden hover-elevate transition-all duration-300">
+      <Link href={`/blog/${post.slug}`}>
+        <div className="relative aspect-video overflow-hidden cursor-pointer group">
+          {post.featuredImage ? (
+            <img
+              src={post.featuredImage}
+              alt={post.title}
+              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <span className="text-muted-foreground">No image</span>
             </div>
           )}
-        </div>
-      )}
-      <CardHeader className="flex-1">
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="secondary" data-testid={`badge-category-${post.id}`}>
-            {post.category}
-          </Badge>
-        </div>
-        <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2" data-testid={`text-blog-title-${post.id}`}>
-          {post.title}
-        </CardTitle>
-        <CardDescription className="line-clamp-3 mt-2" data-testid={`text-blog-excerpt-${post.id}`}>
-          {post.excerpt}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center gap-1" data-testid={`text-blog-date-${post.id}`}>
-            <Calendar className="h-4 w-4" />
-            {format(new Date(post.publishedAt), "MMM d, yyyy")}
+          {post.isPremium && (
+            <div className="absolute top-2 right-2 bg-primary/90 text-primary-foreground px-2 py-1 rounded-md flex items-center gap-1.5 text-xs font-medium backdrop-blur-sm">
+              <Lock className="h-3 w-3" />
+              Premium
+            </div>
+          )}
+          <div className="absolute top-2 left-2">
+            <Badge variant="secondary" className="backdrop-blur-sm bg-background/80">
+              {post.category}
+            </Badge>
           </div>
-          <div className="flex items-center gap-1" data-testid={`text-blog-readtime-${post.id}`}>
-            <Clock className="h-4 w-4" />
+        </div>
+      </Link>
+      <CardHeader className="flex-none p-6 pb-2">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+          <time dateTime={post.publishedAt?.toString()}>
+            {post.publishedAt ? format(new Date(post.publishedAt), "MMM d, yyyy") : "Draft"}
+          </time>
+          <span>•</span>
+          <div className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
             {post.readTimeMinutes} min read
           </div>
         </div>
-
-        {post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {post.tags.slice(0, 3).map((tag, idx) => (
-              <Badge key={idx} variant="outline" className="text-xs" data-testid={`badge-tag-${post.id}-${idx}`}>
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        <Button variant="default" className="w-full" asChild data-testid={`button-read-more-${post.id}`}>
-          <Link href={`/blog/${post.slug}`}>
-            Read More
-          </Link>
-        </Button>
+        <Link href={`/blog/${post.slug}`}>
+          <h3 className="text-xl font-bold leading-tight hover:text-primary transition-colors cursor-pointer line-clamp-2">
+            {post.title}
+          </h3>
+        </Link>
+      </CardHeader>
+      <CardContent className="flex-1 p-6 pt-0">
+        <p className="text-muted-foreground line-clamp-3 text-sm leading-relaxed">
+          {post.excerpt}
+        </p>
       </CardContent>
+      <CardFooter className="flex-none p-6 pt-0 flex flex-wrap gap-1.5">
+        {(post.tags || []).slice(0, 3).map((tag) => (
+          <Badge key={tag} variant="outline" className="text-[10px] py-0 px-2 h-5 font-normal">
+            #{tag}
+          </Badge>
+        ))}
+      </CardFooter>
     </Card>
   );
 }

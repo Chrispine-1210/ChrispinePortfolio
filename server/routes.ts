@@ -69,7 +69,8 @@ router.get("/api/blog", async (req: Request, res: Response) => {
     }
     
     // For premium posts in collection, omit content entirely (use excerpt for preview)
-    if (!req.session?.user?.isPremium) {
+    const user = (req as any).user;
+    if (!user?.claims?.sub) {
       posts = posts.map(post => {
         if (post.isPremium) {
           const { content, ...postWithoutContent } = post;
@@ -92,7 +93,8 @@ router.get("/api/blog/recent", async (req: Request, res: Response) => {
     let posts = await storage.getRecentBlogPosts(limit);
     
     // For premium posts, omit content entirely (use excerpt for preview)
-    if (!req.session?.user?.isPremium) {
+    const user = (req as any).user;
+    if (!user?.claims?.sub) {
       posts = posts.map(post => {
         if (post.isPremium) {
           const { content, ...postWithoutContent } = post;
@@ -117,7 +119,8 @@ router.get("/api/blog/:slug", async (req: Request, res: Response) => {
     }
 
     // Enforce premium content access control
-    if (post.isPremium && !req.session?.user?.isPremium) {
+    const user = (req as any).user;
+    if (post.isPremium && !user?.claims?.sub) {
       return res.status(403).json({ 
         message: "Premium subscription required to access this content",
         isPremium: true,
