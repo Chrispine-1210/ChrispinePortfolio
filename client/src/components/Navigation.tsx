@@ -15,7 +15,7 @@ const navItems = [
 
 export function Navigation() {
   const [location] = useLocation();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -59,6 +59,11 @@ export function Navigation() {
             )}
             {isAuthenticated && (
               <>
+                {user?.isAdmin && (
+                  <Button variant="outline" asChild data-testid="button-admin">
+                    <Link href="/admin">Admin</Link>
+                  </Button>
+                )}
                 <Button variant="outline" asChild data-testid="button-dashboard">
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
@@ -103,8 +108,13 @@ export function Navigation() {
                   )}
                   {isAuthenticated && (
                     <>
+                      {user?.isAdmin && (
+                        <Button variant="outline" className="w-full" asChild data-testid="button-mobile-admin">
+                          <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>Admin</Link>
+                        </Button>
+                      )}
                       <Button variant="outline" className="w-full" asChild data-testid="button-mobile-dashboard">
-                        <Link href="/dashboard">Dashboard</Link>
+                        <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
                       </Button>
                       <Button variant="ghost" className="w-full" asChild data-testid="button-mobile-logout">
                         <a href="/api/logout">Sign Out</a>

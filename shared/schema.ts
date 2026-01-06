@@ -27,6 +27,7 @@ export const blogPosts = pgTable("blog_posts", {
   category: text("category").notNull(), // MEL, Programming, Career, Networking
   tags: text("tags").array().default(sql`ARRAY[]::text[]`),
   isPremium: boolean("is_premium").default(false),
+  isAdmin: boolean("is_admin").default(false),
   isPublished: boolean("is_published").default(true),
   readTimeMinutes: integer("read_time_minutes").default(5),
   publishedAt: timestamp("published_at").defaultNow(),
