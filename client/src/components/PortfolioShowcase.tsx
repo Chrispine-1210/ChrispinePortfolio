@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExternalLink, Github } from "lucide-react";
+import { ExternalLink, Github, Code, Boxes, Layers } from "lucide-react";
 import { Link } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
 import type { PortfolioProject } from "@shared/schema";
 
 interface PortfolioShowcaseProps {
@@ -21,25 +22,28 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
     : projects.filter((p) => p.category === selectedCategory);
 
   return (
-    <section className="py-16 sm:py-24 bg-background" id="portfolio">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 sm:py-24 bg-[#0a0c14] relative overflow-hidden" id="portfolio">
+      <div className="tech-grid-bg opacity-20" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center space-y-4 mb-12">
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground" data-testid="text-portfolio-title">
-            Portfolio
+          <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight uppercase" data-testid="text-portfolio-title">
+            <span className="text-primary font-mono mr-4">{"//"}</span>
+            PROJECT_NODES
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto" data-testid="text-portfolio-subtitle">
-            Explore my work across MEL systems, ICT infrastructure, web development, and data analytics
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-mono" data-testid="text-portfolio-subtitle">
+            ACCESSING_REPOSITORY: Filterable system architecture showcase
           </p>
         </div>
 
         {/* Category Filter */}
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-12">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-2 h-auto p-2">
+          <TabsList className="flex flex-wrap w-full bg-white/5 border border-white/10 p-1 rounded-none">
             {categories.map((category) => (
               <TabsTrigger
                 key={category}
                 value={category}
-                className="text-sm sm:text-base py-2"
+                className="flex-1 text-xs sm:text-sm py-2 rounded-none data-[state=active]:bg-primary data-[state=active]:text-white uppercase font-mono tracking-widest"
                 data-testid={`tab-category-${category.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 {category}
@@ -50,83 +54,74 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
 
         {/* Projects Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project) => (
-            <Card
-              key={project.id}
-              className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-              data-testid={`card-project-${project.id}`}
-            >
-              {project.featuredImage && (
-                <div className="relative h-48 overflow-hidden bg-muted">
-                  <img
-                    src={project.featuredImage}
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    data-testid={`img-project-${project.id}`}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              )}
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors" data-testid={`text-project-title-${project.id}`}>
-                    {project.title}
-                  </CardTitle>
-                </div>
-                <Badge variant="secondary" className="w-fit" data-testid={`badge-category-${project.id}`}>
-                  {project.category}
-                </Badge>
-                <CardDescription className="mt-2 line-clamp-2" data-testid={`text-project-description-${project.id}`}>
-                  {project.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Tech Stack */}
-                <div className="flex flex-wrap gap-2">
-                  {project.techStack.slice(0, 4).map((tech, idx) => (
-                    <Badge key={idx} variant="outline" className="text-xs" data-testid={`badge-tech-${project.id}-${idx}`}>
-                      {tech}
-                    </Badge>
-                  ))}
-                  {project.techStack.length > 4 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{project.techStack.length - 4}
-                    </Badge>
+          <AnimatePresence mode="popLayout">
+            {filteredProjects.map((project, index) => (
+              <motion.div
+                layout
+                key={project.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <div className="tech-card group h-full flex flex-col">
+                  {project.featuredImage && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={project.featuredImage}
+                        alt={project.title}
+                        className="w-full h-full object-cover group-hover:scale-110 grayscale transition-all duration-500"
+                      />
+                      <div className="absolute inset-0 bg-primary/20 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute top-4 left-4">
+                        <div className="bg-black/80 text-primary border border-primary/30 px-2 py-0.5 font-mono text-[10px] uppercase">
+                          ID: {index.toString().padStart(2, '0')}
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </div>
+                  <div className="p-6 flex-1 flex flex-col">
+                    <div className="mb-4">
+                      <div className="text-xs text-primary font-mono mb-2 uppercase tracking-tighter">
+                        MODULE: {project.category}
+                      </div>
+                      <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors uppercase leading-tight">
+                        {project.title}
+                      </h3>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground mb-6 line-clamp-3 font-mono leading-relaxed opacity-80">
+                      {project.description}
+                    </p>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  <Button variant="default" size="sm" className="flex-1" asChild data-testid={`button-view-details-${project.id}`}>
-                    <Link href={`/portfolio/${project.slug}`}>
-                      View Details
-                    </Link>
-                  </Button>
-                  {project.liveUrl && (
-                    <Button variant="outline" size="icon" asChild data-testid={`button-live-${project.id}`}>
-                      <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
-                  {project.githubUrl && (
-                    <Button variant="outline" size="icon" asChild data-testid={`button-github-${project.id}`}>
-                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                        <Github className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {(project.techStack || []).slice(0, 3).map((tech, idx) => (
+                        <div key={idx} className="text-[10px] font-mono text-primary px-2 py-0.5 border border-primary/30 uppercase">
+                          {tech}
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-auto flex gap-2 pt-4 border-t border-white/5">
+                      <Button variant="outline" size="sm" className="flex-1 rounded-none border-primary/30 hover:border-primary text-xs font-mono" asChild>
+                        <Link href={`/portfolio/${project.slug}`}>
+                          EXECUTE_DETAILS
+                        </Link>
+                      </Button>
+                      {project.liveUrl && (
+                        <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 rounded-none" asChild>
+                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
-
-        {filteredProjects.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">No projects found in this category.</p>
-          </div>
-        )}
       </div>
     </section>
   );

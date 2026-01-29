@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { ArrowRight, Download } from "lucide-react";
+import { ArrowRight, Download, Terminal, Cpu, Globe } from "lucide-react";
+import { motion } from "framer-motion";
 import heroImage from "@assets/generated_images/Professional_headshot_portrait_eb0606b5.png";
 
 const specializations = [
@@ -42,80 +43,92 @@ export function Hero() {
   }, [currentText, currentIndex, isDeleting]);
 
   return (
-    <section className="relative min-h-[85vh] flex items-center bg-gradient-to-br from-background via-background to-accent/5 pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+    <section className="relative min-h-screen flex items-center bg-[#0a0c14] pt-16 overflow-hidden">
+      <div className="tech-grid-bg opacity-30" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Content */}
-          <div className="space-y-8 animate-fade-in">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-8"
+          >
             <div className="space-y-4">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground leading-tight" data-testid="text-hero-title">
-                Chrispine Mndala
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-mono mb-4">
+                <Terminal size={14} />
+                <span>SYSTEM_STATUS: ACTIVE</span>
+              </div>
+              <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black text-white tracking-tighter leading-none" data-testid="text-hero-title">
+                CHRISPINE<br />
+                <span className="text-primary italic">MNDALA</span>
               </h1>
               <div className="h-16 sm:h-20">
-                <p className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-primary" data-testid="text-hero-subtitle">
-                  {currentText}
-                  <span className="animate-pulse">|</span>
+                <p className="text-2xl sm:text-3xl lg:text-4xl font-mono text-primary/80" data-testid="text-hero-subtitle">
+                  {">"} {currentText}
+                  <span className="animate-pulse">_</span>
                 </p>
               </div>
-              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl leading-relaxed" data-testid="text-hero-description">
-                Digital systems strategist with <strong>7+ years</strong> building data-driven solutions
-                for education and agriculture sectors across Malawi. Delivering up to{" "}
-                <strong>60% efficiency gains</strong> through innovative MEL frameworks, ICT
-                infrastructure, and analytics tools.
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl leading-relaxed border-l-2 border-primary/30 pl-6" data-testid="text-hero-description">
+                Engineering high-performance digital systems with <strong>7+ years</strong> of expertise. 
+                Architecting data-driven solutions that deliver <strong>60% efficiency gains</strong> across multiple sectors.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" asChild data-testid="button-view-portfolio">
+              <Button size="lg" className="rounded-none bg-primary hover:bg-primary/90 shadow-[0_0_15px_rgba(59,130,246,0.5)]" asChild data-testid="button-view-portfolio">
                 <Link href="/portfolio">
-                  View Portfolio
+                  INITIALIZE_VIEW
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild data-testid="button-download-cv">
+              <Button size="lg" variant="outline" className="rounded-none border-primary/50 text-primary hover:bg-primary/10" asChild data-testid="button-download-cv">
                 <a href="/attached_assets/Chrispine Mndala CV (1)_1762954002259.pdf" download>
                   <Download className="mr-2 h-5 w-5" />
-                  Download CV
+                  PULL_DATA_CV
                 </a>
               </Button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border">
-              <div>
-                <p className="text-3xl sm:text-4xl font-bold text-primary" data-testid="text-stat-years">7+</p>
-                <p className="text-sm text-muted-foreground">Years Experience</p>
+            {/* Tech Stats */}
+            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+              <div className="group">
+                <Cpu className="h-5 w-5 text-primary mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-2xl font-bold text-white font-mono">0x07</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Experience</p>
               </div>
-              <div>
-                <p className="text-3xl sm:text-4xl font-bold text-primary" data-testid="text-stat-projects">50+</p>
-                <p className="text-sm text-muted-foreground">Projects Completed</p>
+              <div className="group">
+                <Globe className="h-5 w-5 text-primary mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-2xl font-bold text-white font-mono">50+</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Nodes Built</p>
               </div>
-              <div>
-                <p className="text-3xl sm:text-4xl font-bold text-primary" data-testid="text-stat-efficiency">60%</p>
-                <p className="text-sm text-muted-foreground">Efficiency Gains</p>
+              <div className="group">
+                <Terminal className="h-5 w-5 text-primary mb-2 group-hover:scale-110 transition-transform" />
+                <p className="text-2xl font-bold text-white font-mono">60%</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest">Optimization</p>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right: Image */}
-          <div className="relative lg:block hidden">
-            <div className="relative rounded-lg overflow-hidden shadow-2xl">
+          {/* Right: Tech Image */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1 }}
+            className="relative lg:block hidden"
+          >
+            <div className="relative tech-card p-2 group">
+              <div className="absolute -top-4 -left-4 w-20 h-20 border-t-2 border-l-2 border-primary/50" />
+              <div className="absolute -bottom-4 -right-4 w-20 h-20 border-b-2 border-r-2 border-primary/50" />
               <img
                 src={heroImage}
-                alt="Chrispine Mndala - Professional ICT Specialist"
-                className="w-full h-auto object-cover"
-                data-testid="img-hero-portrait"
+                alt="Chrispine Mndala"
+                className="w-full h-auto grayscale group-hover:grayscale-0 transition-all duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
+              <div className="absolute inset-0 bg-primary/10 mix-blend-overlay" />
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce hidden sm:block">
-        <div className="w-6 h-10 border-2 border-muted-foreground rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-muted-foreground rounded-full mt-2 animate-pulse" />
+          </motion.div>
         </div>
       </div>
     </section>
