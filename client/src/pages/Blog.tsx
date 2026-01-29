@@ -4,8 +4,8 @@ import { useLocation, useSearch } from "wouter";
 import { BlogCard } from "@/components/BlogCard";
 import { NewsletterForm } from "@/components/NewsletterForm";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search } from "lucide-react";
+import { Search, Terminal, Zap } from "lucide-react";
+import { motion } from "framer-motion";
 import type { BlogPost } from "@shared/schema";
 
 const categories = ["All", "MEL", "Programming", "Career", "Networking", "AI & Data", "Leadership"];
@@ -18,7 +18,7 @@ export default function Blog() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    document.title = "Blog | Chrispine Mndala";
+    document.title = "TECH_LOGS | Chrispine Mndala";
   }, []);
 
   const { data: posts = [], isLoading } = useQuery<BlogPost[]>({
@@ -44,78 +44,95 @@ export default function Blog() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen pt-32 flex items-center justify-center">
-        <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full" data-testid="loading-spinner" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen pt-16">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-background via-background to-accent/5 py-16 sm:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl sm:text-6xl font-bold text-foreground mb-6" data-testid="text-page-title">
-            Blog & Tutorials
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8" data-testid="text-page-description">
-            Insights on ICT, MEL frameworks, programming, and digital transformation
-          </p>
-
-          {/* Search */}
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search articles..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              data-testid="input-search-blog"
-            />
+    <div className="min-h-screen pt-24 pb-16 bg-[#0a0c14] relative">
+      <div className="tech-grid-bg opacity-20" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-8 mb-16"
+        >
+          <div className="text-center space-y-4">
+            <h1 className="text-4xl sm:text-7xl font-black text-white tracking-tighter uppercase">
+              <span className="text-primary mr-4">{"//"}</span>
+              TECH_LOGS
+            </h1>
+            <p className="text-xl text-muted-foreground font-mono">
+              SYSTEM_INTEL: Accessing educational data nodes and ICT insights
+            </p>
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="max-w-2xl mx-auto relative group">
+            <div className="absolute -inset-1 bg-primary/20 blur opacity-0 group-hover:opacity-100 transition duration-500" />
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 h-5 w-5 text-primary" />
+              <Input
+                type="search"
+                placeholder="QUERY_DATABASE: Search posts, tags, or categories..."
+                className="pl-12 h-14 bg-card/50 border-primary/30 rounded-none font-mono focus:ring-primary/50 text-white"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+        </motion.div>
+
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
           <aside className="lg:col-span-1 space-y-6">
-            <div>
-              <h3 className="font-semibold mb-4 text-lg">Categories</h3>
+            <div className="tech-card p-6">
+              <h3 className="font-mono text-primary text-sm font-bold mb-4 uppercase tracking-widest border-b border-primary/20 pb-2">
+                NODES_INDEX
+              </h3>
               <div className="flex flex-wrap lg:flex-col gap-2">
                 {categories.map((category) => (
-                  <Badge
+                  <button
                     key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
-                    className="cursor-pointer hover-elevate active-elevate-2"
                     onClick={() => handleCategoryChange(category)}
-                    data-testid={`badge-category-${category.toLowerCase()}`}
+                    className={`text-left px-3 py-2 text-xs font-mono uppercase transition-all ${
+                      selectedCategory === category 
+                        ? "bg-primary text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    }`}
                   >
-                    {category}
-                  </Badge>
+                    {">"} {category}
+                  </button>
                 ))}
               </div>
             </div>
-
             <NewsletterForm variant="sidebar" />
           </aside>
 
-          {/* Blog Grid */}
           <div className="lg:col-span-3">
-            <div className="grid sm:grid-cols-2 gap-8">
-              {filteredPosts.map((post) => (
-                <BlogCard key={post.id} post={post} />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="grid sm:grid-cols-2 gap-8">
+                {[1, 2, 4].map((i) => (
+                  <div key={i} className="space-y-4">
+                    <div className="h-48 w-full bg-white/5 animate-pulse" />
+                    <div className="h-8 w-3/4 bg-white/5 animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-8">
+                {filteredPosts.map((post, idx) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <BlogCard post={post} />
+                  </motion.div>
+                ))}
+              </div>
+            )}
 
-            {filteredPosts.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground text-lg" data-testid="text-no-results">
-                  No articles found matching your criteria.
-                </p>
+            {!isLoading && filteredPosts.length === 0 && (
+              <div className="text-center py-24 border border-dashed border-primary/20 font-mono">
+                <Zap className="mx-auto h-12 w-12 text-primary mb-4 opacity-50" />
+                <p className="text-xl text-muted-foreground">ERROR_404: No matching data nodes found.</p>
               </div>
             )}
           </div>
