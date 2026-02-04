@@ -53,6 +53,21 @@
     0% { bottom: 100%; }
     100% { bottom: -100px; }
   }
+
+  .binary-bg {
+    @apply absolute inset-0 pointer-events-none opacity-[0.03] overflow-hidden;
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  }
+
+  .binary-column {
+    @apply absolute top-0 text-[10px] font-mono whitespace-pre leading-none text-primary;
+    animation: binary-fall linear infinite;
+  }
+
+  @keyframes binary-fall {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
 }
 
 /* LIGHT MODE FALLBACK */
