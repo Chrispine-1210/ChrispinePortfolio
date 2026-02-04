@@ -72,13 +72,40 @@ const TechTerm = ({ children, definition }: { children: React.ReactNode, definit
 );
 
 export default function About() {
+  const [binaryCols, setBinaryCols] = useState<{ id: number; left: string; duration: string; delay: string; content: string }[]>([]);
+
   useEffect(() => {
     document.title = "BIO_INTEL | Chrispine Mndala";
+    
+    // Generate binary stream columns
+    const cols = Array.from({ length: 20 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      duration: `${10 + Math.random() * 20}s`,
+      delay: `${Math.random() * -20}s`,
+      content: Array.from({ length: 50 }).map(() => (Math.random() > 0.5 ? "1" : "0")).join("\n")
+    }));
+    setBinaryCols(cols);
   }, []);
 
   return (
     <div className="min-h-screen pt-24 pb-16 bg-[#0a0c14] relative overflow-hidden">
       <div className="tech-grid-bg opacity-20" />
+      <div className="binary-bg">
+        {binaryCols.map(col => (
+          <div
+            key={col.id}
+            className="binary-column"
+            style={{
+              left: col.left,
+              animationDuration: col.duration,
+              animationDelay: col.delay
+            }}
+          >
+            {col.content}
+          </div>
+        ))}
+      </div>
 
       {/* Hero Section */}
       <section className="relative py-16 sm:py-24 overflow-hidden">
