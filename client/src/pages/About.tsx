@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,7 +92,7 @@ export default function About() {
     <div className="min-h-screen pt-24 pb-16 bg-[#0a0c14] relative overflow-hidden">
       <div className="tech-grid-bg opacity-20" />
       <div className="binary-bg">
-        {binaryCols.map(col => (
+        {binaryCols.map((col) => (
           <div
             key={col.id}
             className="binary-column"
