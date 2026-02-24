@@ -41,6 +41,9 @@ function Router() {
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/newsletter" component={Landing} />
+          <Route path="/services" component={About} />
+          <Route path="/projects" component={Portfolio} />
           <Route component={NotFound} />
         </Switch>
       </main>
