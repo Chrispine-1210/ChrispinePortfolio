@@ -2,7 +2,7 @@ import { Link } from "wouter";
 import { Linkedin, Github, Facebook, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const footerLinks = {
+const footerLinks: Record<string, Array<{ label: string; path: string }>> = {
   navigation: [
     { label: "Home", path: "/" },
     { label: "Portfolio", path: "/portfolio" },
