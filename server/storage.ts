@@ -7,6 +7,8 @@ import {
   contactRequests,
   blogLikes,
   blogComments,
+  emailTemplates,
+  externalPosts,
   type User,
   type BlogPost,
   type PortfolioProject,
@@ -19,6 +21,10 @@ import {
   type InsertContactRequest,
   type BlogLike,
   type BlogComment,
+  type EmailTemplate,
+  type ExternalPost,
+  type InsertEmailTemplate,
+  type InsertExternalPost,
 } from "@shared/schema";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { eq, desc, and, or, like } from "drizzle-orm";
@@ -71,6 +77,22 @@ export interface IStorage {
   getBlogComments(blogPostId: string): Promise<(BlogComment & { user: User })[]>;
   createBlogComment(data: any): Promise<BlogComment>;
   deleteBlogComment(id: string, userId: string): Promise<void>;
+
+  // Email Templates
+  getEmailTemplates(): Promise<EmailTemplate[]>;
+  getActiveEmailTemplates(): Promise<EmailTemplate[]>;
+  getEmailTemplate(id: string): Promise<EmailTemplate | undefined>;
+  createEmailTemplate(data: InsertEmailTemplate): Promise<EmailTemplate>;
+  updateEmailTemplate(id: string, data: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined>;
+  deleteEmailTemplate(id: string): Promise<void>;
+
+  // External Posts
+  getExternalPosts(): Promise<ExternalPost[]>;
+  getActiveExternalPosts(): Promise<ExternalPost[]>;
+  getExternalPostsByCategory(category: string): Promise<ExternalPost[]>;
+  createExternalPost(data: InsertExternalPost): Promise<ExternalPost>;
+  updateExternalPost(id: string, data: Partial<InsertExternalPost>): Promise<ExternalPost | undefined>;
+  deleteExternalPost(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -277,6 +299,73 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBlogComment(id: string, userId: string): Promise<void> {
     await db.delete(blogComments).where(and(eq(blogComments.id, id), eq(blogComments.userId, userId)));
+  }
+
+  // Email Templates
+  async getEmailTemplates(): Promise<EmailTemplate[]> {
+    return await db.select().from(emailTemplates).orderBy(desc(emailTemplates.createdAt));
+  }
+
+  async getActiveEmailTemplates(): Promise<EmailTemplate[]> {
+    return await db
+      .select()
+      .from(emailTemplates)
+      .where(eq(emailTemplates.isActive, true))
+      .orderBy(desc(emailTemplates.createdAt));
+  }
+
+  async getEmailTemplate(id: string): Promise<EmailTemplate | undefined> {
+    const result = await db.select().from(emailTemplates).where(eq(emailTemplates.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createEmailTemplate(data: InsertEmailTemplate): Promise<EmailTemplate> {
+    const result = await db.insert(emailTemplates).values(data).returning();
+    return result[0];
+  }
+
+  async updateEmailTemplate(id: string, data: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined> {
+    const result = await db.update(emailTemplates).set(data).where(eq(emailTemplates.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteEmailTemplate(id: string): Promise<void> {
+    await db.delete(emailTemplates).where(eq(emailTemplates.id, id));
+  }
+
+  // External Posts
+  async getExternalPosts(): Promise<ExternalPost[]> {
+    return await db.select().from(externalPosts).orderBy(desc(externalPosts.publishedAt));
+  }
+
+  async getActiveExternalPosts(): Promise<ExternalPost[]> {
+    return await db
+      .select()
+      .from(externalPosts)
+      .where(eq(externalPosts.isActive, true))
+      .orderBy(desc(externalPosts.publishedAt));
+  }
+
+  async getExternalPostsByCategory(category: string): Promise<ExternalPost[]> {
+    return await db
+      .select()
+      .from(externalPosts)
+      .where(and(eq(externalPosts.isActive, true), eq(externalPosts.category, category)))
+      .orderBy(desc(externalPosts.publishedAt));
+  }
+
+  async createExternalPost(data: InsertExternalPost): Promise<ExternalPost> {
+    const result = await db.insert(externalPosts).values(data).returning();
+    return result[0];
+  }
+
+  async updateExternalPost(id: string, data: Partial<InsertExternalPost>): Promise<ExternalPost | undefined> {
+    const result = await db.update(externalPosts).set(data).where(eq(externalPosts.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteExternalPost(id: string): Promise<void> {
+    await db.delete(externalPosts).where(eq(externalPosts.id, id));
   }
 }
 
