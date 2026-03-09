@@ -7,8 +7,15 @@ const footerLinks = {
     { label: "Home", path: "/" },
     { label: "Portfolio", path: "/portfolio" },
     { label: "Blog", path: "/blog" },
+    { label: "Newsletter", path: "/newsletter-manage" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
+  ],
+  resources: [
+    { label: "Subscribe", path: "/subscribe" },
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Admin Panel", path: "/admin" },
+    { label: "External Posts", path: "/external-posts" },
   ],
   categories: [
     { label: "MEL Systems", path: "/blog?category=MEL" },
@@ -16,17 +23,13 @@ const footerLinks = {
     { label: "Career Insights", path: "/blog?category=Career" },
     { label: "Networking", path: "/blog?category=Networking" },
   ],
-  legal: [
-    { label: "Privacy Policy", path: "/privacy" },
-    { label: "Terms of Service", path: "/terms" },
-  ],
 };
 
 export function Footer() {
   return (
     <footer className="bg-card border-t border-border mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
           {/* Brand */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-foreground">Chrispine Mndala</h3>
@@ -86,13 +89,13 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Resources */}
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">Categories</h4>
+            <h4 className="font-semibold mb-4 text-foreground">Resources</h4>
             <ul className="space-y-2">
-              {footerLinks.categories.map((link) => (
+              {footerLinks.resources.map((link) => (
                 <li key={link.path}>
-                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-category-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-resources-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
                     {link.label}
                   </Link>
                 </li>
@@ -100,13 +103,13 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Categories */}
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">Legal</h4>
+            <h4 className="font-semibold mb-4 text-foreground">Categories</h4>
             <ul className="space-y-2">
-              {footerLinks.legal.map((link) => (
+              {footerLinks.categories.map((link) => (
                 <li key={link.path}>
-                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-legal-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-category-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
                     {link.label}
                   </Link>
                 </li>

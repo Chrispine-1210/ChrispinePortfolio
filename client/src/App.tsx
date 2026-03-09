@@ -19,6 +19,7 @@ import Subscribe from "@/pages/Subscribe";
 import Dashboard from "@/pages/Dashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import NewsletterManagement from "@/pages/NewsletterManagement";
+import ExternalPostsPage from "@/pages/ExternalPosts";
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -44,6 +45,7 @@ function Router() {
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/newsletter" component={Landing} />
           <Route path="/newsletter-manage" component={NewsletterManagement} />
+          <Route path="/external-posts" component={ExternalPostsPage} />
           <Route path="/services" component={About} />
           <Route path="/projects" component={Portfolio} />
           <Route component={NotFound} />

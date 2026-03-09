@@ -9,6 +9,7 @@ const navItems = [
   { label: "INITIALIZE", path: "/" },
   { label: "REPOSITORY", path: "/portfolio" },
   { label: "TECH_LOGS", path: "/blog" },
+  { label: "NEWSLETTER", path: "/newsletter-manage" },
   { label: "BIO_INTEL", path: "/about" },
   { label: "UPLINK", path: "/contact" },
 ];
@@ -58,8 +59,11 @@ export function Navigation() {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-4">
-            <Button size="sm" className="rounded-none bg-primary text-white text-[10px] font-mono h-8 uppercase shadow-[0_0_15px_rgba(59,130,246,0.4)]" asChild>
+          <div className="hidden md:flex items-center gap-3">
+            <Button size="sm" className="rounded-none bg-primary/20 border border-primary/50 text-primary text-[10px] font-mono h-8 uppercase hover:bg-primary/30" asChild data-testid="button-subscribe-nav">
+              <Link href="/subscribe">SUBSCRIBE</Link>
+            </Button>
+            <Button size="sm" className="rounded-none bg-primary text-white text-[10px] font-mono h-8 uppercase shadow-[0_0_15px_rgba(59,130,246,0.4)]" asChild data-testid="button-uplink-nav">
               <Link href="/contact">UPLINK_SYSTEM</Link>
             </Button>
           </div>
@@ -90,7 +94,10 @@ export function Navigation() {
                   ))}
                 </nav>
                 <div className="flex flex-col gap-2 pt-4 border-t border-white/10">
-                  <Button size="sm" className="w-full rounded-none bg-primary text-white text-[10px] font-mono h-10 uppercase shadow-[0_0_15px_rgba(59,130,246,0.4)]" asChild>
+                  <Button size="sm" className="w-full rounded-none bg-primary/20 border border-primary/50 text-primary text-[10px] font-mono h-10 uppercase hover:bg-primary/30" asChild data-testid="button-subscribe-mobile">
+                    <Link href="/subscribe" onClick={() => setMobileMenuOpen(false)}>SUBSCRIBE</Link>
+                  </Button>
+                  <Button size="sm" className="w-full rounded-none bg-primary text-white text-[10px] font-mono h-10 uppercase shadow-[0_0_15px_rgba(59,130,246,0.4)]" asChild data-testid="button-uplink-mobile">
                     <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>UPLINK_SYSTEM</Link>
                   </Button>
                 </div>
