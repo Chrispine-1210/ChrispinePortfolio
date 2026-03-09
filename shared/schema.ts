@@ -146,3 +146,52 @@ export const insertBlogCommentSchema = createInsertSchema(blogComments).omit({
 });
 
 export type BlogComment = typeof blogComments.$inferSelect;
+
+// Email Templates
+export const emailTemplates = pgTable("email_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  subject: text("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content"),
+  templateImage: text("template_image"),
+  marketingTips: text("marketing_tips"),
+  category: text("category"), // weekly, monthly, promotional
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+
+// External Posts (for embedding external content)
+export const externalPosts = pgTable("external_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  source: text("source").notNull(), // LinkedIn, Medium, Dev.to, etc
+  url: text("url").notNull(),
+  excerpt: text("excerpt"),
+  featuredImage: text("featured_image"),
+  publishedAt: timestamp("published_at"),
+  category: text("category"), // MEL, Programming, Career
+  embedCode: text("embed_code"), // For embedded widgets
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertExternalPostSchema = createInsertSchema(externalPosts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertExternalPost = z.infer<typeof insertExternalPostSchema>;
+export type ExternalPost = typeof externalPosts.$inferSelect;

@@ -7,6 +7,8 @@ import {
   insertNewsletterSubscriberSchema,
   insertContactRequestSchema,
   insertBlogCommentSchema,
+  insertEmailTemplateSchema,
+  insertExternalPostSchema,
 } from "@shared/schema";
 import Stripe from "stripe";
 
@@ -411,6 +413,54 @@ router.post("/api/create-payment-intent", isAuthenticated, async (req: Request, 
   } catch (error) {
     console.error("Error creating payment intent:", error);
     res.status(500).json({ message: "Failed to create payment intent" });
+  }
+});
+
+// Email Templates routes
+router.get("/api/email-templates", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const templates = await storage.getActiveEmailTemplates();
+    res.json(templates);
+  } catch (error) {
+    console.error("Error fetching email templates:", error);
+    res.status(500).json({ message: "Failed to fetch templates" });
+  }
+});
+
+router.post("/api/email-templates", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const data = insertEmailTemplateSchema.parse(req.body);
+    const template = await storage.createEmailTemplate(data);
+    res.json(template);
+  } catch (error: any) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to create template" });
+  }
+});
+
+// External Posts routes
+router.get("/api/external-posts", async (req: Request, res: Response) => {
+  try {
+    const posts = await storage.getActiveExternalPosts();
+    res.json(posts);
+  } catch (error) {
+    console.error("Error fetching external posts:", error);
+    res.status(500).json({ message: "Failed to fetch posts" });
+  }
+});
+
+router.post("/api/external-posts", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const data = insertExternalPostSchema.parse(req.body);
+    const post = await storage.createExternalPost(data);
+    res.json(post);
+  } catch (error: any) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+    }
+    res.status(500).json({ message: "Failed to create external post" });
   }
 });
 
