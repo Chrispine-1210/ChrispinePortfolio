@@ -30,6 +30,30 @@ const services = [
     title: "Data Analytics",
     description: "Power BI dashboards, Excel analysis, and data-driven decision-making systems",
     price: "$40-80/hr"
+  },
+  {
+    icon: Code,
+    title: "Business Development",
+    description: "Strategic partnerships, market analysis, and growth planning for digital enterprises",
+    price: "$60-120/hr"
+  },
+  {
+    icon: Lightbulb,
+    title: "Marketing & Content Strategy",
+    description: "Ads management, content creation, content management systems, and product development",
+    price: "Project-based"
+  },
+  {
+    icon: Users,
+    title: "Network Technician Services",
+    description: "Network configuration, infrastructure support, and IT system maintenance",
+    price: "$35-75/hr"
+  },
+  {
+    icon: Code,
+    title: "Development Specialist",
+    description: "Backend systems, APIs, databases, and infrastructure optimization for scalable apps",
+    price: "$60-120/hr"
   }
 ];
 
