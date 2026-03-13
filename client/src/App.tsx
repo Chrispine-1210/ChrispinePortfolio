@@ -5,10 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { useAuth } from "@/hooks/useAuth";
+import { useCustomAuth } from "@/hooks/useCustomAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
+import Login from "@/pages/Login";
 import Portfolio from "@/pages/Portfolio";
 import PortfolioDetail from "@/pages/PortfolioDetail";
 import Blog from "@/pages/Blog";
@@ -23,8 +24,16 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import NewsletterManagement from "@/pages/NewsletterManagement";
 import ExternalPostsPage from "@/pages/ExternalPosts";
 
+function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { isAuthenticated, isLoading } = useCustomAuth();
+  
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (!isAuthenticated) return <Route path="/login" component={Login} />;
+  return <Component />;
+}
+
 function Router() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, isAdmin } = useCustomAuth();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -47,6 +56,7 @@ function Router() {
           <Route path="/publications" component={Resources} />
           <Route path="/contact" component={Contact} />
           <Route path="/subscribe" component={Subscribe} />
+          <Route path="/login" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/newsletter" component={Landing} />
