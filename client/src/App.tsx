@@ -14,6 +14,7 @@ import PortfolioDetail from "@/pages/PortfolioDetail";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import About from "@/pages/About";
+import HireMe from "@/pages/HireMe";
 import Contact from "@/pages/Contact";
 import Subscribe from "@/pages/Subscribe";
 import Dashboard from "@/pages/Dashboard";
@@ -39,6 +40,8 @@ function Router() {
           <Route path="/blog" component={Blog} />
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/about" component={About} />
+          <Route path="/hire" component={HireMe} />
+          <Route path="/services" component={HireMe} />
           <Route path="/contact" component={Contact} />
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/dashboard" component={Dashboard} />
@@ -46,7 +49,6 @@ function Router() {
           <Route path="/newsletter" component={Landing} />
           <Route path="/newsletter-manage" component={NewsletterManagement} />
           <Route path="/external-posts" component={ExternalPostsPage} />
-          <Route path="/services" component={About} />
           <Route path="/projects" component={Portfolio} />
           <Route component={NotFound} />
         </Switch>

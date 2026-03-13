@@ -9,8 +9,8 @@ const navItems = [
   { label: "INITIALIZE", path: "/" },
   { label: "REPOSITORY", path: "/portfolio" },
   { label: "TECH_LOGS", path: "/blog" },
-  { label: "NEWSLETTER", path: "/newsletter-manage" },
   { label: "BIO_INTEL", path: "/about" },
+  { label: "ENGAGE_SPECIALIST", path: "/hire" },
   { label: "UPLINK", path: "/contact" },
 ];
 
