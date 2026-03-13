@@ -1,9 +1,56 @@
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Users, FileText, MessageSquare } from "lucide-react";
+import { BarChart, Users, FileText, MessageSquare, Shield } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Link } from "wouter";
 
 export default function AdminDashboard() {
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    document.title = "Admin Panel | Chrispine Mndala";
+    if (!authLoading && !isAuthenticated) {
+      toast({
+        title: "Access Denied",
+        description: "You must be logged in to access the admin panel.",
+        variant: "destructive",
+      });
+    }
+  }, [isAuthenticated, authLoading, toast]);
+
+  if (authLoading) {
+    return (
+      <div className="p-8 space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <Shield className="w-16 h-16 text-primary mx-auto" />
+          <h1 className="text-4xl font-bold text-white">Access Restricted</h1>
+          <p className="text-muted-foreground max-w-md">
+            This admin panel is only accessible to authenticated administrators. Please log in to continue.
+          </p>
+          <Link href="/contact">
+            <span className="text-primary hover:underline cursor-pointer">Contact administrator</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const { data: stats, isLoading } = useQuery<{
     totalPosts: number;
     totalSubscribers: number;

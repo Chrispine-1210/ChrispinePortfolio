@@ -15,6 +15,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import About from "@/pages/About";
 import HireMe from "@/pages/HireMe";
+import Resources from "@/pages/Resources";
 import Contact from "@/pages/Contact";
 import Subscribe from "@/pages/Subscribe";
 import Dashboard from "@/pages/Dashboard";
@@ -42,6 +43,8 @@ function Router() {
           <Route path="/about" component={About} />
           <Route path="/hire" component={HireMe} />
           <Route path="/services" component={HireMe} />
+          <Route path="/resources" component={Resources} />
+          <Route path="/publications" component={Resources} />
           <Route path="/contact" component={Contact} />
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/dashboard" component={Dashboard} />

@@ -12,10 +12,10 @@ const footerLinks: Record<string, Array<{ label: string; path: string }>> = {
     { label: "Contact", path: "/contact" },
   ],
   resources: [
+    { label: "Publications", path: "/resources" },
     { label: "Subscribe", path: "/subscribe" },
     { label: "Dashboard", path: "/dashboard" },
-    { label: "Admin Panel", path: "/admin" },
-    { label: "External Posts", path: "/external-posts" },
+    { label: "Hire Me", path: "/hire" },
   ],
   categories: [
     { label: "MEL Systems", path: "/blog?category=MEL" },

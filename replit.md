@@ -21,19 +21,28 @@ A comprehensive professional portfolio and blog platform showcasing 7+ years of 
 4. **User Authentication**: Replit Auth with Google, GitHub, email/password
 5. **Newsletter**: Email subscription system with multiple signup placements
 6. **Contact Form**: Professional consultation request system
-7. **Responsive Design**: Mobile-first approach with exceptional UI/UX
+7. **Hire Me Section**: 8 comprehensive services (Strategic Consulting, Development, MEL, Analytics, Business Dev, Marketing, Network Tech, Development Specialist)
+8. **Secure Admin Panel**: Authentication-gated admin dashboard with access control
+9. **Public Resources**: LinkedIn, GitHub profiles and downloadable resources
+10. **Responsive Design**: Mobile-first approach with exceptional UI/UX
 
 ## Recent Changes
+- **March 13, 2026**: Professional Services & Engagement System
+  - Expanded HireMe page with 8 comprehensive service offerings (Business Development, Marketing & Content Strategy, Network Technician, Development Specialist added)
+  - Created new `Resources.tsx` page showcasing LinkedIn, GitHub, and available downloadable resources
+  - Secured Admin Dashboard with authentication checks and access control
+  - Updated Footer resources section: Publications → Hire Me (removed insecure links)
+  - Added `/resources` and `/publications` routes for public resource access
+  - Fixed missing Code icon import in HireMe component
+  - All service offerings include pricing, descriptions, and engagement models
 - **March 2025**: Complete system upgrade & routing fixes
   - Added middleware layer with standardized API responses & error handling
   - Implemented premium status validation with requirePremium middleware
   - Created validation utilities with Zod schemas for all forms
   - Added SEO meta tags helper for all pages
   - Type-safe API client with error handling
-  - Fixed Resources section in footer (Subscribe, Dashboard, Admin, External Posts)
   - Removed database incompatibilities (is_admin column)
   - All pages now properly linked and routable
-  - Mock external posts data endpoint
 - **January 2025**: Initial platform build with complete frontend and schema
   - Generated professional images for hero, portfolio, and blog
   - Implemented Inter + JetBrains Mono typography system
@@ -67,10 +76,13 @@ A comprehensive professional portfolio and blog platform showcasing 7+ years of 
   - `PortfolioDetail.tsx`: Individual project detail page
   - `Blog.tsx`: Blog listing with search and filters
   - `BlogPost.tsx`: Individual blog post with reading progress
-  - `About.tsx`: Professional profile and timeline
+  - `About.tsx`: Professional profile with expertise highlights (streamlined, non-CV)
+  - `HireMe.tsx`: Services and engagement models page (8 offerings)
+  - `Resources.tsx`: Publications and downloadable resources
   - `Contact.tsx`: Contact page
   - `Subscribe.tsx`: Stripe payment page
   - `Dashboard.tsx`: User dashboard
+  - `AdminDashboard.tsx`: Secure admin panel (authentication-gated)
 
 - `hooks/`: Custom React hooks
   - `useAuth.ts`: Authentication state management
