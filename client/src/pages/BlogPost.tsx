@@ -72,7 +72,7 @@ export default function BlogPost() {
             </div>
           )}
 
-          <div className="prose prose-invert prose-primary max-w-none font-mono text-sm leading-relaxed opacity-90">
+          <div className="space-y-8 text-sm leading-relaxed opacity-90">
             <ReactMarkdown
               components={{
                 code({ node, inline, className, children, ...props }: any) {
@@ -93,25 +93,25 @@ export default function BlogPost() {
                       </SyntaxHighlighter>
                     </div>
                   ) : (
-                    <code className="bg-primary/10 text-primary px-1 py-0.5" {...props}>
+                    <code className="bg-primary/10 text-primary px-1 py-0.5 rounded" {...props}>
                       {children}
                     </code>
                   );
                 },
-                img({ src, alt }) {
-                  return (
-                    <div className="my-10 relative group">
-                      <img
-                        src={src}
-                        alt={alt}
-                        className="w-full tech-card border-primary/10 rounded-none grayscale group-hover:grayscale-0 transition-all duration-700"
-                      />
-                      <div className="absolute top-4 left-4 font-mono text-[8px] bg-black/80 px-2 py-1 text-primary border border-primary/30 uppercase opacity-0 group-hover:opacity-100 transition-opacity">
-                        IMG_ASSET // {alt}
-                      </div>
+                img: (props) => (
+                  <div className="my-10 relative group inline-block w-full">
+                    <img
+                      {...props}
+                      className="w-full tech-card border-primary/10 rounded-none grayscale group-hover:grayscale-0 transition-all duration-700"
+                    />
+                    <div className="absolute top-4 left-4 font-mono text-[8px] bg-black/80 px-2 py-1 text-primary border border-primary/30 uppercase opacity-0 group-hover:opacity-100 transition-opacity">
+                      IMG_ASSET // {props.alt || "image"}
                     </div>
-                  );
-                },
+                  </div>
+                ),
+                p: (props) => <p className="text-muted-foreground leading-relaxed" {...props} />,
+                h2: (props) => <h2 className="text-2xl font-bold mt-8 mb-4 text-foreground" {...props} />,
+                h3: (props) => <h3 className="text-xl font-bold mt-6 mb-3 text-foreground" {...props} />,
               }}
             >
               {post.content}
