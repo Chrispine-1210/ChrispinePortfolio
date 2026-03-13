@@ -12,14 +12,11 @@ import {
 } from "@shared/schema";
 import Stripe from "stripe";
 
-const router = Router();
+// Note: Middleware utilities created but router uses standard patterns for now
+// const { sendResponse, sendError, ApiError, asyncHandler, requirePremium } from "./middleware";
+// These will be integrated in next phase
 
-// Middleware to check premium status
-function requirePremium(req: Request, res: Response, next: Function) {
-  const user = req.user as any;
-  // TODO: Check premium status from database once implemented
-  next();
-}
+const router = Router();
 
 // User profile routes
 router.get("/api/user/profile", isAuthenticated, (req: Request, res: Response) => {
