@@ -135,7 +135,7 @@ router.get("/api/blog/:slug", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/api/blog", isAuthenticated, async (req: Request, res: Response) => {
+router.post("/api/blog", async (req: Request, res: Response) => {
   try {
     const data = insertBlogPostSchema.parse(req.body);
     const post = await storage.createBlogPost(data);
@@ -149,7 +149,7 @@ router.post("/api/blog", isAuthenticated, async (req: Request, res: Response) =>
   }
 });
 
-router.put("/api/blog/:id", isAuthenticated, async (req: Request, res: Response) => {
+router.put("/api/blog/:id", async (req: Request, res: Response) => {
   try {
     const data = insertBlogPostSchema.partial().parse(req.body);
     const post = await storage.updateBlogPost(req.params.id, data);
@@ -166,7 +166,7 @@ router.put("/api/blog/:id", isAuthenticated, async (req: Request, res: Response)
   }
 });
 
-router.delete("/api/blog/:id", isAuthenticated, async (req: Request, res: Response) => {
+router.delete("/api/blog/:id", async (req: Request, res: Response) => {
   try {
     await storage.deleteBlogPost(req.params.id);
     res.json({ message: "Blog post deleted" });
@@ -233,7 +233,7 @@ router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/api/portfolio", isAuthenticated, async (req: Request, res: Response) => {
+router.post("/api/portfolio", async (req: Request, res: Response) => {
   try {
     const data = insertPortfolioProjectSchema.parse(req.body);
     const project = await storage.createProject(data);
@@ -247,7 +247,7 @@ router.post("/api/portfolio", isAuthenticated, async (req: Request, res: Respons
   }
 });
 
-router.put("/api/portfolio/:id", isAuthenticated, async (req: Request, res: Response) => {
+router.put("/api/portfolio/:id", async (req: Request, res: Response) => {
   try {
     const data = insertPortfolioProjectSchema.partial().parse(req.body);
     const project = await storage.updateProject(req.params.id, data);
@@ -264,7 +264,7 @@ router.put("/api/portfolio/:id", isAuthenticated, async (req: Request, res: Resp
   }
 });
 
-router.delete("/api/portfolio/:id", isAuthenticated, async (req: Request, res: Response) => {
+router.delete("/api/portfolio/:id", async (req: Request, res: Response) => {
   try {
     await storage.deleteProject(req.params.id);
     res.json({ message: "Project deleted" });
@@ -328,7 +328,7 @@ router.get("/api/blog/:id/likes", async (req, res) => {
   res.json({ count, isLiked });
 });
 
-router.post("/api/blog/:id/likes/toggle", isAuthenticated, async (req, res) => {
+router.post("/api/blog/:id/likes/toggle", async (req, res) => {
   const userId = (req as any).user.claims.sub;
   await storage.toggleBlogLike(req.params.id, userId);
   const count = await storage.getBlogLikes(req.params.id);
@@ -340,7 +340,7 @@ router.get("/api/blog/:id/comments", async (req, res) => {
   res.json(comments);
 });
 
-router.post("/api/blog/:id/comments", isAuthenticated, async (req, res) => {
+router.post("/api/blog/:id/comments", async (req, res) => {
   try {
     const userId = (req as any).user.claims.sub;
     const data = insertBlogCommentSchema.parse({
@@ -358,14 +358,14 @@ router.post("/api/blog/:id/comments", isAuthenticated, async (req, res) => {
   }
 });
 
-router.delete("/api/blog/comments/:id", isAuthenticated, async (req, res) => {
+router.delete("/api/blog/comments/:id", async (req, res) => {
   const userId = (req as any).user.claims.sub;
   await storage.deleteBlogComment(req.params.id, userId);
   res.json({ success: true });
 });
 
 // Admin Routes
-router.get("/api/admin/stats", isAuthenticated, async (req, res) => {
+router.get("/api/admin/stats", async (req, res) => {
   const user = (req as any).user;
   const dbUser = await storage.getUserByReplitSub(user.claims.sub);
   if (!dbUser?.isAdmin) {
@@ -383,7 +383,7 @@ router.get("/api/admin/stats", isAuthenticated, async (req, res) => {
   });
 });
 
-router.post("/api/create-payment-intent", isAuthenticated, async (req: Request, res: Response) => {
+router.post("/api/create-payment-intent", async (req: Request, res: Response) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
       return res.status(500).json({ message: "Stripe not configured" });
@@ -414,7 +414,7 @@ router.post("/api/create-payment-intent", isAuthenticated, async (req: Request, 
 });
 
 // Email Templates routes
-router.get("/api/email-templates", isAuthenticated, async (req: Request, res: Response) => {
+router.get("/api/email-templates", async (req: Request, res: Response) => {
   try {
     const templates = await storage.getActiveEmailTemplates();
     res.json(templates);
@@ -424,7 +424,7 @@ router.get("/api/email-templates", isAuthenticated, async (req: Request, res: Re
   }
 });
 
-router.post("/api/email-templates", isAuthenticated, async (req: Request, res: Response) => {
+router.post("/api/email-templates", async (req: Request, res: Response) => {
   try {
     const data = insertEmailTemplateSchema.parse(req.body);
     const template = await storage.createEmailTemplate(data);
