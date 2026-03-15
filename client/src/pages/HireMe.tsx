@@ -1,10 +1,12 @@
 import { useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { CheckCircle, ArrowRight, Mail, Phone, Briefcase, Clock, Users, Lightbulb, Code } from "lucide-react";
+import { CheckCircle, ArrowRight, Mail, Briefcase, Clock, Users, Lightbulb, Code } from "lucide-react";
 import { motion } from "framer-motion";
+import { HeroSection } from "@/components/HeroSection";
+import { VisualCard } from "@/components/VisualCard";
 
 const services = [
   {
