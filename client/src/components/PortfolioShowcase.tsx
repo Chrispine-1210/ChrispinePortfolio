@@ -64,15 +64,15 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <div className="tech-card group h-full flex flex-col">
+                <div className="tech-card group h-full flex flex-col hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all duration-300">
                   {project.featuredImage && (
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary/10 to-blue-600/10">
                       <img
                         src={project.featuredImage}
                         alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-110 grayscale transition-all duration-500"
+                        className="w-full h-full object-cover group-hover:scale-105 grayscale group-hover:grayscale-0 transition-all duration-500 brightness-75 group-hover:brightness-100"
                       />
-                      <div className="absolute inset-0 bg-primary/20 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-primary/30 mix-blend-multiply opacity-0 group-hover:opacity-70 transition-opacity duration-300" />
                       
                       {/* Holographic HUD Overlay */}
                       <div className="absolute inset-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
