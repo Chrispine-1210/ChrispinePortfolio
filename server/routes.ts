@@ -41,9 +41,11 @@ router.put("/api/user/profile", isAuthenticated, async (req: Request, res: Respo
   }
 });
 
-// Blog routes
+// Blog routes - with caching headers
 router.get("/api/blog", async (req: Request, res: Response) => {
   try {
+    // Set cache headers for better performance
+    res.setHeader("Cache-Control", "public, max-age=300"); // 5 min cache
     let posts = await storage.getPublishedBlogPosts();
     
     // Apply filters
@@ -179,6 +181,8 @@ router.delete("/api/blog/:id", async (req: Request, res: Response) => {
 // Portfolio routes
 router.get("/api/portfolio", async (req: Request, res: Response) => {
   try {
+    // Set cache headers for portfolio
+    res.setHeader("Cache-Control", "public, max-age=300");
     let projects = await storage.getAllProjects();
     
     // Apply filters

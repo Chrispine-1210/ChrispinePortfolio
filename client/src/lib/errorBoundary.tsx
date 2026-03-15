@@ -24,6 +24,20 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: any) {
     console.error("Error caught by boundary:", error, errorInfo);
+    // In production, could send to error tracking service like Sentry
+    if (process.env.NODE_ENV === "production") {
+      // Send to error tracking service
+      fetch("/api/errors/report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: error.message,
+          stack: error.stack,
+          component: errorInfo.componentStack,
+          timestamp: new Date().toISOString(),
+        }),
+      }).catch(() => {});
+    }
   }
 
   reset = () => {

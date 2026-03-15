@@ -6,6 +6,7 @@ import { setupAnalyticsRoutes } from "./api-analytics";
 import { setupSeedRoutes } from "./content-seeder";
 import { setupFilteringRoutes } from "./advanced-filtering";
 import { setupSeedTriggerRoutes } from "./seed-trigger";
+import { securityHeaders, requestLogger } from "./middleware";
 import { logger } from "./logger";
 import routes from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -36,9 +37,14 @@ app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
 app.use(express.json({
   verify: (req: any, _res, buf) => {
     req.rawBody = buf;
-  }
+  },
+  limit: "10kb"
 }));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: "10kb" }));
+
+// Security & performance middleware
+app.use(securityHeaders);
+app.use(requestLogger);
 
 // Analytics middleware
 app.use(analyticsMiddleware);

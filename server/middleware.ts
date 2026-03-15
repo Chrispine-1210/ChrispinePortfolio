@@ -91,3 +91,33 @@ export const asyncHandler = (
 ) => (req: Request, res: Response, next: NextFunction) => {
   return Promise.resolve(fn(req, res, next)).catch(next);
 };
+
+// Security headers middleware
+export const securityHeaders = (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'");
+  next();
+};
+
+// Cache control middleware
+export const cacheControl = (maxAge: number = 3600) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    res.setHeader("Cache-Control", `public, max-age=${maxAge}`);
+    next();
+  };
+};
+
+// Request logging middleware
+export const requestLogger = (req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    const logLevel = res.statusCode >= 400 ? "warn" : "info";
+    console.log(`[${logLevel.toUpperCase()}] ${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+  });
+  next();
+};
