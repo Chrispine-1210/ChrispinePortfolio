@@ -4,6 +4,8 @@ import { setupAuthRoutes } from "./custom-auth";
 import { analyticsMiddleware } from "./analytics";
 import { setupAnalyticsRoutes } from "./api-analytics";
 import { setupSeedRoutes } from "./content-seeder";
+import { setupFilteringRoutes } from "./advanced-filtering";
+import { setupSeedTriggerRoutes } from "./seed-trigger";
 import { logger } from "./logger";
 import routes from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -55,6 +57,16 @@ app.use(analyticsRouter);
 const seedRouter = express.Router();
 setupSeedRoutes(seedRouter);
 app.use(seedRouter);
+
+// Setup advanced filtering routes (search, pagination, categories)
+const filterRouter = express.Router();
+setupFilteringRoutes(filterRouter);
+app.use(filterRouter);
+
+// Setup seed trigger routes (admin seeding endpoints)
+const seedTriggerRouter = express.Router();
+setupSeedTriggerRoutes(seedTriggerRouter);
+app.use(seedTriggerRouter);
 
 // Request logging middleware
 app.use((req, res, next) => {
