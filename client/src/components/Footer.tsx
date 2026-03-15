@@ -27,14 +27,14 @@ const footerLinks: Record<string, Array<{ label: string; path: string }>> = {
 
 export function Footer() {
   return (
-    <footer className="bg-card border-t border-border mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
+    <footer className="bg-gradient-to-br from-card via-background to-card/50 border-t border-primary/20 mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="text-lg font-bold text-foreground">Chrispine Mndala</h3>
-            <p className="text-sm text-muted-foreground">
-              ICT & MEL Specialist helping organizations build data-driven solutions for digital transformation.
+            <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Chrispine</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Digital architect & MEL specialist. 7+ years building data-driven solutions for transformation.
             </p>
             <div className="flex gap-2">
               <Button variant="ghost" size="icon" asChild data-testid="link-social-linkedin">

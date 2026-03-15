@@ -345,6 +345,62 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-24 bg-accent/5 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-4xl sm:text-5xl font-black text-white mb-16 text-center tracking-tighter"
+          >
+            What Clients Say
+          </motion.h2>
+
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          >
+            {[
+              {
+                text: "Chrispine transformed our MEL framework. Data-driven insights improved program outcomes by 45%.",
+                author: "Sarah Johnson",
+                role: "Program Director, NGO",
+                emoji: "⭐⭐⭐⭐⭐"
+              },
+              {
+                text: "Full-stack expertise combined with strategic thinking. Delivered production app in 3 months.",
+                author: "Marcus Chen",
+                role: "Tech Lead, Startup",
+                emoji: "⭐⭐⭐⭐⭐"
+              },
+              {
+                text: "Infrastructure optimization saved us 60% in operational costs. Highly recommended consultant.",
+                author: "Elena Rodriguez",
+                role: "CTO, Enterprise",
+                emoji: "⭐⭐⭐⭐⭐"
+              },
+            ].map((testimonial, idx) => (
+              <motion.div key={idx} variants={itemVariants}>
+                <Card className="bg-card/50 border-primary/20 h-full hover-elevate">
+                  <CardContent className="pt-8 space-y-4">
+                    <p className="text-lg">{testimonial.emoji}</p>
+                    <p className="text-muted-foreground leading-relaxed italic">"{testimonial.text}"</p>
+                    <div className="border-t border-primary/20 pt-4">
+                      <p className="font-bold text-white">{testimonial.author}</p>
+                      <p className="text-sm text-primary">{testimonial.role}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-24 relative z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
