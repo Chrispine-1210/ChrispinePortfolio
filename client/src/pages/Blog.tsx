@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch } from "wouter";
+import { setSEO } from "@/lib/seoHelper";
 import { BlogCard } from "@/components/BlogCard";
 import { NewsletterForm } from "@/components/NewsletterForm";
 import { Input } from "@/components/ui/input";
-import { Search, Terminal, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Terminal, Zap, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 import type { BlogPost } from "@shared/schema";
 
-const categories = ["All", "MEL", "Programming", "Career", "Networking", "AI & Data", "Leadership"];
+const categories = ["All", "MEL", "Programming", "Career", "Networking", "AI & Data", "Leadership", "Hardware Engineering", "Infrastructure"];
 
 export default function Blog() {
   const searchParams = new URLSearchParams(useSearch());
@@ -18,7 +20,11 @@ export default function Blog() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    document.title = "TECH_LOGS | Chrispine Mndala";
+    setSEO(
+      "TECH_LOGS | Professional Blog | Chrispine Mndala",
+      "Explore insights on MEL systems, programming, leadership, and technical expertise across 7+ years of ICT and data analytics.",
+      "/blog"
+    );
   }, []);
 
   const { data: posts = [], isLoading } = useQuery<BlogPost[]>({

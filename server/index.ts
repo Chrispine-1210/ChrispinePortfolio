@@ -2,6 +2,8 @@ import express, { type Request, type Response, type NextFunction } from "express
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { setupAuthRoutes } from "./custom-auth";
 import { analyticsMiddleware } from "./analytics";
+import { setupAnalyticsRoutes } from "./api-analytics";
+import { setupSeedRoutes } from "./content-seeder";
 import { logger } from "./logger";
 import routes from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -43,6 +45,16 @@ app.use(analyticsMiddleware);
 const customAuthRouter = express.Router();
 setupAuthRoutes(customAuthRouter);
 app.use(customAuthRouter);
+
+// Setup analytics routes
+const analyticsRouter = express.Router();
+setupAnalyticsRoutes(analyticsRouter);
+app.use(analyticsRouter);
+
+// Setup content seed routes (for enriching database)
+const seedRouter = express.Router();
+setupSeedRoutes(seedRouter);
+app.use(seedRouter);
 
 // Request logging middleware
 app.use((req, res, next) => {
