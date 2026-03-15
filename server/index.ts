@@ -1,6 +1,8 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { setupAuthRoutes } from "./custom-auth";
+import { analyticsMiddleware } from "./analytics";
+import { logger } from "./logger";
 import routes from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -33,6 +35,9 @@ app.use(express.json({
   }
 }));
 app.use(express.urlencoded({ extended: false }));
+
+// Analytics middleware
+app.use(analyticsMiddleware);
 
 // Setup custom auth routes (admin panel authentication)
 const customAuthRouter = express.Router();
