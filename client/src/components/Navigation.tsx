@@ -32,14 +32,25 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4 h-16">
           <Link href="/">
-            <div className="flex items-center gap-3 cursor-pointer group">
-              <div className="w-10 h-10 bg-primary flex items-center justify-center rotate-45 group-hover:rotate-90 transition-transform duration-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-                <Terminal className="-rotate-45 group-hover:-rotate-90 transition-transform duration-500 text-white" size={20} />
+            <motion.div
+              className="flex items-center gap-3 cursor-pointer group"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center group-hover:shadow-[0_0_25px_rgba(59,130,246,0.8)] transition-shadow duration-500 rounded-lg"
+                animate={{ rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              >
+                <Terminal className="text-white" size={20} />
+              </motion.div>
+              <div className="flex flex-col gap-0">
+                <span className="text-lg font-black text-white tracking-tighter uppercase leading-tight">
+                  Chrispine
+                </span>
+                <span className="text-xs font-bold text-primary">DIGITAL ARCHITECT</span>
               </div>
-              <span className="text-xl font-black text-white tracking-tighter uppercase">
-                Chrispine<span className="text-primary italic">.sys</span>
-              </span>
-            </div>
+            </motion.div>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-1">
