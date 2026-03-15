@@ -164,10 +164,53 @@ All tables use PostgreSQL with Drizzle ORM:
 - `POST /api/contact`: Submit contact request
 
 ## Development Workflow
-1. Frontend: React components with TypeScript
-2. Backend: Express routes with proper validation
-3. Database: Drizzle ORM with PostgreSQL
-4. Testing: End-to-end tests with Playwright
+1. Frontend: React components with TypeScript + SEO optimization
+2. Backend: Express routes with analytics, logging, error handling
+3. Database: Drizzle ORM with PostgreSQL + content seeding
+4. Authentication: Custom standalone + Replit Auth (dual system)
+5. Monitoring: Real-time analytics, structured logging, error boundaries
+
+## Quick API Endpoints Reference
+**Auth:**
+- `POST /api/auth/login` - Admin login
+- `GET /api/auth/me` - Current user
+- `POST /api/auth/logout` - Logout
+
+**Analytics:**
+- `GET /api/analytics/stats` - System stats (requests, response time, errors)
+- `GET /api/analytics/events` - Recent events log
+- `GET /api/analytics/events/type/:type` - Events by type
+
+**Content Seeding:**
+- `GET /api/content/blogs/seed` - Seed blog data
+- `GET /api/content/projects/seed` - Seed portfolio data
+
+**Blog:**
+- `GET /api/blog` - List all posts
+- `GET /api/blog/:slug` - Get single post
+- `GET /api/blog/recent?limit=6` - Recent posts
+
+**Portfolio:**
+- `GET /api/portfolio` - List projects
+- `GET /api/portfolio/:slug` - Project details
+
+## Key Implementation Files
+
+### Critical Components
+- `server/custom-auth.ts` - Standalone auth (no external deps)
+- `server/analytics.ts` - Real-time performance tracking
+- `server/logger.ts` - Structured logging system
+- `server/api-analytics.ts` - Analytics API routes
+- `server/content-seeder.ts` - Content seed data endpoints
+- `client/src/lib/errorBoundary.tsx` - Global error handling
+- `client/src/lib/seoHelper.ts` - SEO meta tag management
+- `client/src/hooks/useCustomAuth.ts` - Auth state management
+- `server/seed-data.ts` - Rich content templates (Hardware, MEL, Infrastructure)
+
+### Page Structure
+- **Public Pages:** Landing, Portfolio, Blog, About, HireMe, Resources, Contact
+- **Protected Pages:** Dashboard, Admin (/admin), Analytics (/analytics)
+- **Auth Page:** Login (/login)
 
 ## System Status - Production Ready ✅
 
@@ -201,11 +244,15 @@ All tables use PostgreSQL with Drizzle ORM:
 - ✅ Error tracking and reporting
 - ✅ Development mode debugging support
 
-### TIER 5: Content Enrichment
+### TIER 5: Content Enrichment & SEO
 - ✅ Rich seed data for Hardware Engineering (LoRaWAN deep dive)
 - ✅ MEL Systems methodology documentation with data flow diagrams
 - ✅ Infrastructure project specifications with technical details
-- ✅ Ready for blog/portfolio content expansion
+- ✅ SEO optimization across all pages (meta tags, OG tags, descriptions)
+- ✅ Read time estimation for blog posts
+- ✅ Social sharing buttons with native share API
+- ✅ Enhanced blog categories (Hardware Engineering, Infrastructure added)
+- ✅ Content seeding API endpoints for easy database enrichment
 
 ### TIER 6: Error Handling
 - ✅ Global error boundary component for React

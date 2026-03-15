@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { setSEO } from "@/lib/seoHelper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Github, Terminal, Cpu, Zap, Activity } from "lucide-react";
+import { ArrowLeft, ExternalLink, Github, Terminal, Cpu, Zap, Activity, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { PortfolioProject } from "@shared/schema";
 
@@ -17,7 +18,11 @@ export default function PortfolioDetail() {
 
   useEffect(() => {
     if (project) {
-      document.title = `${project.title} | INITIALIZE_NODE | Chrispine Mndala`;
+      setSEO(
+        `${project.title} | Portfolio | Chrispine Mndala`,
+        project.description,
+        `/portfolio/${project.slug}`
+      );
     }
   }, [project]);
 

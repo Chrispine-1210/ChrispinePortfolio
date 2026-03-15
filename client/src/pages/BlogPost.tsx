@@ -1,8 +1,11 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { BlogPost as BlogPostType } from "@shared/schema";
+import { setSEO } from "@/lib/seoHelper";
 import { motion } from "framer-motion";
-import { Terminal, Calendar, Tag } from "lucide-react";
+import { Terminal, Calendar, Tag, Clock, Share2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -14,6 +17,16 @@ export default function BlogPost() {
   const { data: post, isLoading } = useQuery<BlogPostType>({
     queryKey: ["/api/blog", slug],
   });
+
+  useEffect(() => {
+    if (post) {
+      setSEO(
+        `${post.title} | TECH_LOGS | Chrispine Mndala`,
+        post.excerpt,
+        `/blog/${post.slug}`
+      );
+    }
+  }, [post]);
 
   if (isLoading) {
     return (
@@ -55,9 +68,34 @@ export default function BlogPost() {
                 {new Date(post.publishedAt || "").toLocaleDateString()}
               </div>
               <div className="flex items-center gap-2">
+                <Clock size={12} className="text-primary" />
+                {post.readTimeMinutes} min read
+              </div>
+              <div className="flex items-center gap-2">
                 <Tag size={12} className="text-primary" />
                 {post.tags?.join(", ")}
               </div>
+            </div>
+            
+            {/* Share Buttons */}
+            <div className="flex flex-wrap gap-2 pt-4">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs"
+                onClick={() => {
+                  const url = `${window.location.href}`;
+                  if (navigator.share) {
+                    navigator.share({ title: post.title, url });
+                  } else {
+                    navigator.clipboard.writeText(url);
+                  }
+                }}
+                data-testid="button-share-post"
+              >
+                <Share2 className="w-3 h-3 mr-1" />
+                SHARE
+              </Button>
             </div>
           </div>
 
