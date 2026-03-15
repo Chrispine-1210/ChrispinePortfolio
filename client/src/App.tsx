@@ -12,6 +12,7 @@ import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Portfolio from "@/pages/Portfolio";
+import PortfolioAdvanced from "@/pages/PortfolioAdvanced";
 import PortfolioDetail from "@/pages/PortfolioDetail";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
@@ -47,7 +48,7 @@ function Router() {
           ) : (
             <Route path="/" component={Home} />
           )}
-          <Route path="/portfolio" component={Portfolio} />
+          <Route path="/portfolio" component={PortfolioAdvanced} />
           <Route path="/portfolio/:slug" component={PortfolioDetail} />
           <Route path="/blog" component={Blog} />
           <Route path="/blog/:slug" component={BlogPost} />

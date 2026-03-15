@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { BarChart, Users, FileText, MessageSquare, Shield, LogOut, Plus, Edit, Trash2 } from "lucide-react";
+import { BarChart, Users, FileText, MessageSquare, Shield, LogOut, Plus, Edit, Trash2, Database } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 
@@ -25,6 +25,7 @@ export default function AdminDashboard() {
     category: "Programming",
     slug: "",
   });
+  const [isSeeding, setIsSeeding] = useState(false);
 
   useEffect(() => {
     document.title = "Admin Panel | Chrispine Mndala";
@@ -74,8 +75,41 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/stats"],
   });
 
+  const { data: seedStatus } = useQuery({
+    queryKey: ["/api/admin/seed-status"],
+  });
+
   const { data: blogs, isLoading: blogsLoading } = useQuery({
     queryKey: ["/api/blog"],
+  });
+
+  const seedMutation = useMutation({
+    mutationFn: async () => {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("/api/admin/seed-database", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) throw new Error("Seeding failed");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Database Seeded",
+        description: `Added ${data.blogsAdded} blogs and ${data.projectsAdded} projects`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/blog"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/seed-status"] });
+    },
+    onError: () => {
+      toast({
+        title: "Seeding Failed",
+        variant: "destructive",
+      });
+    },
   });
 
   const createBlogMutation = useMutation({
@@ -179,6 +213,29 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Seeding Section */}
+      <Card className="border-primary/30 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Database className="w-5 h-5" />
+            Database Seeding
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-sm text-muted-foreground">
+            <p>Seed Status: {seedStatus?.totalBlogsSeeded || 0} blogs, {seedStatus?.totalProjectsSeeded || 0} projects</p>
+          </div>
+          <Button
+            onClick={() => seedMutation.mutate()}
+            disabled={seedMutation.isPending}
+            className="bg-primary hover:bg-primary/90"
+            data-testid="button-seed-database"
+          >
+            {seedMutation.isPending ? "Seeding..." : "Populate with Sample Content"}
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Blog Management */}
       <div className="space-y-4">
