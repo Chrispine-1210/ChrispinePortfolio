@@ -20,12 +20,12 @@ const itemVariants = {
 };
 
 const skillsData = [
-  { name: "Full-Stack Development", level: 95, category: "Technical" },
-  { name: "MEL Systems Design", level: 90, category: "Strategy" },
-  { name: "Database Architecture", level: 88, category: "Technical" },
-  { name: "Cloud Infrastructure", level: 85, category: "Technical" },
-  { name: "Data Analytics", level: 92, category: "Data" },
-  { name: "Strategic Consulting", level: 87, category: "Strategy" },
+  { name: "Full-Stack Development", level: 95, category: "Technical", color: "from-primary" },
+  { name: "MEL Systems Design", level: 90, category: "Strategy", color: "from-emerald-500" },
+  { name: "Database Architecture", level: 88, category: "Technical", color: "from-blue-500" },
+  { name: "Cloud Infrastructure", level: 85, category: "Technical", color: "from-cyan-500" },
+  { name: "Data Analytics", level: 92, category: "Data", color: "from-yellow-500" },
+  { name: "Strategic Consulting", level: 87, category: "Strategy", color: "from-indigo-500" },
 ];
 
 const expertise = [
@@ -189,13 +189,13 @@ export default function Landing() {
                 <motion.div
                   animate={{ 
                     boxShadow: [
-                      "0 0 60px rgba(59, 130, 246, 0.3)",
-                      "0 0 100px rgba(34, 197, 94, 0.2)",
-                      "0 0 60px rgba(59, 130, 246, 0.3)",
+                      "0 0 80px rgba(59, 130, 246, 0.4)",
+                      "0 0 120px rgba(34, 197, 94, 0.3)",
+                      "0 0 80px rgba(59, 130, 246, 0.4)",
                     ]
                   }}
                   transition={{ duration: 4, repeat: Infinity }}
-                  className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-emerald-500/20 rounded-2xl blur-3xl"
+                  className="absolute -inset-6 bg-gradient-to-br from-primary/30 via-blue-500/20 to-emerald-500/30 rounded-3xl blur-3xl"
                 />
                 
                 {/* Image container */}

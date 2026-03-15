@@ -19,22 +19,32 @@
   .tech-grid-bg {
     background-size: 50px 50px;
     background-image: 
-      linear-gradient(to right, hsl(var(--border) / 0.2) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(var(--border) / 0.2) 1px, transparent 1px);
+      linear-gradient(to right, hsl(var(--border) / 0.25) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.25) 1px, transparent 1px);
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
   }
 
+  /* Professional gradient overlays */
+  .gradient-overlay-primary {
+    @apply absolute inset-0 bg-gradient-to-br from-primary/10 to-blue-600/5 pointer-events-none;
+  }
+
+  .glow-effect {
+    @apply shadow-[0_0_40px_rgba(59,130,246,0.25)];
+  }
+
   .tech-card {
-    @apply relative border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden transition-all duration-300;
+    @apply relative border border-border/60 bg-gradient-to-br from-card/60 to-card/40 backdrop-blur-lg overflow-hidden transition-all duration-300;
     clip-path: polygon(0 0, 95% 0, 100% 5%, 100% 100%, 5% 100%, 0 95%);
+    background-image: linear-gradient(135deg, rgba(59,130,246,0.05) 0%, transparent 100%);
   }
 
   .tech-card::before {
     content: "";
-    @apply absolute top-0 left-0 w-1 h-full bg-primary/50 shadow-[0_0_10px_rgba(59,130,246,0.5)];
+    @apply absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary/70 to-primary/20 shadow-[0_0_20px_rgba(59,130,246,0.6)];
   }
 
   .scanline {
