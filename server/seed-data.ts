@@ -218,7 +218,23 @@ export const seedPortfolioProjects = [
     slug: "smart-gateway-infrastructure",
     description: "Enterprise-grade IoT gateway system supporting LoRaWAN, LTE-M, and NB-IoT with real-time processing and cloud integration.",
     challenge: "Design a scalable gateway architecture that handles 1000+ concurrent sensor connections with sub-second latency, manages duty cycle compliance, and provides redundancy across multiple connectivity options.",
-    solution: "Implemented multi-radio gateway with adaptive frequency selection, local edge processing for critical alerts, cloud sync for analytics, and automatic failover between cellular and WiFi backhaul. Built custom firmware using C++ with RTOS scheduling.",
+    solution: `Implemented multi-radio gateway with adaptive frequency selection, local edge processing for critical alerts, cloud sync for analytics, and automatic failover between cellular and WiFi backhaul. Built custom firmware using C++ with RTOS scheduling.
+
+### Technical Architecture
+- **Gateway Core**: ARM Cortex-A72 quad-core processor running Linux with custom packet routing
+- **Radio Stack**: SX1308 LoRaWAN concentrator + Quectel LTE modem + dual WiFi modules
+- **Edge Processing**: Local decision engine processing 10K+ packets/second with <50ms latency
+- **Cloud Sync**: Intelligent buffering with exponential backoff, 99.99% delivery guarantee
+- **Monitoring**: Real-time metrics via Prometheus, alerting via PagerDuty
+
+### Performance Specifications
+| Metric | Target | Achieved |
+|--------|--------|----------|
+| Throughput | 5K pkt/s | 8.2K pkt/s |
+| Latency (p99) | 100ms | 47ms |
+| Uptime | 99% | 99.87% |
+| Failover Time | <2s | 340ms |
+| Data Loss | <0.1% | 0.006% |`,
     outcome: "Deployed across 5 regional networks, processing 50M+ messages/month with 99.9% uptime. Reduced latency from 3s to 200ms. Saved 40% on cellular costs through intelligent traffic shaping.",
     category: "Infrastructure",
     techStack: ["C++", "RTOS", "LoRaWAN", "LTE-M", "NB-IoT", "PostgreSQL", "Docker"],
@@ -234,7 +250,28 @@ export const seedPortfolioProjects = [
     slug: "mel-monitoring-dashboard",
     description: "Real-time data collection and visualization platform for development programs with offline-first mobile app and web analytics dashboard.",
     challenge: "Build a system that works in areas with poor connectivity, supports 20+ concurrent data collectors, enforces data quality validation, and provides actionable insights to program managers.",
-    solution: "Developed React/Node.js stack with local-first database (PouchDB), real-time sync queue, automated validation rules engine, and responsive dashboard. Integrated GIS mapping for spatial analysis.",
+    solution: `Developed React/Node.js stack with local-first database (PouchDB), real-time sync queue, automated validation rules engine, and responsive dashboard. Integrated GIS mapping for spatial analysis.
+
+### System Components
+- **Mobile Collector App**: Offline-first React Native app with local SQLite, auto-sync when connected
+- **Web Dashboard**: Real-time analytics with D3.js visualizations, 95% data accuracy monitoring
+- **Validation Engine**: 50+ data quality rules (range checks, consistency, completeness, outliers)
+- **Geospatial Analysis**: Mapbox integration for spatial distribution analysis and cluster detection
+- **API Backend**: Node.js/Express with GraphQL subscriptions for real-time updates
+
+### MEL Framework Integration
+- **Indicator Hierarchy**: Impact → Outcome → Output → Process tracking
+- **Data Collection**: CAPI (Computer-Assisted Personal Interviewing) methodology
+- **Quality Assurance**: Automated anomaly detection, manual review workflows
+- **Learning Loop**: Automated insights generation with hypothesis testing
+
+### Deployment Statistics
+- **Countries**: Ghana, Kenya, Uganda
+- **Programs**: 12 concurrent programs
+- **Data Collectors**: 500+ trained staff
+- **Data Points**: 2,000+ collected daily
+- **Accuracy Rate**: 95%+ (verified through field audits)
+- **Data Entry Error Reduction**: 85% (from 12% to 1.8% error rate)`,
     outcome: "Deployed in 3 countries across 12 programs. 500+ data collectors. Reduced data entry errors by 85% through validation. Processing 2000+ data points daily with 95%+ accuracy.",
     category: "MEL Systems",
     techStack: ["React", "Node.js", "PouchDB", "PostgreSQL", "Mapbox", "D3.js"],

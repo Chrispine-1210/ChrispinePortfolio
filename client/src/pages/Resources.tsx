@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Linkedin, ExternalLink, FileText, BookOpen, Link as LinkIcon } from "lucide-react";
+import { Linkedin, ExternalLink, FileText, BookOpen, Download, Github } from "lucide-react";
+import { HeroSection } from "@/components/HeroSection";
 
 const publications = [
   {
@@ -18,95 +19,109 @@ const publications = [
     description: "Open source projects, code samples, and technical implementations",
     url: "https://github.com/Chrispine-1210",
     category: "Code",
-    icon: FileText
+    icon: Github
   }
 ];
 
 const resources = [
   {
     title: "MEL Framework Templates",
-    description: "Downloadable templates for monitoring and evaluation frameworks",
-    category: "Documents"
+    description: "Downloadable templates for monitoring and evaluation frameworks, logframes, and indicator matrices",
+    category: "Documents",
+    icon: FileText,
+    available: true
   },
   {
     title: "ICT Infrastructure Guide",
-    description: "Comprehensive guide to implementing modern ICT solutions",
-    category: "Documents"
+    description: "Comprehensive guide to implementing modern ICT solutions for development organizations",
+    category: "Documents",
+    icon: BookOpen,
+    available: true
   },
   {
     title: "Data Analytics Toolkit",
-    description: "Excel templates, Power BI samples, and analysis tools",
-    category: "Tools"
+    description: "Excel templates, Power BI samples, and analysis tools for program evaluation",
+    category: "Tools",
+    icon: FileText,
+    available: true
   },
   {
     title: "Web Development Starter Kit",
-    description: "React boilerplates and modern development workflows",
-    category: "Code"
+    description: "React boilerplates and modern development workflows for rapid application development",
+    category: "Code",
+    icon: Github,
+    available: true
+  },
+  {
+    title: "LoRaWAN Deployment Guide",
+    description: "Step-by-step guide for planning, implementing, and optimizing LoRaWAN networks",
+    category: "Technical",
+    icon: BookOpen,
+    available: true
+  },
+  {
+    title: "MEL Indicators Library",
+    description: "Pre-built indicators for common program types (education, health, livelihood, WASH)",
+    category: "Data",
+    icon: FileText,
+    available: true
   }
 ];
 
 export default function Resources() {
   useEffect(() => {
-    document.title = "Resources | Chrispine Mndala";
+    document.title = "REPOSITORY | Chrispine Mndala";
   }, []);
 
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-[#0a0c14] relative overflow-hidden">
+    <div className="min-h-screen pt-16 bg-[#0a0c14] relative overflow-hidden">
       <div className="tech-grid-bg opacity-20" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-6 mb-16"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 text-primary text-sm font-mono">
-            RESOURCE_LIBRARY // PUBLIC
-          </div>
-          <h1 className="text-5xl sm:text-7xl font-black text-white uppercase tracking-tighter">
-            Publications & <span className="text-primary">Resources</span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-mono">
-            Access my professional profiles, projects, and downloadable resources
-          </p>
-        </motion.div>
+      <HeroSection
+        subtitle="KNOWLEDGE_BASE"
+        title="REPOSITORY"
+        description="Access professional resources, templates, and tools to accelerate your ICT and MEL initiatives."
+      />
 
-        {/* Publications */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="mb-20"
-        >
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-4xl font-bold text-white uppercase">Professional Profiles</h2>
-            <p className="text-muted-foreground">Connect on professional platforms and view my work</p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {publications.map((pub, index) => {
+      {/* Publications */}
+      <section className="py-16 sm:py-24 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-black text-white mb-12 uppercase tracking-tighter">
+            Professional Profiles
+          </h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {publications.map((pub, idx) => {
               const Icon = pub.icon;
               return (
                 <motion.div
-                  key={pub.title}
+                  key={idx}
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + index * 0.1 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
                 >
-                  <Card className="h-full bg-card/50 border-border/50 hover:border-primary/50 transition-all group">
+                  <Card className="h-full tech-card hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]">
                     <CardHeader>
-                      <div className="flex items-start justify-between mb-4">
-                        <Icon className="w-8 h-8 text-primary" />
-                        <Badge variant="secondary">{pub.category}</Badge>
-                      </div>
+                      <Icon className="w-8 h-8 text-primary mb-2" />
                       <CardTitle className="text-white">{pub.title}</CardTitle>
+                      <Badge className="w-fit mt-2 bg-primary/10 text-primary border-primary/30">
+                        {pub.category}
+                      </Badge>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="text-muted-foreground">{pub.description}</p>
-                      <Button asChild className="w-full" variant="default" data-testid={`button-visit-${pub.title.toLowerCase().replace(/\s/g, '-')}`}>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {pub.description}
+                      </p>
+                      <Button
+                        asChild
+                        variant="default"
+                        size="sm"
+                        className="w-full"
+                        data-testid={`button-visit-${pub.category.toLowerCase()}`}
+                      >
                         <a href={pub.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                          <ExternalLink className="w-4 h-4" />
-                          Visit Profile
+                          <span>Visit Profile</span>
+                          <ExternalLink className="w-3 h-3" />
                         </a>
                       </Button>
                     </CardContent>
@@ -115,63 +130,70 @@ export default function Resources() {
               );
             })}
           </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* Available Resources */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mb-20"
-        >
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-4xl font-bold text-white uppercase">Available Resources</h2>
-            <p className="text-muted-foreground">Downloadable templates, guides, and tools for your projects</p>
+      {/* Download Resources */}
+      <section className="py-16 sm:py-24 bg-primary/5 border-y border-primary/10 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-black text-white mb-12 uppercase tracking-tighter">
+            Download Resources
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {resources.map((resource, idx) => {
+              const Icon = resource.icon;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <Card className="h-full tech-card hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
+                    <CardHeader>
+                      <Icon className="w-8 h-8 text-primary mb-2" />
+                      <CardTitle className="text-white text-lg">{resource.title}</CardTitle>
+                      <Badge variant="outline" className="w-fit mt-2 border-primary/30 text-primary/80">
+                        {resource.category}
+                      </Badge>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {resource.description}
+                      </p>
+                      <Button
+                        variant={resource.available ? "default" : "outline"}
+                        size="sm"
+                        className="w-full"
+                        disabled={!resource.available}
+                        data-testid={`button-download-${resource.title.toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        <Download className="w-3 h-3 mr-2" />
+                        {resource.available ? "Download" : "Coming Soon"}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {resources.map((resource, index) => (
-              <motion.div
-                key={resource.title}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 + index * 0.05 }}
-              >
-                <Card className="h-full bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 hover:border-primary/50 transition-all group cursor-pointer">
-                  <CardHeader className="space-y-4">
-                    <BookOpen className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
-                    <div>
-                      <CardTitle className="text-base text-white">{resource.title}</CardTitle>
-                      <Badge variant="outline" className="mt-2 text-xs">{resource.category}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">{resource.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* Contact CTA */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/30 rounded-lg p-8 sm:p-12 text-center"
-        >
-          <h2 className="text-3xl font-bold text-white mb-4">Need Custom Resources?</h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            I can create custom templates, guides, and tools tailored to your specific needs. Get in touch to discuss your requirements.
-          </p>
-          <Button size="lg" asChild data-testid="button-request-resources">
+      {/* CTA */}
+      <section className="py-16 sm:py-24 relative z-10">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <h2 className="text-3xl font-black text-white uppercase">Need Custom Materials?</h2>
+          <p className="text-lg text-muted-foreground">I can develop custom frameworks, templates, and resources tailored to your specific needs.</p>
+          <Button asChild className="group" data-testid="button-contact-resources">
             <a href="/contact" className="flex items-center gap-2">
-              <LinkIcon className="w-4 h-4" />
-              Request Custom Resource
+              Get in Touch
+              <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </a>
           </Button>
-        </motion.div>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
