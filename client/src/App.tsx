@@ -26,6 +26,8 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import Analytics from "@/pages/Analytics";
 import NewsletterManagement from "@/pages/NewsletterManagement";
 import ExternalPostsPage from "@/pages/ExternalPosts";
+import SoftwareConsultingMalawi from "@/pages/SoftwareConsultingMalawi";
+import DigitalTransformationAfrica from "@/pages/DigitalTransformationAfrica";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useCustomAuth();
@@ -67,6 +69,8 @@ function Router() {
           <Route path="/newsletter-manage" component={NewsletterManagement} />
           <Route path="/external-posts" component={ExternalPostsPage} />
           <Route path="/projects" component={Portfolio} />
+          <Route path="/software-consulting-malawi" component={SoftwareConsultingMalawi} />
+          <Route path="/digital-transformation-africa" component={DigitalTransformationAfrica} />
           <Route component={NotFound} />
         </Switch>
       </main>

@@ -2,26 +2,26 @@ import { Link } from "wouter";
 import { Linkedin, Github, Facebook, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const footerLinks: Record<string, Array<{ label: string; path: string }>> = {
+const footerLinks: Record<string, Array<{ label: string; path: string; external?: boolean }>> = {
   navigation: [
     { label: "Home", path: "/" },
     { label: "Portfolio", path: "/portfolio" },
     { label: "Blog", path: "/blog" },
-    { label: "Newsletter", path: "/newsletter-manage" },
     { label: "About", path: "/about" },
+    { label: "Insights", path: "/resources" },
     { label: "Contact", path: "/contact" },
   ],
-  resources: [
-    { label: "Publications", path: "/resources" },
-    { label: "Subscribe", path: "/subscribe" },
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Hire Me", path: "/hire" },
+  consulting: [
+    { label: "Book a Discovery Call", path: "/hire" },
+    { label: "Software Consulting — Malawi", path: "/software-consulting-malawi" },
+    { label: "Digital Transformation — Africa", path: "/digital-transformation-africa" },
+    { label: "View Case Studies", path: "/portfolio" },
   ],
-  categories: [
-    { label: "MEL Systems", path: "/blog?category=MEL" },
-    { label: "Programming", path: "/blog?category=Programming" },
-    { label: "Career Insights", path: "/blog?category=Career" },
-    { label: "Networking", path: "/blog?category=Networking" },
+  connect: [
+    { label: "LinkedIn Profile", path: "https://www.linkedin.com/in/chrispine-mndala-11a951206", external: true },
+    { label: "GitHub Projects", path: "https://github.com/Chrispine-1210", external: true },
+    { label: "Mtendere Platform", path: "https://mtendereeducationconsult.com/", external: true },
+    { label: "Email Directly", path: "mailto:peterschrispine@gmail.com", external: true },
   ],
 };
 
@@ -34,8 +34,16 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Chrispine</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Digital architect & MEL specialist. 7+ years building data-driven solutions for transformation.
+              Systems Architect & Digital Transformation Consultant. Building scalable technology for emerging markets.
             </p>
+            <div className="space-y-1 pt-2">
+              <p className="text-xs text-muted-foreground">
+                <a href="tel:+265999431115" className="hover:text-primary transition-colors">+265 999 431 115</a>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <a href="mailto:peterschrispine@gmail.com" className="hover:text-primary transition-colors">peterschrispine@gmail.com</a>
+              </p>
+            </div>
             <div className="flex gap-2">
               <Button variant="ghost" size="icon" asChild data-testid="link-social-linkedin">
                 <a
@@ -89,13 +97,13 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Consulting */}
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">Resources</h4>
+            <h4 className="font-semibold mb-4 text-foreground">Consulting</h4>
             <ul className="space-y-2">
-              {footerLinks.resources.map((link) => (
+              {footerLinks.consulting.map((link) => (
                 <li key={link.path}>
-                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-resources-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-consulting-${link.label.toLowerCase().replace(/[\s—]+/g, '-')}`}>
                     {link.label}
                   </Link>
                 </li>
@@ -103,15 +111,15 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Connect */}
           <div>
-            <h4 className="font-semibold mb-4 text-foreground">Categories</h4>
+            <h4 className="font-semibold mb-4 text-foreground">Connect</h4>
             <ul className="space-y-2">
-              {footerLinks.categories.map((link) => (
+              {footerLinks.connect.map((link) => (
                 <li key={link.path}>
-                  <Link href={link.path} className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-category-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <a href={link.path} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors" data-testid={`link-connect-${link.label.toLowerCase().replace(/\s+/g, '-')}`}>
                     {link.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>

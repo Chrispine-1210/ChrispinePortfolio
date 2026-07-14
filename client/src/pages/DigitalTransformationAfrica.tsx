@@ -1,129 +1,133 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
-import { ArrowRight, CheckCircle, Globe, Layers, BarChart, Cpu } from "lucide-react";
+import { ArrowRight, TrendingUp, Globe, Zap, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function DigitalTransformationAfrica() {
   useEffect(() => {
-    document.title = "Digital Transformation Africa | Chrispine Mndala — Technology Consultant";
+    document.title = "Digital Transformation Africa | Chrispine Mndala";
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "Digital transformation consulting for African organizations. Scalable technology systems built for emerging-market realities — limited bandwidth, mobile-first users, and distributed teams.");
-
-    const canonical = document.createElement("link");
-    canonical.rel = "canonical";
-    canonical.href = "https://chrispine.com/digital-transformation-africa";
-    document.head.appendChild(canonical);
-    return () => document.head.removeChild(canonical);
+    if (meta) meta.setAttribute("content", "Digital transformation consulting for African organizations. Technology strategy, system modernization, and business automation for NGOs, enterprises, and development programs across Sub-Saharan Africa.");
   }, []);
 
-  const pillars = [
-    { icon: Globe, title: "Infrastructure Modernization", desc: "Replace legacy tools with cloud-native systems designed for African connectivity realities." },
-    { icon: Layers, title: "Process Automation", desc: "Digitize manual workflows — admissions, applications, reporting, and data collection." },
-    { icon: BarChart, title: "Data-Driven Operations", desc: "Build dashboards and analytics that convert raw data into actionable business intelligence." },
-    { icon: Cpu, title: "Systems Integration", desc: "Connect existing tools into unified platforms that eliminate data silos." },
-  ];
-
   return (
-    <div className="min-h-screen pt-16 bg-[#0a0c14]">
-      <div className="tech-grid-bg opacity-20 fixed inset-0 pointer-events-none" />
+    <div className="min-h-screen pt-20 pb-24 bg-[#0a0c14]">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
-      {/* Hero */}
-      <section className="py-24 relative z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-            <Badge variant="outline" className="font-mono text-[10px] uppercase text-primary border-primary/40">
-              Digital Transformation · Africa
-            </Badge>
-            <h1 className="text-5xl sm:text-6xl font-black text-white uppercase tracking-tighter leading-none">
-              Digital Transformation<br />
-              <span className="text-primary">For African Organizations</span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed">
-              Practical, affordable digital transformation for NGOs, universities, SMEs, and enterprises 
-              across Sub-Saharan Africa. Technology that works in your environment — not against it.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Button size="lg" asChild data-testid="button-cta-africa">
-                <Link href="/hire">
-                  Start the Conversation <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/portfolio">See Deployed Systems</Link>
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Challenge */}
-      <section className="py-16 border-t border-white/5 relative z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-6">The African Digital Challenge</h2>
-          <p className="text-muted-foreground max-w-3xl leading-relaxed mb-10">
-            Most technology solutions are designed for high-bandwidth, stable-power, Western contexts. 
-            African organizations need systems that perform under mobile connectivity, load-shedding, 
-            and distributed team structures. I build for these realities.
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="py-16 space-y-6"
+        >
+          <Badge variant="outline" className="font-mono text-[10px] uppercase">Sub-Saharan Africa · Digital Transformation</Badge>
+          <h1 className="text-5xl font-black text-white uppercase tracking-tighter leading-tight">
+            Digital Transformation<br />
+            <span className="text-primary">for Africa</span>
+          </h1>
+          <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
+            Technology consulting for African organizations navigating digital change. 
+            Pragmatic strategies built for African infrastructure, connectivity, and business realities.
           </p>
-          <div className="grid sm:grid-cols-2 gap-6">
-            {pillars.map((p, idx) => {
-              const Icon = p.icon;
-              return (
-                <motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: idx * 0.1 }}>
-                  <Card className="h-full tech-card hover-elevate">
-                    <CardContent className="pt-6 space-y-3">
-                      <Icon className="h-6 w-6 text-primary" />
-                      <h3 className="font-bold text-white uppercase text-sm">{p.title}</h3>
-                      <p className="text-sm text-muted-foreground">{p.desc}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
+          <div className="flex flex-wrap gap-4 pt-4">
+            <Button size="lg" asChild>
+              <Link href="/hire">
+                Start Your Transformation
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/portfolio">View Case Studies</Link>
+            </Button>
           </div>
-        </div>
-      </section>
+        </motion.div>
 
-      {/* Track Record */}
-      <section className="py-16 bg-primary/5 border-y border-primary/10 relative z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-10">Proven in the Field</h2>
-          <div className="space-y-4">
+        <motion.section
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="py-16 border-t border-white/5"
+        >
+          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">What Digital Transformation Looks Like in Africa</h2>
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              "Delivered MEL systems deployed across 3 countries (Malawi, Zimbabwe, Kenya)",
-              "Built education platform serving 500+ students — 82% engagement lift post-launch",
-              "Designed IoT infrastructure for low-connectivity rural monitoring environments",
-              "Implemented government-grade data validation engines for international NGO programs",
-              "All systems built mobile-first for feature phone and smartphone compatibility",
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-start gap-3">
-                <CheckCircle className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                <p className="text-muted-foreground text-sm">{item}</p>
+              { icon: TrendingUp, title: "Process Digitization", desc: "Replace paper-based workflows with systems designed for low-bandwidth, offline-first, and mobile-first users." },
+              { icon: Globe, title: "Cross-Border Deployment", desc: "Platforms that work reliably across multiple African countries with different connectivity and device landscapes." },
+              { icon: Zap, title: "Rapid ROI Delivery", desc: "Solutions scoped for measurable business impact within 3–6 months, not multi-year enterprise rollouts." },
+            ].map(({ icon: Icon, title, desc }, idx) => (
+              <div key={idx} className="tech-card p-6 space-y-3">
+                <Icon className="w-8 h-8 text-primary" />
+                <h3 className="font-bold text-white uppercase text-sm">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </motion.section>
 
-      {/* CTA */}
-      <section className="py-24 relative z-10 text-center">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <h2 className="text-4xl font-black text-white uppercase tracking-tighter">
-            Transform Your Operations
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            Free 30-minute technology discovery call. Clarity on your digital roadmap, no commitment.
+        <motion.section
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="py-16 border-t border-white/5"
+        >
+          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">Sectors Served</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              "Education & EdTech", "NGO & Development", "Healthcare", "Agriculture",
+              "Finance & Fintech", "Government", "Retail & Commerce", "Infrastructure"
+            ].map((sector, idx) => (
+              <div key={idx} className="tech-card p-4 text-center">
+                <p className="text-xs font-mono font-bold text-white uppercase">{sector}</p>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="py-16 border-t border-white/5"
+        >
+          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">Transformation Track Record</h2>
+          <div className="space-y-4">
+            {[
+              "Deployed education management platform serving students across Malawi — 82% engagement increase",
+              "MEL monitoring system used in 3 countries, processing 2,000+ data points daily at 95% accuracy",
+              "IoT gateway infrastructure handling 50M+ messages monthly at 99.9% uptime",
+              "Business automation cutting administrative processing from weeks to 3–5 days",
+              "Digital systems supporting NGOs and development partners across Sub-Saharan Africa",
+            ].map((result, idx) => (
+              <div key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
+                <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                {result}
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="py-16 border-t border-white/5 text-center space-y-6"
+        >
+          <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Let's Talk Transformation</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Free 30-minute discovery call. Leave with a clear picture of what's possible for your organization.
           </p>
           <Button size="lg" asChild>
-            <Link href="/hire">
-              Book a Discovery Call <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+            <Link href="/hire">Book a Free Discovery Call <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
-        </div>
-      </section>
+          <div className="pt-4 text-sm text-muted-foreground">
+            Call: <a href="tel:+265999431115" className="text-primary">+265 999 431 115</a>
+            {" · "}
+            Email: <a href="mailto:peterschrispine@gmail.com" className="text-primary">peterschrispine@gmail.com</a>
+          </div>
+        </motion.section>
+
+      </div>
     </div>
   );
 }
