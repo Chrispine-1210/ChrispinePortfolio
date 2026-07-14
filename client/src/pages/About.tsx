@@ -235,6 +235,170 @@ export default function About() {
         </div>
       </section>
 
+      {/* Technology Philosophy */}
+      <section className="py-24 bg-primary/5 border-y border-primary/10 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-12"
+          >
+            <div className="text-center space-y-4">
+              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">02 // Approach</span>
+              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Technology Philosophy</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                I build technology systems that convert complex business processes into scalable digital platforms.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                { title: "Automation", desc: "Eliminate repetitive manual work through intelligent automation. Every system I design reduces operational overhead and frees teams to focus on strategic priorities." },
+                { title: "Data-Driven Decisions", desc: "Transform raw data into actionable intelligence. Real-time dashboards and analytics that enable leadership to make informed decisions faster." },
+                { title: "Cloud Systems", desc: "Cloud-native architecture designed for reliability and scale. Infrastructure that grows with your business without proportional cost increases." },
+                { title: "Infrastructure Reliability", desc: "Enterprise-grade uptime and security. Systems engineered for 99.9% availability with automated failover and disaster recovery." },
+                { title: "Human-Centered Design", desc: "Technology should serve people, not the other way around. Interfaces and workflows designed around how teams actually work, not how systems want them to work." },
+                { title: "Scalable Architecture", desc: "Build once, scale infinitely. Modular systems that adapt to changing business needs without requiring fundamental redesign." }
+              ].map((item, idx) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="tech-card p-8 space-y-4"
+                >
+                  <h3 className="text-lg font-bold text-primary uppercase">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Enterprise Solution Areas */}
+      <section className="py-24 border-t border-white/5 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-12"
+          >
+            <div className="text-center space-y-4">
+              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">03 // Capabilities</span>
+              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Enterprise Solutions</h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {[
+                {
+                  title: "Digital Transformation",
+                  desc: "End-to-end digital transformation for organizations ready to modernize operations.",
+                  items: ["Business process automation", "Custom software platforms", "Enterprise dashboards", "Workflow optimization"]
+                },
+                {
+                  title: "Data Intelligence",
+                  desc: "Turn data into your most valuable strategic asset.",
+                  items: ["Data collection systems", "Real-time analytics", "Reporting platforms", "Predictive insights"]
+                },
+                {
+                  title: "Infrastructure Engineering",
+                  desc: "Robust, secure infrastructure that scales with your ambitions.",
+                  items: ["Network architecture", "Server administration", "Security hardening", "Cloud deployment"]
+                },
+                {
+                  title: "Education Technology",
+                  desc: "Digital ecosystems designed for learning and administrative excellence.",
+                  items: ["Student management platforms", "Digital learning ecosystems", "Administration systems", "Analytics for educators"]
+                }
+              ].map((solution, idx) => (
+                <motion.div
+                  key={solution.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="tech-card p-8 space-y-4"
+                >
+                  <h3 className="text-xl font-bold text-primary uppercase">{solution.title}</h3>
+                  <p className="text-muted-foreground">{solution.desc}</p>
+                  <ul className="space-y-2">
+                    {solution.items.map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Entrepreneurial Ventures */}
+      <section className="py-24 bg-primary/5 border-y border-primary/10 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-12"
+          >
+            <div className="text-center space-y-4">
+              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">04 // Ventures</span>
+              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Entrepreneurial Ventures</h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Building technology-driven businesses that solve real problems across Africa.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  name: "Aothothe LLC",
+                  role: "Founder & Systems Architect",
+                  desc: "Technology innovation company focused on building scalable digital platforms for African enterprises. Driving digital transformation through custom software solutions.",
+                  focus: "Digital Platforms"
+                },
+                {
+                  name: "Mtendere Education Consult",
+                  role: "Co-Founder & CTO",
+                  desc: "Education technology platform connecting African students with international universities. Digital infrastructure for 1000+ students across 15+ countries.",
+                  focus: "EdTech"
+                },
+                {
+                  name: "AgriTech Innovation",
+                  role: "Technology Strategist",
+                  desc: "Exploring digital solutions for agriculture value chains. IoT sensors, data collection systems, and market linkage platforms for smallholder farmers.",
+                  focus: "AgriTech"
+                }
+              ].map((venture, idx) => (
+                <motion.div
+                  key={venture.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="tech-card p-8 space-y-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white uppercase">{venture.name}</h3>
+                    <Badge variant="outline" className="text-[10px] font-mono">{venture.focus}</Badge>
+                  </div>
+                  <p className="text-sm text-primary font-mono uppercase">{venture.role}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{venture.desc}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Call to Action */}
       <section className="py-24 bg-white/5 relative border-y border-white/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

@@ -6,6 +6,37 @@ import { motion } from "framer-motion";
 import { Linkedin, ExternalLink, FileText, BookOpen, Download, Github } from "lucide-react";
 import { HeroSection } from "@/components/HeroSection";
 
+const authorityArticles = [
+  {
+    title: "How Digital Systems Can Transform African Businesses",
+    description: "Why organizations across Africa are losing competitive advantage by running manual processes — and how strategic digital transformation creates measurable ROI.",
+    readTime: "8 min read",
+    category: "Digital Transformation",
+    icon: BookOpen
+  },
+  {
+    title: "Why Small Organizations Need Enterprise-Level Software",
+    description: "The myth that enterprise software is only for large companies. How scalable systems built early prevent costly rebuilds and enable rapid growth.",
+    readTime: "6 min read",
+    category: "Strategy",
+    icon: FileText
+  },
+  {
+    title: "Building Scalable Technology Infrastructure in Emerging Markets",
+    description: "Lessons from deploying production systems across Malawi, Zambia, and Tanzania — from unreliable connectivity to regulatory compliance.",
+    readTime: "10 min read",
+    category: "Infrastructure",
+    icon: BookOpen
+  },
+  {
+    title: "The Future of Education Technology in Malawi",
+    description: "How student management platforms, digital learning ecosystems, and data-driven administration are reshaping education delivery.",
+    readTime: "7 min read",
+    category: "EdTech",
+    icon: FileText
+  }
+];
+
 const publications = [
   {
     title: "LinkedIn Profile",
@@ -83,8 +114,57 @@ export default function Resources() {
         description="Access professional resources, templates, and tools to accelerate your ICT and MEL initiatives."
       />
 
-      {/* Publications */}
+      {/* Authority Articles */}
       <section className="py-16 sm:py-24 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4 mb-12">
+            <span className="text-[10px] font-mono text-primary uppercase tracking-widest">01 // THOUGHT LEADERSHIP</span>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
+              Articles & Insights
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {authorityArticles.map((article, idx) => {
+              const Icon = article.icon;
+              return (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                >
+                  <Card className="h-full tech-card hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
+                    <CardHeader>
+                      <Icon className="w-8 h-8 text-primary mb-2" />
+                      <CardTitle className="text-white text-lg leading-tight">{article.title}</CardTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge className="bg-primary/10 text-primary border-primary/30">{article.category}</Badge>
+                        <span className="text-xs text-muted-foreground">{article.readTime}</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {article.description}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                      >
+                        Read Article
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Publications */}
+      <section className="py-16 sm:py-24 bg-primary/5 border-y border-primary/10 relative z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-black text-white mb-12 uppercase tracking-tighter">
             Professional Profiles
