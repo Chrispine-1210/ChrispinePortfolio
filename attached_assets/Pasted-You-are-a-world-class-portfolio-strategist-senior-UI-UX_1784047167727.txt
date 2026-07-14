@@ -1,0 +1,212 @@
+You are a world-class portfolio strategist, senior UI/UX designer, full-stack engineer, and personal branding expert.
+
+Your task is to completely audit, improve, and elevate my developer/business portfolio into a premium global-standard portfolio that positions me as a high-value technology consultant, software engineer, systems architect, and entrepreneur.
+
+OBJECTIVE:
+Transform my current portfolio from a simple showcase into a powerful personal brand asset that attracts:
+- International clients
+- Technology companies
+- Investors
+- Business partnerships
+- High-value consulting opportunities
+
+POSITIONING:
+The portfolio should communicate:
+"I design and build scalable digital systems that solve real business problems."
+
+TARGET IMAGE:
+A senior technology professional combining:
+- Full-stack software engineering
+- Network engineering
+- Data systems
+- Business intelligence
+- Digital transformation
+- Entrepreneurship
+
+PORTFOLIO SECTIONS TO CREATE/IMPROVE:
+
+1. HERO SECTION
+Create a premium first impression:
+- Strong professional headline
+- Clear value proposition
+- Modern animations
+- Professional profile presentation
+- Strong CTA buttons:
+  - Hire Me
+  - View Projects
+  - Contact Me
+
+Avoid generic developer wording.
+
+2. ABOUT SECTION
+Rewrite my biography professionally.
+
+Highlight:
+- Full-stack development
+- Software architecture
+- Network engineering
+- Data analytics
+- Business development experience
+- Entrepreneurial mindset
+
+Make it sound like a technology leader, not only a programmer.
+
+3. PROJECT PORTFOLIO
+
+Add and showcase:
+
+PROJECT 1:
+MTENDERE EDUCATION CONSULT WEBSITE & MANAGEMENT PLATFORM
+
+Website:
+https://mtendereeducationconsult.com/
+
+Description:
+A comprehensive education consultancy platform connecting students with international universities while providing digital services for student applications, consultations, resources, and institutional management.
+
+Role:
+Lead Developer / Systems Architect
+
+Technologies:
+- React
+- TypeScript
+- Node.js
+- Express
+- PostgreSQL
+- Drizzle ORM
+- Tailwind CSS
+- Vite
+- Cloud infrastructure
+
+Key Features:
+- Student portal
+- Admin CRM dashboard
+- University partner management
+- Application management system
+- Consultation booking
+- Events management
+- Scholarship management
+- Jobs portal
+- Blog/resource centre
+- Analytics dashboard
+- SEO optimization
+- Multilingual support
+
+Impact:
+Explain how the platform digitizes education consultancy operations and improves student engagement.
+
+---
+
+PROJECT 2:
+Add other software projects with professional case-study format.
+
+Each project must include:
+- Problem
+- Solution
+- Architecture
+- Technology stack
+- My contribution
+- Business impact
+
+4. SKILLS SECTION
+
+Organize skills into categories:
+
+Software Engineering:
+- React
+- TypeScript
+- JavaScript
+- Node.js
+- Express
+- PostgreSQL
+- APIs
+- Database Architecture
+
+Cloud & DevOps:
+- Git
+- CI/CD
+- Cloud Deployment
+- DNS Management
+- Server Administration
+
+Networks:
+- Computer Networks
+- Internet Protocols
+- Infrastructure Design
+
+Data:
+- SQL
+- Power BI
+- Excel Analytics
+- Data Collection Systems
+
+Business:
+- Project Management
+- Digital Transformation
+- Sales Strategy
+
+5. EXPERIENCE SECTION
+
+Convert my experience into achievement-focused statements.
+
+Focus on:
+- Systems built
+- Processes improved
+- Revenue/business impact
+- Leadership
+- Problem-solving
+
+6. DESIGN REQUIREMENTS
+
+Create a premium technology aesthetic:
+- Minimal luxury design
+- Strong typography
+- Smooth animations
+- Dark/light mode
+- Responsive mobile-first design
+- Professional spacing
+- Modern cards
+- Interactive project showcases
+
+Reference quality:
+- Apple
+- Vercel
+- Linear
+- Stripe
+
+7. ADDITIONAL FEATURES
+
+Implement:
+- Download CV button
+- GitHub integration
+- LinkedIn integration
+- Contact form
+- Testimonials section
+- Blog/thought leadership section
+- SEO metadata
+- Open Graph optimization
+- Performance optimization
+
+8. CODE QUALITY
+
+Audit:
+- Component structure
+- Accessibility
+- Performance
+- Security
+- SEO
+- Maintainability
+
+Follow production-level standards.
+
+9. FINAL OUTPUT
+
+Provide:
+- Design improvements
+- Content improvements
+- Code improvements
+- New architecture recommendations
+- Missing sections
+- Conversion optimization ideas
+
+Think like you are preparing this portfolio for a senior engineer applying globally and also attracting enterprise clients.

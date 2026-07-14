@@ -214,6 +214,40 @@ Program Adjustment & Iteration
 
 export const seedPortfolioProjects = [
   {
+    title: "Mtendere Education Consult - Platform & Management System",
+    slug: "mtendere-education-platform",
+    description: "Comprehensive education consultancy platform connecting African students with international universities. Full-stack web application with student portal, admin CRM, partner management, and analytics.",
+    challenge: "Build a scalable platform to digitize education consultancy operations for 1000+ students, manage university partnerships across 15+ countries, handle application workflows, and provide real-time analytics for decision-making.",
+    solution: `Architected and built a complete full-stack platform using React, TypeScript, Node.js, and PostgreSQL. Implemented student self-service portal, admin CRM dashboard, university partner management, application tracking, scholarship management, and automated reporting.
+
+### Architecture
+- **Frontend**: React 18 + TypeScript + Tailwind CSS + shadcn/ui, responsive design
+- **Backend**: Node.js + Express with structured API design, authentication middleware
+- **Database**: PostgreSQL with Drizzle ORM, relational schema for students, applications, partners
+- **Infrastructure**: Cloud-deployed with CI/CD, DNS management, SSL
+- **Features**: Student portal, admin CRM, partner management, application tracking, events, jobs, blog, analytics
+
+### Key Results
+| Metric | Before | After |
+|--------|--------|-------|
+| Application Processing | 2-3 weeks | 3-5 days |
+| Student Engagement | 45% | 82% |
+| Partner Response Time | 5 days | <24 hours |
+| Admin Efficiency | 40% | 85% |
+
+Live: https://mtendereeducationconsult.com/`,
+    outcome: "Digitized education consultancy operations, improved student engagement by 82%, reduced application processing time from weeks to days, and enabled management of 15+ university partnerships from a single platform.",
+    category: "ICT Infrastructure",
+    techStack: ["React", "TypeScript", "Node.js", "Express", "PostgreSQL", "Drizzle ORM", "Tailwind CSS", "Vite"],
+    images: [
+      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
+      "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800"
+    ],
+    featured: true,
+    liveUrl: "https://mtendereeducationconsult.com/",
+    order: 1,
+  },
+  {
     title: "Smart Gateway Infrastructure System",
     slug: "smart-gateway-infrastructure",
     description: "Enterprise-grade IoT gateway system supporting LoRaWAN, LTE-M, and NB-IoT with real-time processing and cloud integration.",
@@ -309,6 +343,6 @@ export const seedPortfolioProjects = [
     techStack: ["ARM Cortex-M0", "LoRaWAN", "C/C++", "KiCad", "RF Design"],
     liveUrl: "https://github.com/projects/lorawan-hardware",
     featured: false,
-    order: 4,
+    order: 5,
   },
 ];

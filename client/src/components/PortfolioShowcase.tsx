@@ -12,7 +12,7 @@ interface PortfolioShowcaseProps {
   projects: PortfolioProject[];
 }
 
-const categories = ["All", "MEL Systems", "ICT Infrastructure", "Web Development", "Data Analytics"];
+const categories = ["All", "ICT Infrastructure", "MEL Systems", "Hardware Engineering", "Data Analytics"];
 
 export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");

@@ -3,59 +3,69 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { CheckCircle, ArrowRight, Mail, Phone, Briefcase, Clock, Users, Lightbulb, Code } from "lucide-react";
+import { CheckCircle, ArrowRight, Mail, Phone, Briefcase, Clock, Users, Lightbulb, Code, Network, Database, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { HeroSection } from "@/components/HeroSection";
 import { VisualCard } from "@/components/VisualCard";
 
 const services = [
   {
-    icon: Lightbulb,
-    title: "Strategic Consulting",
-    description: "ICT infrastructure planning, MEL framework design, and digital transformation strategy",
-    price: "Custom Quote"
-  },
-  {
     icon: Code,
     title: "Full-Stack Development",
-    description: "Web applications, dashboards, and custom software solutions with React & modern stack",
+    description: "End-to-end web applications, dashboards, and scalable platforms. React, TypeScript, Node.js, PostgreSQL.",
+    features: ["React/TypeScript", "Node.js/Express", "PostgreSQL", "REST APIs", "Cloud Deployment"],
+    price: "$60-120/hr",
+    highlight: true
+  },
+  {
+    icon: Network,
+    title: "Network Engineering",
+    description: "Computer network design, configuration, and optimization. LoRaWAN, IoT systems, infrastructure.",
+    features: ["LAN/WAN Design", "IoT Solutions", "LoRaWAN", "Server Config", "Cloud Infrastructure"],
+    price: "$50-100/hr"
+  },
+  {
+    icon: Database,
+    title: "Data Systems & Analytics",
+    description: "Database architecture, Power BI dashboards, data collection systems, and strategic analytics.",
+    features: ["SQL/PostgreSQL", "Power BI", "Data Collection", "DHIS2", "Excel Analytics"],
+    price: "$40-80/hr"
+  },
+  {
+    icon: TrendingUp,
+    title: "Digital Transformation",
+    description: "Strategic technology consulting aligning digital investments with business outcomes and growth.",
+    features: ["Strategy Design", "Process Optimization", "Tech Roadmaps", "Change Management"],
+    price: "Custom Quote",
+    highlight: true
+  },
+  {
+    icon: Briefcase,
+    title: "Project Management",
+    description: "End-to-end project delivery, stakeholder management, and team leadership for technology initiatives.",
+    features: ["Agile/Scrum", "Stakeholder Management", "Risk Management", "Team Leadership"],
     price: "$50-100/hr"
   },
   {
     icon: Users,
-    title: "MEL & Monitoring",
-    description: "Results frameworks, indicator design, and monitoring dashboard implementation",
+    title: "MEL Systems & Monitoring",
+    description: "Results-based frameworks, indicator design, and monitoring dashboards for development programs.",
+    features: ["Indicator Design", "Dashboards", "Data Quality", "Reporting", "Learning Systems"],
     price: "Project-based"
-  },
-  {
-    icon: Briefcase,
-    title: "Data Analytics",
-    description: "Power BI dashboards, Excel analysis, and data-driven decision-making systems",
-    price: "$40-80/hr"
-  },
-  {
-    icon: Code,
-    title: "Business Development",
-    description: "Strategic partnerships, market analysis, and growth planning for digital enterprises",
-    price: "$60-120/hr"
   },
   {
     icon: Lightbulb,
-    title: "Marketing & Content Strategy",
-    description: "Ads management, content creation, content management systems, and product development",
-    price: "Project-based"
-  },
-  {
-    icon: Users,
-    title: "Network Technician Services",
-    description: "Network configuration, infrastructure support, and IT system maintenance",
-    price: "$35-75/hr"
+    title: "Entrepreneurship & Consulting",
+    description: "Technology business strategy, market analysis, product development, and growth planning.",
+    features: ["Market Analysis", "Product Strategy", "Business Planning", "Growth Hacking"],
+    price: "Custom Quote"
   },
   {
     icon: Code,
-    title: "Development Specialist",
-    description: "Backend systems, APIs, databases, and infrastructure optimization for scalable apps",
-    price: "$60-120/hr"
+    title: "Cloud & DevOps",
+    description: "CI/CD pipelines, cloud deployment, DNS management, and server administration.",
+    features: ["CI/CD", "Cloud Deploy", "Docker", "DNS/SSL", "Monitoring"],
+    price: "$40-80/hr"
   }
 ];
 
@@ -188,6 +198,13 @@ export default function HireMe() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <p className="text-sm text-muted-foreground">{service.description}</p>
+                      {service.features && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {service.features.map((feature) => (
+                            <Badge key={feature} variant="outline" className="text-[10px] font-mono">{feature}</Badge>
+                          ))}
+                        </div>
+                      )}
                       <div className="pt-2 border-t border-border/30">
                         <p className="text-primary font-mono text-sm font-bold">{service.price}</p>
                       </div>
