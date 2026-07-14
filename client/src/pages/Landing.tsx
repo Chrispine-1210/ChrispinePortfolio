@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
-import { ArrowRight, Code, Database, Network, TrendingUp, ExternalLink, Github, Linkedin, Mail, CheckCircle2, Zap } from "lucide-react";
+import { ArrowRight, Code, Database, Network, TrendingUp, ExternalLink, Github, Linkedin, Mail, CheckCircle2, Zap, Badge } from "lucide-react";
+import { Badge as BadgeComponent } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import heroImage from "@assets/generated_images/Professional_headshot_portrait_eb0606b5.png";
 
@@ -59,33 +60,33 @@ const experiences = [
   {
     title: "7+ Years",
     subtitle: "Professional Experience",
-    description: "ICT, MEL Systems, Data Analytics",
-    icon: "📊",
+    description: "Full-Stack, Infrastructure, MEL Systems",
+    icon: "📈",
   },
   {
     title: "50+ Projects",
     subtitle: "Delivered",
-    description: "Across 3 continents",
+    description: "Web Apps, IoT Systems, Data Platforms",
     icon: "🌍",
   },
   {
     title: "60% Efficiency",
     subtitle: "Average Improvement",
-    description: "For client organizations",
+    description: "For enterprise clients",
     icon: "⚡",
   },
   {
-    title: "100+ Stakeholders",
-    subtitle: "Trained",
-    description: "In MEL and digital tools",
+    title: "1000+ Users",
+    subtitle: "Served",
+    description: "Students, organizations, teams",
     icon: "👥",
   },
 ];
 
 const ctas = [
-  { label: "View Portfolio", path: "/portfolio", variant: "default" },
-  { label: "Read Blog", path: "/blog", variant: "outline" },
+  { label: "View Projects", path: "/portfolio", variant: "default" },
   { label: "Hire Me", path: "/hire", variant: "outline" },
+  { label: "Read Blog", path: "/blog", variant: "outline" },
   { label: "Contact", path: "/contact", variant: "outline" },
 ];
 
@@ -120,20 +121,20 @@ export default function Landing() {
                   <span className="text-sm font-mono text-primary font-bold">FULL-STACK INNOVATOR</span>
                 </div>
                 
-                <h1 className="text-6xl sm:text-7xl font-black text-white leading-tight tracking-tighter">
-                  Digital{" "}
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-tight tracking-tighter">
+                  I Design & Build{" "}
                   <span className="bg-gradient-to-r from-primary via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                    Solutions
+                    Scalable Digital Systems
                   </span>
                   <br />
                   That{" "}
                   <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-primary bg-clip-text text-transparent">
-                    Transform
+                    Solve Real Problems
                   </span>
                 </h1>
 
                 <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-                  ICT infrastructure expert, MEL systems designer, and full-stack developer. 7+ years helping organizations achieve 60% efficiency gains through strategic digital transformation.
+                  Senior full-stack engineer, systems architect, and technology consultant. 7+ years designing and deploying enterprise-grade solutions for organizations across Sub-Saharan Africa.
                 </p>
               </motion.div>
 
@@ -148,6 +149,7 @@ export default function Landing() {
                       <Button
                         variant={cta.variant as any}
                         className="w-full justify-start text-base h-12 font-semibold group-hover:scale-105 transition-transform"
+                        data-testid={`button-cta-${cta.label.toLowerCase().replace(/\s+/g, '-')}`}
                       >
                         {cta.label}
                         <ArrowRight className="ml-auto h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -157,20 +159,30 @@ export default function Landing() {
                 ))}
               </motion.div>
 
+              {/* Trust Indicators */}
+              <motion.div variants={itemVariants} className="flex flex-wrap gap-2 pt-2">
+                <BadgeComponent variant="secondary" className="bg-primary/10 text-primary border-primary/30 text-xs font-mono">React</BadgeComponent>
+                <BadgeComponent variant="secondary" className="bg-primary/10 text-primary border-primary/30 text-xs font-mono">TypeScript</BadgeComponent>
+                <BadgeComponent variant="secondary" className="bg-primary/10 text-primary border-primary/30 text-xs font-mono">Node.js</BadgeComponent>
+                <BadgeComponent variant="secondary" className="bg-primary/10 text-primary border-primary/30 text-xs font-mono">PostgreSQL</BadgeComponent>
+                <BadgeComponent variant="secondary" className="bg-primary/10 text-primary border-primary/30 text-xs font-mono">IoT Systems</BadgeComponent>
+                <BadgeComponent variant="secondary" className="bg-primary/10 text-primary border-primary/30 text-xs font-mono">MEL</BadgeComponent>
+              </motion.div>
+
               {/* Social Links */}
               <motion.div variants={itemVariants} className="flex gap-4 pt-4">
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover-elevate">
-                  <Button size="icon" variant="outline" className="rounded-full">
+                <a href="https://www.linkedin.com/in/chrispine-mndala-11a951206" target="_blank" rel="noopener noreferrer" className="hover-elevate">
+                  <Button size="icon" variant="outline" className="rounded-full" data-testid="button-linkedin">
                     <Linkedin className="h-5 w-5" />
                   </Button>
                 </a>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover-elevate">
-                  <Button size="icon" variant="outline" className="rounded-full">
+                <a href="https://github.com/Chrispine-1210" target="_blank" rel="noopener noreferrer" className="hover-elevate">
+                  <Button size="icon" variant="outline" className="rounded-full" data-testid="button-github">
                     <Github className="h-5 w-5" />
                   </Button>
                 </a>
-                <a href="mailto:hello@chrispine.dev" className="hover-elevate">
-                  <Button size="icon" variant="outline" className="rounded-full">
+                <a href="mailto:peterschrispine@gmail.com" className="hover-elevate">
+                  <Button size="icon" variant="outline" className="rounded-full" data-testid="button-email">
                     <Mail className="h-5 w-5" />
                   </Button>
                 </a>
@@ -345,6 +357,76 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Featured Project Preview */}
+      <section className="py-16 sm:py-24 bg-primary/5 border-y border-primary/10 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tighter">
+              Featured Project
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Mtendere Education Consult — Platform & Management System
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="grid lg:grid-cols-2 gap-8 items-center"
+          >
+            <div className="relative overflow-hidden rounded-lg border border-primary/30 group">
+              <img
+                src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800"
+                alt="Mtendere Education Platform"
+                className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="flex flex-wrap gap-2">
+                  {["React", "TypeScript", "Node.js", "PostgreSQL"].map((tech) => (
+                    <span key={tech} className="text-xs bg-primary/20 text-primary px-2 py-1 rounded font-mono">
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-white">
+                Digitizing Education Consultancy Operations
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Built a comprehensive platform connecting African students with international universities. 
+                Features include student portal, admin CRM, university partner management, application tracking, 
+                scholarship management, events, jobs portal, and real-time analytics.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-primary/10 rounded-lg">
+                  <div className="text-2xl font-black text-primary">82%</div>
+                  <div className="text-xs text-muted-foreground">Engagement Increase</div>
+                </div>
+                <div className="text-center p-4 bg-primary/10 rounded-lg">
+                  <div className="text-2xl font-black text-primary">3-5 Days</div>
+                  <div className="text-xs text-muted-foreground">App Processing Time</div>
+                </div>
+              </div>
+              <Button asChild className="w-full" data-testid="button-view-mtendere">
+                <a href="https://mtendereeducationconsult.com/" target="_blank" rel="noopener noreferrer">
+                  Visit Live Site
+                </a>
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Testimonials Section */}
       <section className="py-24 bg-accent/5 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -366,32 +448,32 @@ export default function Landing() {
           >
             {[
               {
-                text: "Chrispine transformed our MEL framework. Data-driven insights improved program outcomes by 45%.",
-                author: "Sarah Johnson",
-                role: "Program Director, NGO",
-                emoji: "⭐⭐⭐⭐⭐"
+                text: "Chrispine transformed our education consultancy operations entirely. The platform increased student engagement by 82% and reduced application processing from weeks to days.",
+                author: "Mtendere Education Consult",
+                role: "Education Platform",
+                company: "Founder & Director"
               },
               {
-                text: "Full-stack expertise combined with strategic thinking. Delivered production app in 3 months.",
-                author: "Marcus Chen",
-                role: "Tech Lead, Startup",
-                emoji: "⭐⭐⭐⭐⭐"
+                text: "Delivered a production-grade MEL dashboard in 3 months. The system now processes 2,000+ data points daily with 95% accuracy across 3 countries.",
+                author: "International Development Partner",
+                role: "MEL Dashboard",
+                company: "Program Director"
               },
               {
-                text: "Infrastructure optimization saved us 60% in operational costs. Highly recommended consultant.",
-                author: "Elena Rodriguez",
-                role: "CTO, Enterprise",
-                emoji: "⭐⭐⭐⭐⭐"
+                text: "The IoT gateway system handles 50M+ messages monthly with 99.9% uptime. Infrastructure optimization saved 40% on costs while improving latency to under 200ms.",
+                author: "Regional Network Provider",
+                role: "IoT Infrastructure",
+                company: "CTO"
               },
             ].map((testimonial, idx) => (
               <motion.div key={idx} variants={itemVariants}>
                 <Card className="bg-card/50 border-primary/20 h-full hover-elevate">
                   <CardContent className="pt-8 space-y-4">
-                    <p className="text-lg">{testimonial.emoji}</p>
                     <p className="text-muted-foreground leading-relaxed italic">"{testimonial.text}"</p>
                     <div className="border-t border-primary/20 pt-4">
                       <p className="font-bold text-white">{testimonial.author}</p>
-                      <p className="text-sm text-primary">{testimonial.role}</p>
+                      <p className="text-sm text-primary">{testimonial.company}</p>
+                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
                     </div>
                   </CardContent>
                 </Card>

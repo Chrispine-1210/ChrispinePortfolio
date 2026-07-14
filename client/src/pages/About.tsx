@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Briefcase, GraduationCap, Award, Users, Terminal, Cpu, Shield, Database, Link as LinkIcon } from "lucide-react";
+import { Download, Briefcase, GraduationCap, Award, Users, Terminal, Cpu, Shield, Database, Code, Network, TrendingUp, Mail, Link as LinkIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "wouter";
@@ -78,13 +78,19 @@ export default function About() {
               </h1>
               <div className="space-y-6 text-lg text-muted-foreground font-mono leading-relaxed opacity-80">
                 <p data-testid="text-intro-1">
-                  I'm a <TechTerm definition="An expert focused on designing and deploying high-impact digital systems through evidence-based strategy.">digital systems strategist</TechTerm> with 
-                  over 7 years of specialized experience building data-driven solutions for education and agriculture across Malawi.
+                  I'm a <TechTerm definition="A senior professional who designs and oversees enterprise-grade software systems combining business strategy with technical architecture.">full-stack systems architect</TechTerm> and 
+                  <TechTerm definition="A technology leader who guides organizations through digital transformation by aligning technology investments with business outcomes.">digital transformation consultant</TechTerm> with 
+                  7+ years building scalable platforms that drive measurable business impact.
                 </p>
                 <p data-testid="text-intro-2">
-                  My expertise spans <TechTerm definition="Monitoring, Evaluation, and Learning - the methodology of using data to improve organizational performance.">MEL frameworks</TechTerm>, 
-                  <TechTerm definition="The hardware and software required to support organizational digital services.">ICT infrastructure</TechTerm>, and 
-                  high-performance analytics, delivering measurable impact for organizational systems.
+                  I combine <TechTerm definition="End-to-end software development from frontend user interfaces to backend APIs and databases.">full-stack engineering</TechTerm> with 
+                  <TechTerm definition="The practice of designing robust, scalable technology infrastructure for enterprise environments.">systems architecture</TechTerm>, 
+                  <TechTerm definition="Professional networking design, configuration, and optimization.">network engineering</TechTerm>, and
+                  <TechTerm definition="Using data to inform strategic business decisions and optimize organizational performance.">business intelligence</TechTerm> 
+                  to deliver enterprise solutions that solve real business problems.
+                </p>
+                <p data-testid="text-intro-3" className="text-primary font-medium">
+                  I don't just write code — I design and build scalable digital systems that create competitive advantage.
                 </p>
               </div>
               <div className="pt-4 flex flex-col sm:flex-row gap-4">
@@ -126,6 +132,37 @@ export default function About() {
         </div>
       </section>
 
+      {/* Impact Stats */}
+      <section className="py-16 border-t border-white/5 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-8"
+          >
+            {[
+              { number: "7+", label: "Years Experience" },
+              { number: "15+", label: "Countries Reached" },
+              { number: "82%", label: "Avg Engagement Lift" },
+              { number: "50M+", label: "IoT Messages/Month" },
+            ].map((stat, idx) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="text-center"
+              >
+                <div className="text-4xl sm:text-5xl font-black text-primary mb-2">{stat.number}</div>
+                <div className="text-sm text-muted-foreground font-mono uppercase">{stat.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Expertise Areas */}
       <section className="py-24 border-t border-white/5 relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -145,38 +182,50 @@ export default function About() {
             </div>
             
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="tech-card p-8 space-y-4">
-                <h3 className="text-xl font-bold text-primary uppercase">ICT Infrastructure</h3>
-                <p className="text-muted-foreground">Network architecture, cloud solutions, server configuration, and digital infrastructure design for enterprise systems.</p>
+              <div className="tech-card p-8 space-y-4 group hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <Code className="w-6 h-6 text-primary" />
+                  <h3 className="text-xl font-bold text-primary uppercase">Full-Stack Engineering</h3>
+                </div>
+                <p className="text-muted-foreground">End-to-end software development from frontend interfaces to backend APIs and databases. React, Node.js, PostgreSQL architecture.</p>
                 <div className="flex flex-wrap gap-2">
-                  {["TCP/IP", "LAN/WAN", "Server Config", "Cloud"].map(tag => (
+                  {["React", "TypeScript", "Node.js", "Express", "PostgreSQL", "Drizzle ORM", "REST APIs"].map(tag => (
                     <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                   ))}
                 </div>
               </div>
-              <div className="tech-card p-8 space-y-4">
-                <h3 className="text-xl font-bold text-primary uppercase">MEL Systems</h3>
-                <p className="text-muted-foreground">Results-based frameworks, indicator design, and monitoring dashboards that drive organizational learning.</p>
+              <div className="tech-card p-8 space-y-4 group hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <Network className="w-6 h-6 text-primary" />
+                  <h3 className="text-xl font-bold text-primary uppercase">Network Engineering</h3>
+                </div>
+                <p className="text-muted-foreground">Computer networks, internet protocols, infrastructure design. LoRaWAN, IoT systems, 5G optimization, server administration.</p>
                 <div className="flex flex-wrap gap-2">
-                  {["RBM", "Indicators", "Dashboards", "Learning"].map(tag => (
+                  {["TCP/IP", "LAN/WAN", "LoRaWAN", "IoT", "5G", "Server Config"].map(tag => (
                     <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                   ))}
                 </div>
               </div>
-              <div className="tech-card p-8 space-y-4">
-                <h3 className="text-xl font-bold text-primary uppercase">Full-Stack Development</h3>
-                <p className="text-muted-foreground">Web applications, responsive design, and scalable software solutions using modern frameworks and technologies.</p>
+              <div className="tech-card p-8 space-y-4 group hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <Database className="w-6 h-6 text-primary" />
+                  <h3 className="text-xl font-bold text-primary uppercase">Data Systems & Analytics</h3>
+                </div>
+                <p className="text-muted-foreground">Database architecture, data collection systems, Power BI dashboards, Excel analytics, DHIS2 integration for evidence-based decisions.</p>
                 <div className="flex flex-wrap gap-2">
-                  {["React", "TypeScript", ".NET", "PostgreSQL"].map(tag => (
+                  {["SQL", "Power BI", "Excel", "DHIS2", "Data Collection", "Analytics"].map(tag => (
                     <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                   ))}
                 </div>
               </div>
-              <div className="tech-card p-8 space-y-4">
-                <h3 className="text-xl font-bold text-primary uppercase">Data Analytics</h3>
-                <p className="text-muted-foreground">Power BI dashboards, advanced Excel analysis, and data visualization for strategic insights and decision-making.</p>
+              <div className="tech-card p-8 space-y-4 group hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
+                <div className="flex items-center gap-3 mb-2">
+                  <TrendingUp className="w-6 h-6 text-primary" />
+                  <h3 className="text-xl font-bold text-primary uppercase">Business Development</h3>
+                </div>
+                <p className="text-muted-foreground">Digital transformation strategy, project management, sales strategy, and entrepreneurship. Aligning technology with business outcomes.</p>
                 <div className="flex flex-wrap gap-2">
-                  {["Power BI", "Excel", "DHIS2", "Analytics"].map(tag => (
+                  {["Project Management", "Digital Transformation", "Sales Strategy", "Entrepreneurship", "Consulting"].map(tag => (
                     <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
                   ))}
                 </div>
@@ -195,22 +244,23 @@ export default function About() {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Let's Work Together</h2>
+            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Let's Build Something Great</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Ready to discuss your project, goals, and how I can contribute to your success.
+              Available for consulting, development, or full-time roles. 
+              Flexible engagement options for your project needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild data-testid="button-hire-cta">
                 <Link href="/hire" className="flex items-center gap-2">
                   <Briefcase className="mr-2 h-5 w-5" />
-                  Engage Specialist
+                  Hire Me
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild data-testid="button-contact-cta">
-                <Link href="/contact" className="flex items-center gap-2">
-                  <LinkIcon className="mr-2 h-5 w-5" />
-                  Get in Touch
-                </Link>
+                <a href="mailto:peterschrispine@gmail.com" className="flex items-center gap-2">
+                  <Mail className="mr-2 h-5 w-5" />
+                  Email Directly
+                </a>
               </Button>
             </div>
           </motion.div>

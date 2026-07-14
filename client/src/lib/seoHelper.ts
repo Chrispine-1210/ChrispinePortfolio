@@ -1,4 +1,4 @@
-export function setSEO(title: string, description: string, path: string = "/") {
+export function setSEO(title: string, description: string, path: string = "/", image?: string) {
   // Set page title
   document.title = title;
 
@@ -22,8 +22,34 @@ export function setSEO(title: string, description: string, path: string = "/") {
     tag.setAttribute('content', content);
   };
 
+  const updateMetaTag = (name: string, content: string) => {
+    let tag = document.querySelector(`meta[name="${name}"]`);
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.setAttribute('name', name);
+      document.head.appendChild(tag);
+    }
+    tag.setAttribute('content', content);
+  };
+
   updateOGTag('og:title', title);
   updateOGTag('og:description', description);
   updateOGTag('og:url', `https://chrispine-portfolio.replit.dev${path}`);
   updateOGTag('og:type', 'website');
+  updateOGTag('og:image', image || 'https://chrispine-portfolio.replit.dev/favicon.png');
+
+  // Twitter Card tags
+  updateMetaTag('twitter:card', 'summary_large_image');
+  updateMetaTag('twitter:title', title);
+  updateMetaTag('twitter:description', description);
+  updateMetaTag('twitter:image', image || 'https://chrispine-portfolio.replit.dev/favicon.png');
+
+  // Canonical URL
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute('href', `https://chrispine-portfolio.replit.dev${path}`);
 }
