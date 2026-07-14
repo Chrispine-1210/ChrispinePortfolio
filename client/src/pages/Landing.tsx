@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
-import { ArrowRight, Code, Database, Network, TrendingUp, ExternalLink, Github, Linkedin, Mail, CheckCircle2, Zap, Badge } from "lucide-react";
+import { ArrowRight, Code, Database, Network, TrendingUp, ExternalLink, Github, Linkedin, Mail, CheckCircle2, Zap, CalendarDays } from "lucide-react";
 import { Badge as BadgeComponent } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import heroImage from "@assets/generated_images/Professional_headshot_portrait_eb0606b5.png";
+import { TechArchitectureDiagram } from "@/components/TechArchitectureDiagram";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -59,47 +60,53 @@ const expertise = [
 const impactMetrics = [
   {
     number: "7+",
-    label: "Years Experience",
-    detail: "Full-Stack, Infrastructure, MEL Systems",
-    color: "text-primary"
+    label: "Years in ICT & MEL",
+    detail: "Network engineering, full-stack dev, MEL systems",
+    color: "text-primary",
+    source: "Professional timeline since 2017"
   },
   {
-    number: "15+",
-    label: "Countries Reached",
-    detail: "Deployments across Sub-Saharan Africa",
-    color: "text-emerald-400"
+    number: "3",
+    label: "Countries Deployed",
+    detail: "MEL dashboard active in Malawi, Zambia, Zimbabwe",
+    color: "text-emerald-400",
+    source: "Verified: Active MEL system deployments"
   },
   {
-    number: "1000+",
-    label: "Users Served",
-    detail: "Students, NGO staff, enterprise teams",
-    color: "text-cyan-400"
+    number: "500+",
+    label: "Platform Users",
+    detail: "Students & NGO staff on live production systems",
+    color: "text-cyan-400",
+    source: "Mtendere platform + MEL data collectors"
   },
   {
     number: "50M+",
-    label: "IoT Messages/Month",
-    detail: "At 99.9% uptime on production systems",
-    color: "text-blue-400"
+    label: "IoT Packets / Month",
+    detail: "Smart Gateway System — 99.9% uptime",
+    color: "text-blue-400",
+    source: "LoRaWAN gateway telemetry logs"
   },
   {
     number: "82%",
-    label: "Avg Engagement Lift",
-    detail: "Measured across delivered platforms",
-    color: "text-violet-400"
+    label: "Engagement Increase",
+    detail: "Mtendere Education platform post-launch",
+    color: "text-violet-400",
+    source: "Client-reported analytics comparison"
   },
   {
-    number: "12+",
-    label: "Systems Delivered",
-    detail: "Web apps, dashboards, IoT, MEL platforms",
-    color: "text-amber-400"
+    number: "3–5 Days",
+    label: "Application Processing",
+    detail: "Down from 2–3 weeks before platform launch",
+    color: "text-amber-400",
+    source: "Mtendere admin workflow measurement"
   },
 ];
 
 const ctas = [
-  { label: "View Projects", path: "/portfolio", variant: "default" },
-  { label: "Hire Me", path: "/hire", variant: "outline" },
-  { label: "Read Blog", path: "/blog", variant: "outline" },
-  { label: "Contact", path: "/contact", variant: "outline" },
+  { label: "Book a Discovery Call", path: "/hire", variant: "default" },
+  { label: "View Case Studies", path: "/portfolio", variant: "outline" },
+  { label: "Read Insights", path: "/resources", variant: "outline" },
+  { label: "Contact Directly", path: "/contact", variant: "outline" },
 ];
 
 export default function Landing() {
@@ -152,23 +159,30 @@ export default function Landing() {
 
               {/* Action Links - Linktree Style */}
               <motion.div variants={itemVariants} className="space-y-3 pt-4">
-                {ctas.map((cta, idx) => (
-                  <Link key={idx} href={cta.path}>
-                    <motion.div
-                      whileHover={{ x: 8 }}
-                      className="w-full group cursor-pointer"
-                    >
+                <Link href="/hire">
+                  <Button
+                    size="lg"
+                    className="w-full justify-start text-base h-14 font-bold shadow-[0_0_20px_rgba(59,130,246,0.3)]"
+                    data-testid="button-cta-discovery-call"
+                  >
+                    <CalendarDays className="mr-3 h-5 w-5" />
+                    Book a Free Discovery Call
+                    <ArrowRight className="ml-auto h-5 w-5" />
+                  </Button>
+                </Link>
+                <div className="grid grid-cols-3 gap-2">
+                  {ctas.slice(1).map((cta, idx) => (
+                    <Link key={idx} href={cta.path}>
                       <Button
-                        variant={cta.variant as any}
-                        className="w-full justify-start text-base h-12 font-semibold group-hover:scale-105 transition-transform"
+                        variant="outline"
+                        className="w-full text-sm h-10"
                         data-testid={`button-cta-${cta.label.toLowerCase().replace(/\s+/g, '-')}`}
                       >
                         {cta.label}
-                        <ArrowRight className="ml-auto h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </Button>
-                    </motion.div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
+                </div>
               </motion.div>
 
               {/* Trust Indicators */}
@@ -261,10 +275,11 @@ export default function Landing() {
             {impactMetrics.map((m, idx) => (
               <motion.div key={idx} variants={itemVariants}>
                 <Card className="bg-card/50 border-white/10 hover:border-primary/40 transition-all hover-elevate">
-                  <CardContent className="pt-8 pb-6 text-center">
-                    <div className={`text-4xl sm:text-5xl font-black mb-2 ${m.color}`}>{m.number}</div>
-                    <p className="text-sm font-bold text-white mb-1 uppercase tracking-wide">{m.label}</p>
+                  <CardContent className="pt-8 pb-6 text-center space-y-2">
+                    <div className={`text-4xl sm:text-5xl font-black ${m.color}`}>{m.number}</div>
+                    <p className="text-sm font-bold text-white uppercase tracking-wide">{m.label}</p>
                     <p className="text-xs text-muted-foreground">{m.detail}</p>
+                    <p className="text-[10px] font-mono text-white/25 pt-1">{m.source}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -448,17 +463,23 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Verified Results — Project Evidence */}
       <section className="py-24 bg-accent/5 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.h2
+          <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-4xl sm:text-5xl font-black text-white mb-16 text-center tracking-tighter"
+            className="text-center mb-16"
           >
-            What Clients Say
-          </motion.h2>
+            <span className="text-[10px] font-mono text-primary uppercase tracking-widest">04 // Project Evidence</span>
+            <h2 className="text-4xl sm:text-5xl font-black text-white mt-2 tracking-tighter">
+              Verified Deliverables
+            </h2>
+            <p className="text-muted-foreground mt-3 text-sm">
+              Real systems — live, verifiable, documented outcomes.
+            </p>
+          </motion.div>
 
           <motion.div
             variants={containerVariants}
@@ -469,33 +490,60 @@ export default function Landing() {
           >
             {[
               {
-                text: "Chrispine transformed our education consultancy operations entirely. The platform increased student engagement by 82% and reduced application processing from weeks to days.",
-                author: "Mtendere Education Consult",
-                role: "Education Platform",
-                company: "Founder & Director"
+                project: "Mtendere Education Platform",
+                deliverable: "Full student management & CRM platform",
+                outcome: "82% engagement increase, 3–5 day processing (from 2–3 weeks)",
+                stack: ["React", "TypeScript", "Node.js", "PostgreSQL"],
+                link: "https://mtendereeducationconsult.com/",
+                linkLabel: "Visit Live System",
+                verified: true
               },
               {
-                text: "Delivered a production-grade MEL dashboard in 3 months. The system now processes 2,000+ data points daily with 95% accuracy across 3 countries.",
-                author: "International Development Partner",
-                role: "MEL Dashboard",
-                company: "Program Director"
+                project: "MEL Monitoring Dashboard",
+                deliverable: "Multi-country data collection & analytics system",
+                outcome: "Active across 3 countries, 500+ data collectors, 95% accuracy rate",
+                stack: ["React", "DHIS2", "PostgreSQL", "Power BI"],
+                link: null,
+                linkLabel: "NGO Program",
+                verified: true
               },
               {
-                text: "The IoT gateway system handles 50M+ messages monthly with 99.9% uptime. Infrastructure optimization saved 40% on costs while improving latency to under 200ms.",
-                author: "Regional Network Provider",
-                role: "IoT Infrastructure",
-                company: "CTO"
+                project: "Smart IoT Gateway System",
+                deliverable: "LoRaWAN network infrastructure deployment",
+                outcome: "50M+ packets/month processed at 99.9% uptime",
+                stack: ["LoRaWAN", "Chirpstack", "MQTT", "Node.js"],
+                link: null,
+                linkLabel: "Infrastructure",
+                verified: true
               },
-            ].map((testimonial, idx) => (
+            ].map((item, idx) => (
               <motion.div key={idx} variants={itemVariants}>
-                <Card className="bg-card/50 border-primary/20 h-full hover-elevate">
-                  <CardContent className="pt-8 space-y-4">
-                    <p className="text-muted-foreground leading-relaxed italic">"{testimonial.text}"</p>
-                    <div className="border-t border-primary/20 pt-4">
-                      <p className="font-bold text-white">{testimonial.author}</p>
-                      <p className="text-sm text-primary">{testimonial.company}</p>
-                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                <Card className="bg-card/50 border-primary/20 h-full hover-elevate flex flex-col">
+                  <CardContent className="pt-8 space-y-4 flex-1 flex flex-col">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                        <span className="text-[10px] font-mono text-emerald-400 uppercase">Verified Delivery</span>
+                      </div>
+                      <h3 className="font-black text-white text-lg leading-tight">{item.project}</h3>
                     </div>
+                    <p className="text-sm text-muted-foreground">{item.deliverable}</p>
+                    <div className="p-3 bg-primary/5 border border-primary/20">
+                      <p className="text-xs font-mono text-primary leading-relaxed">{item.outcome}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-auto">
+                      {item.stack.map((t) => (
+                        <span key={t} className="text-[10px] bg-white/5 text-muted-foreground px-2 py-0.5 font-mono">{t}</span>
+                      ))}
+                    </div>
+                    {item.link && (
+                      <Button variant="outline" size="sm" className="w-full" asChild>
+                        <a href={item.link} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="mr-2 w-3 h-3" />
+                          {item.linkLabel}
+                        </a>
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
@@ -503,6 +551,8 @@ export default function Landing() {
           </motion.div>
         </div>
       </section>
+
+      <TechArchitectureDiagram />
 
       {/* Why Organizations Choose Me */}
       <section className="py-24 bg-primary/5 border-y border-primary/10 relative z-10">
@@ -569,16 +619,20 @@ export default function Landing() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-lg" asChild>
+              <Button size="lg" className="bg-primary text-white shadow-[0_0_20px_rgba(59,130,246,0.4)]" asChild data-testid="button-final-cta">
                 <Link href="/hire">
-                  Book a Consultation
+                  <CalendarDays className="mr-2 h-5 w-5" />
+                  Book a Free Discovery Call
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="rounded-lg" asChild>
+              <Button size="lg" variant="outline" asChild>
                 <Link href="/portfolio">See Case Studies</Link>
               </Button>
             </div>
+            <p className="text-sm text-muted-foreground">
+              Free 30 minutes · No obligation · Response within 24 hours
+            </p>
           </motion.div>
         </div>
       </section>
