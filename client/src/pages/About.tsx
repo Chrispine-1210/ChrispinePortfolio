@@ -399,6 +399,165 @@ export default function About() {
         </div>
       </section>
 
+      {/* Professional Credentials */}
+      <section className="py-24 border-t border-white/5 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-12"
+          >
+            <div className="text-center space-y-4">
+              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">05 // Credentials</span>
+              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Certifications & Expertise</h2>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  category: "Engineering",
+                  color: "text-primary",
+                  creds: [
+                    "Advanced Diploma in Computer Networks & Internet Protocols",
+                    "Full-Stack Web Development",
+                    "IoT Systems & LoRaWAN Networks",
+                    "Cloud Infrastructure & DevOps"
+                  ]
+                },
+                {
+                  category: "Business",
+                  color: "text-emerald-400",
+                  creds: [
+                    "Project Management Certification",
+                    "Digital Transformation Strategy",
+                    "Entrepreneurship & Innovation",
+                    "Stakeholder Management"
+                  ]
+                },
+                {
+                  category: "Data",
+                  color: "text-cyan-400",
+                  creds: [
+                    "Monitoring & Evaluation (MEL)",
+                    "Data Analytics & Visualization",
+                    "Power BI & Excel Advanced",
+                    "DHIS2 Implementation"
+                  ]
+                },
+                {
+                  category: "Leadership",
+                  color: "text-amber-400",
+                  creds: [
+                    "HarvardX: Computer Science",
+                    "Systems Architecture Design",
+                    "Team Leadership & Mentoring",
+                    "Technology Strategy Consulting"
+                  ]
+                }
+              ].map((group, idx) => (
+                <motion.div
+                  key={group.category}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
+                  className="tech-card p-6 space-y-4"
+                >
+                  <h3 className={`text-sm font-black uppercase tracking-widest ${group.color}`}>{group.category}</h3>
+                  <ul className="space-y-3">
+                    {group.creds.map((cred) => (
+                      <li key={cred} className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
+                        <span className={`mt-0.5 flex-shrink-0 ${group.color}`}>›</span>
+                        {cred}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* GitHub & Open Source Showcase */}
+      <section className="py-24 bg-primary/5 border-y border-primary/10 relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-12"
+          >
+            <div className="text-center space-y-4">
+              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">06 // Open Source</span>
+              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">GitHub & Technical Authority</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Real code. Real systems. Explore repositories and technical implementations.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="tech-card p-8 space-y-6">
+                <h3 className="text-lg font-bold text-white uppercase">Technical Philosophy</h3>
+                <div className="space-y-4">
+                  {[
+                    { title: "Clean Architecture", desc: "Code organized for maintainability — layers separated, dependencies injected, logic testable." },
+                    { title: "Documentation First", desc: "Every system ships with README, API docs, and architecture diagrams." },
+                    { title: "Security by Design", desc: "Auth, validation, sanitization, and security headers baked in from day one." },
+                    { title: "Performance Optimized", desc: "Caching strategies, query optimization, and lazy loading built into production builds." }
+                  ].map((item) => (
+                    <div key={item.title} className="flex gap-3">
+                      <span className="text-primary mt-0.5 flex-shrink-0">›</span>
+                      <div>
+                        <h4 className="text-xs font-bold text-white uppercase">{item.title}</h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="tech-card p-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-white uppercase">Technology Expertise</h4>
+                    <Badge variant="outline" className="text-[10px] font-mono">Production</Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      ["React + TypeScript", "95%"],
+                      ["Node.js / Express", "93%"],
+                      ["PostgreSQL", "90%"],
+                      ["REST API Design", "92%"],
+                      ["IoT / LoRaWAN", "85%"],
+                      ["Cloud Deploy", "87%"],
+                    ].map(([tech, level]) => (
+                      <div key={tech} className="p-2 bg-white/5">
+                        <div className="text-[10px] text-white font-mono uppercase">{tech}</div>
+                        <div className="text-[10px] text-primary">{level}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Button asChild className="w-full" data-testid="button-github-profile">
+                  <a
+                    href="https://github.com/Chrispine-1210"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <Code className="w-4 h-4" />
+                    View GitHub Profile
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Call to Action */}
       <section className="py-24 bg-white/5 relative border-y border-white/5">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -408,16 +567,15 @@ export default function About() {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Let's Build Something Great</h2>
+            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Ready to Work Together?</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Available for consulting, development, or full-time roles. 
-              Flexible engagement options for your project needs.
+              Book a free 30-minute technology consultation. No obligation — just clarity.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" asChild data-testid="button-hire-cta">
-                <Link href="/hire" className="flex items-center gap-2">
+                <Link href="/hire#consultation" className="flex items-center gap-2">
                   <Briefcase className="mr-2 h-5 w-5" />
-                  Hire Me
+                  Book a Consultation
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild data-testid="button-contact-cta">

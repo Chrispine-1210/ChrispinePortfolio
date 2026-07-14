@@ -7,6 +7,7 @@ import { CheckCircle, ArrowRight, Mail, Phone, Briefcase, Clock, Users, Lightbul
 import { motion } from "framer-motion";
 import { HeroSection } from "@/components/HeroSection";
 import { VisualCard } from "@/components/VisualCard";
+import { ConsultationForm } from "@/components/ConsultationForm";
 
 const engagementPaths = [
   {
@@ -314,25 +315,75 @@ export default function HireMe() {
           </div>
         </motion.div>
 
-        {/* Final CTA */}
+        {/* Book a Technology Consultation — Lead Generation Form */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
+          className="mb-20"
+          id="consultation"
+        >
+          <div className="text-center space-y-4 mb-12">
+            <span className="text-[10px] font-mono text-primary uppercase tracking-widest">03 // PRIMARY CTA</span>
+            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Book a Technology Consultation</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Free 30-minute discovery call. Walk away with a clear picture of your digital roadmap and next steps — no obligation.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12">
+            {/* Left: What to expect */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-bold text-white uppercase">What We Cover</h3>
+              <div className="space-y-4">
+                {[
+                  { step: "01", title: "Understand Your Challenge", desc: "Deep-dive into your current business process and the inefficiencies costing you time and revenue." },
+                  { step: "02", title: "Technology Assessment", desc: "Review your existing systems, identify integration opportunities, and flag technical risks." },
+                  { step: "03", title: "Solution Options", desc: "Outline 2-3 strategic technology approaches with trade-offs, timelines, and investment ranges." },
+                  { step: "04", title: "Clear Next Steps", desc: "Leave with a concrete action plan, whether you engage me or not." },
+                ].map((item) => (
+                  <div key={item.step} className="flex gap-4 p-4 tech-card">
+                    <div className="text-2xl font-black text-primary/30 font-mono w-8 flex-shrink-0">{item.step}</div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white uppercase mb-1">{item.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Consultation Form */}
+            <div className="tech-card p-8">
+              <h3 className="font-mono text-primary text-xs font-bold mb-6 uppercase tracking-widest border-b border-primary/20 pb-3">
+                CONSULTATION REQUEST FORM
+              </h3>
+              <ConsultationForm />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Final CTA */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9 }}
           className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/30 rounded-lg p-8 sm:p-12 text-center"
         >
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Start?</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Prefer to Talk First?</h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Let's discuss your project, timeline, and requirements. I'm ready to help bring your vision to life.
+            Call directly or send an email. Response within 24 hours.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild data-testid="button-start-project">
-              <Link href="/contact" className="flex items-center gap-2">
-                Start Project <ArrowRight className="w-4 h-4" />
-              </Link>
+              <a href="tel:+265999431115" className="flex items-center gap-2">
+                <Phone className="w-4 h-4" /> +265 999 431 115
+              </a>
             </Button>
-            <Button size="lg" variant="outline" asChild data-testid="button-view-portfolio">
-              <Link href="/portfolio">View Portfolio</Link>
+            <Button size="lg" variant="outline" asChild data-testid="button-email-direct">
+              <a href="mailto:peterschrispine@gmail.com" className="flex items-center gap-2">
+                <Mail className="w-4 h-4" /> peterschrispine@gmail.com
+              </a>
             </Button>
           </div>
         </motion.div>

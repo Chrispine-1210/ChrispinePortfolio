@@ -56,30 +56,42 @@ const expertise = [
   },
 ];
 
-const experiences = [
+const impactMetrics = [
   {
-    title: "7+ Years",
-    subtitle: "Professional Experience",
-    description: "Full-Stack, Infrastructure, MEL Systems",
-    icon: "📈",
+    number: "7+",
+    label: "Years Experience",
+    detail: "Full-Stack, Infrastructure, MEL Systems",
+    color: "text-primary"
   },
   {
-    title: "50+ Projects",
-    subtitle: "Delivered",
-    description: "Web Apps, IoT Systems, Data Platforms",
-    icon: "🌍",
+    number: "15+",
+    label: "Countries Reached",
+    detail: "Deployments across Sub-Saharan Africa",
+    color: "text-emerald-400"
   },
   {
-    title: "60% Efficiency",
-    subtitle: "Average Improvement",
-    description: "For enterprise clients",
-    icon: "⚡",
+    number: "1000+",
+    label: "Users Served",
+    detail: "Students, NGO staff, enterprise teams",
+    color: "text-cyan-400"
   },
   {
-    title: "1000+ Users",
-    subtitle: "Served",
-    description: "Students, organizations, teams",
-    icon: "👥",
+    number: "50M+",
+    label: "IoT Messages/Month",
+    detail: "At 99.9% uptime on production systems",
+    color: "text-blue-400"
+  },
+  {
+    number: "82%",
+    label: "Avg Engagement Lift",
+    detail: "Measured across delivered platforms",
+    color: "text-violet-400"
+  },
+  {
+    number: "12+",
+    label: "Systems Delivered",
+    detail: "Web apps, dashboards, IoT, MEL platforms",
+    color: "text-amber-400"
   },
 ];
 
@@ -226,24 +238,33 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 relative z-10">
+      {/* Results & Impact — Social Proof Engine */}
+      <section className="py-20 relative z-10 border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="text-[10px] font-mono text-primary uppercase tracking-widest">01 // VERIFIED RESULTS</span>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mt-2">Results & Impact</h2>
+            <p className="text-muted-foreground mt-2 text-sm">Defensible numbers from delivered systems</p>
+          </motion.div>
           <motion.div
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {experiences.map((exp, idx) => (
+            {impactMetrics.map((m, idx) => (
               <motion.div key={idx} variants={itemVariants}>
-                <Card className="bg-card/50 border-primary/20 hover:border-primary/50 transition-all hover-elevate">
+                <Card className="bg-card/50 border-white/10 hover:border-primary/40 transition-all hover-elevate">
                   <CardContent className="pt-8 pb-6 text-center">
-                    <div className="text-4xl mb-3">{exp.icon}</div>
-                    <h3 className="text-2xl font-bold text-primary mb-1">{exp.title}</h3>
-                    <p className="text-sm font-semibold text-white mb-2">{exp.subtitle}</p>
-                    <p className="text-sm text-muted-foreground">{exp.description}</p>
+                    <div className={`text-4xl sm:text-5xl font-black mb-2 ${m.color}`}>{m.number}</div>
+                    <p className="text-sm font-bold text-white mb-1 uppercase tracking-wide">{m.label}</p>
+                    <p className="text-xs text-muted-foreground">{m.detail}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -483,6 +504,49 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Why Organizations Choose Me */}
+      <section className="py-24 bg-primary/5 border-y border-primary/10 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <span className="text-[10px] font-mono text-primary uppercase tracking-widest">TRUST SIGNALS</span>
+            <h2 className="text-4xl font-black text-white uppercase tracking-tighter mt-2">Why Organizations Choose Me</h2>
+          </motion.div>
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {[
+              { title: "Business-First Engineering", desc: "Every technical decision is evaluated against business outcomes. I don't build features — I build solutions that generate measurable ROI." },
+              { title: "Scalable Architecture Thinking", desc: "Systems designed to grow with you. Modular, well-documented, and built with future requirements in mind from day one." },
+              { title: "Emerging-Market Expertise", desc: "Deep experience deploying production systems in bandwidth-constrained, power-unreliable environments across 15+ African countries." },
+              { title: "End-to-End Delivery", desc: "From strategy to deployment. One point of contact across systems architecture, development, QA, infrastructure, and launch." },
+              { title: "Technical + Business Fluency", desc: "Rare combination: engineering precision with strategic business thinking. Comfortable in boardrooms and code editors." },
+              { title: "Proven Track Record", desc: "82% engagement lifts. 99.9% uptime. 40-80% processing time reductions. Real results from delivered systems, not promises." },
+            ].map((item, idx) => (
+              <motion.div key={idx} variants={itemVariants}>
+                <Card className="bg-card/50 border-white/10 h-full hover-elevate">
+                  <CardContent className="pt-6 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
+                      <h3 className="font-bold text-white text-sm uppercase tracking-wide">{item.title}</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed pl-8">{item.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Final CTA */}
       <section className="py-24 relative z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -496,23 +560,23 @@ export default function Landing() {
               <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tighter">
                 Ready to Transform Your{" "}
                 <span className="bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">
-                  Digital Future?
+                  Digital Operations?
                 </span>
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Let's collaborate on your next strategic project or digital transformation initiative.
+                Book a free 30-minute technology consultation. Walk away with clarity on your digital roadmap.
               </p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-lg" asChild>
                 <Link href="/hire">
-                  Start a Project
+                  Book a Consultation
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="rounded-lg" asChild>
-                <Link href="/contact">Get in Touch</Link>
+                <Link href="/portfolio">See Case Studies</Link>
               </Button>
             </div>
           </motion.div>

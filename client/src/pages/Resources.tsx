@@ -99,9 +99,82 @@ const resources = [
   }
 ];
 
+const allInsights = [
+  {
+    title: "Digital Transformation Challenges in African SMEs",
+    description: "Why 70% of African small businesses fail at digital transformation — and the framework that changes outcomes.",
+    readTime: "9 min read",
+    category: "Digital Transformation",
+    icon: BookOpen
+  },
+  {
+    title: "Building Software Systems With Limited Resources",
+    description: "How constraint-driven development produces more focused, reliable systems than unlimited-budget projects.",
+    readTime: "7 min read",
+    category: "Engineering",
+    icon: FileText
+  },
+  {
+    title: "Why Data Infrastructure Is Africa's Next Competitive Advantage",
+    description: "The organizations that invest in data pipelines and analytics now will dominate their sectors in 5 years.",
+    readTime: "8 min read",
+    category: "Data Intelligence",
+    icon: BookOpen
+  },
+  {
+    title: "Education Technology Opportunities in Malawi",
+    description: "Where EdTech can have 10x impact — student management, digital learning, and remote assessment systems.",
+    readTime: "6 min read",
+    category: "EdTech",
+    icon: FileText
+  },
+  {
+    title: "Designing Scalable Platforms for Emerging Markets",
+    description: "Architecture decisions that account for unreliable power, limited bandwidth, and mobile-first users.",
+    readTime: "11 min read",
+    category: "Architecture",
+    icon: BookOpen
+  },
+  {
+    title: "Cloud Computing Adoption in Developing Economies",
+    description: "The business case, risk factors, and practical migration roadmap for African organizations moving to cloud.",
+    readTime: "8 min read",
+    category: "Infrastructure",
+    icon: FileText
+  },
+  {
+    title: "The Role of AI in African Business Growth",
+    description: "Practical, affordable AI implementations for SMEs — from chatbots to predictive analytics to process automation.",
+    readTime: "10 min read",
+    category: "Strategy",
+    icon: BookOpen
+  },
+  {
+    title: "Software Engineering vs Business Engineering",
+    description: "Why the best technology solutions come from engineers who understand business strategy, not just code.",
+    readTime: "6 min read",
+    category: "Leadership",
+    icon: FileText
+  },
+  {
+    title: "Building Reliable Systems From Local Markets",
+    description: "How to source hardware, manage vendors, and build redundancy when supply chains are unpredictable.",
+    readTime: "7 min read",
+    category: "Infrastructure",
+    icon: BookOpen
+  },
+  {
+    title: "Technology Entrepreneurship in Africa",
+    description: "Lessons from building Aothothe LLC — market validation, funding approaches, and scaling technology businesses.",
+    readTime: "12 min read",
+    category: "Entrepreneurship",
+    icon: FileText
+  }
+];
+
 export default function Resources() {
   useEffect(() => {
-    document.title = "REPOSITORY | Chrispine Mndala";
+    document.title = "Insights | Chrispine Mndala";
   }, []);
 
   return (
@@ -109,22 +182,22 @@ export default function Resources() {
       <div className="tech-grid-bg opacity-20" />
       
       <HeroSection
-        subtitle="KNOWLEDGE_BASE"
-        title="REPOSITORY"
-        description="Access professional resources, templates, and tools to accelerate your ICT and MEL initiatives."
+        subtitle="THOUGHT LEADERSHIP"
+        title="INSIGHTS"
+        description="Strategic articles on digital transformation, technology infrastructure, and building scalable systems for emerging markets."
       />
 
-      {/* Authority Articles */}
+      {/* All Insights — 10 Articles */}
       <section className="py-16 sm:py-24 relative z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 mb-12">
-            <span className="text-[10px] font-mono text-primary uppercase tracking-widest">01 // THOUGHT LEADERSHIP</span>
+            <span className="text-[10px] font-mono text-primary uppercase tracking-widest">01 // ARTICLES</span>
             <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
-              Articles & Insights
+              All Articles & Insights
             </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
-            {authorityArticles.map((article, idx) => {
+            {allInsights.map((article, idx) => {
               const Icon = article.icon;
               return (
                 <motion.div
