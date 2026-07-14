@@ -8,80 +8,81 @@ import { motion } from "framer-motion";
 import { HeroSection } from "@/components/HeroSection";
 import { VisualCard } from "@/components/VisualCard";
 
-const services = [
-  {
-    icon: Code,
-    title: "Full-Stack Development",
-    description: "End-to-end web applications, dashboards, and scalable platforms. React, TypeScript, Node.js, PostgreSQL.",
-    features: ["React/TypeScript", "Node.js/Express", "PostgreSQL", "REST APIs", "Cloud Deployment"],
-    price: "$60-120/hr",
-    highlight: true
-  },
-  {
-    icon: Network,
-    title: "Network Engineering",
-    description: "Computer network design, configuration, and optimization. LoRaWAN, IoT systems, infrastructure.",
-    features: ["LAN/WAN Design", "IoT Solutions", "LoRaWAN", "Server Config", "Cloud Infrastructure"],
-    price: "$50-100/hr"
-  },
-  {
-    icon: Database,
-    title: "Data Systems & Analytics",
-    description: "Database architecture, Power BI dashboards, data collection systems, and strategic analytics.",
-    features: ["SQL/PostgreSQL", "Power BI", "Data Collection", "DHIS2", "Excel Analytics"],
-    price: "$40-80/hr"
-  },
+const engagementPaths = [
   {
     icon: TrendingUp,
-    title: "Digital Transformation",
-    description: "Strategic technology consulting aligning digital investments with business outcomes and growth.",
-    features: ["Strategy Design", "Process Optimization", "Tech Roadmaps", "Change Management"],
+    title: "Digital Transformation Consulting",
+    subtitle: "For organizations ready to modernize",
+    idealClient: "NGOs, enterprises, and government agencies seeking to digitize operations and improve efficiency through technology.",
+    problemsSolved: [
+      "Manual processes consuming staff time",
+      "Data silos preventing informed decisions",
+      "Legacy systems limiting growth",
+      "Lack of real-time operational visibility"
+    ],
+    outcomes: [
+      "40-80% reduction in processing time",
+      "Unified data platform for decision-making",
+      "Scalable systems that grow with the organization",
+      "Measurable ROI within 6 months"
+    ],
     price: "Custom Quote",
     highlight: true
   },
   {
-    icon: Briefcase,
-    title: "Project Management",
-    description: "End-to-end project delivery, stakeholder management, and team leadership for technology initiatives.",
-    features: ["Agile/Scrum", "Stakeholder Management", "Risk Management", "Team Leadership"],
-    price: "$50-100/hr"
-  },
-  {
-    icon: Users,
-    title: "MEL Systems & Monitoring",
-    description: "Results-based frameworks, indicator design, and monitoring dashboards for development programs.",
-    features: ["Indicator Design", "Dashboards", "Data Quality", "Reporting", "Learning Systems"],
-    price: "Project-based"
+    icon: Code,
+    title: "Custom Software Development",
+    subtitle: "For businesses needing tailored solutions",
+    idealClient: "Companies and organizations requiring bespoke software platforms, dashboards, or automation systems built to their exact specifications.",
+    problemsSolved: [
+      "Off-the-shelf software not fitting workflows",
+      "Multiple disconnected tools creating friction",
+      "No central system for operations",
+      "Technical debt from poor past decisions"
+    ],
+    outcomes: [
+      "Purpose-built platform aligned to business logic",
+      "API-first architecture for future integrations",
+      "Modern tech stack with 5+ year lifespan",
+      "Full documentation and knowledge transfer"
+    ],
+    price: "$60-120/hr",
+    highlight: true
   },
   {
     icon: Lightbulb,
-    title: "Entrepreneurship & Consulting",
-    description: "Technology business strategy, market analysis, product development, and growth planning.",
-    features: ["Market Analysis", "Product Strategy", "Business Planning", "Growth Hacking"],
-    price: "Custom Quote"
-  },
-  {
-    icon: Code,
-    title: "Cloud & DevOps",
-    description: "CI/CD pipelines, cloud deployment, DNS management, and server administration.",
-    features: ["CI/CD", "Cloud Deploy", "Docker", "DNS/SSL", "Monitoring"],
-    price: "$40-80/hr"
+    title: "Technology Strategy Advisory",
+    subtitle: "For leaders making big technology decisions",
+    idealClient: "Executives, founders, and boards evaluating technology investments, vendor selection, or digital transformation roadmaps.",
+    problemsSolved: [
+      "Uncertainty about which technology to adopt",
+      "Vendors overselling capabilities",
+      "No clear technology roadmap",
+      "Risk of expensive misinvestment"
+    ],
+    outcomes: [
+      "Evidence-based technology recommendations",
+      "3-5 year technology roadmap with milestones",
+      "Vendor evaluation framework",
+      "Risk mitigation strategy"
+    ],
+    price: "$80-150/hr"
   }
 ];
 
 const benefits = [
-  "7+ years ICT & MEL expertise",
-  "Proven track record with NGOs & enterprises",
-  "Full-stack technical capabilities",
-  "Real-time project support & mentoring",
-  "Data-driven solution design",
-  "Scalable & maintainable systems"
+  "Systems architect with 7+ years enterprise experience",
+  "Proven track record: 82% engagement increases, 99.9% uptime",
+  "Full-stack capabilities from strategy to deployment",
+  "Emerging markets expertise: Africa-focused solutions",
+  "Entrepreneur who understands business, not just code",
+  "Measurable outcomes, not just deliverables"
 ];
 
 const engagementTypes = [
-  { type: "Project-based", desc: "1-3 months", icon: Briefcase },
-  { type: "Part-time", desc: "10-20 hrs/week", icon: Clock },
-  { type: "Full-time", desc: "Fulltime role", icon: Users },
+  { type: "Advisory Retainer", desc: "Monthly strategic support", icon: Lightbulb },
+  { type: "Project Delivery", desc: "Fixed-scope engagement", icon: Briefcase },
+  { type: "Fractional CTO", desc: "Ongoing leadership", icon: Users },
 ];
 
 export default function HireMe() {
@@ -170,7 +171,7 @@ export default function HireMe() {
           </motion.div>
         </div>
 
-        {/* Services Overview */}
+        {/* Work With Me - Client Conversion System */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -178,35 +179,55 @@ export default function HireMe() {
           className="mb-20"
         >
           <div className="text-center space-y-4 mb-12">
-            <h2 className="text-4xl font-bold text-white uppercase">Services</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">What I can help you with</p>
+            <span className="text-[10px] font-mono text-primary uppercase tracking-widest">02 // ENGAGEMENT MODELS</span>
+            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Work With Me</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Three proven engagement paths designed for different organizational needs.
+            </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, index) => {
-              const Icon = service.icon;
+          <div className="grid md:grid-cols-3 gap-6">
+            {engagementPaths.map((path, index) => {
+              const Icon = path.icon;
               return (
                 <motion.div
-                  key={service.title}
+                  key={path.title}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + index * 0.1 }}
                 >
-                  <Card className="h-full bg-card/50 border-border/50 hover:border-primary/50 transition-all group">
+                  <Card className={`h-full bg-card/50 border-border/50 hover:border-primary/50 transition-all group ${path.highlight ? 'border-primary/30 bg-primary/5' : ''}`}>
                     <CardHeader>
                       <Icon className="w-8 h-8 text-primary mb-3 group-hover:scale-110 transition-transform" />
-                      <CardTitle className="text-lg text-white">{service.title}</CardTitle>
+                      <CardTitle className="text-lg text-white">{path.title}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{path.subtitle}</p>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground">{service.description}</p>
-                      {service.features && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {service.features.map((feature) => (
-                            <Badge key={feature} variant="outline" className="text-[10px] font-mono">{feature}</Badge>
+                      <div className="p-3 bg-white/5 rounded">
+                        <p className="text-[10px] font-mono text-primary uppercase mb-1">Ideal Client</p>
+                        <p className="text-sm text-muted-foreground">{path.idealClient}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-mono text-red-400 uppercase mb-2">Problems Solved</p>
+                        <ul className="space-y-1">
+                          {path.problemsSolved.map((p) => (
+                            <li key={p} className="text-xs text-muted-foreground flex items-start gap-2">
+                              <span className="text-red-400 mt-0.5">-</span>{p}
+                            </li>
                           ))}
-                        </div>
-                      )}
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-mono text-emerald-400 uppercase mb-2">Expected Outcomes</p>
+                        <ul className="space-y-1">
+                          {path.outcomes.map((o) => (
+                            <li key={o} className="text-xs text-muted-foreground flex items-start gap-2">
+                              <span className="text-emerald-400 mt-0.5">+</span>{o}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                       <div className="pt-2 border-t border-border/30">
-                        <p className="text-primary font-mono text-sm font-bold">{service.price}</p>
+                        <p className="text-primary font-mono text-sm font-bold">{path.price}</p>
                       </div>
                     </CardContent>
                   </Card>

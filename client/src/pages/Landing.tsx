@@ -118,23 +118,23 @@ export default function Landing() {
               <motion.div variants={itemVariants} className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full">
                   <Zap className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-mono text-primary font-bold">FULL-STACK INNOVATOR</span>
+                  <span className="text-sm font-mono text-primary font-bold">SYSTEMS ARCHITECT</span>
                 </div>
-                
+
                 <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-tight tracking-tighter">
-                  I Design & Build{" "}
+                  Systems Architect{" "}
                   <span className="bg-gradient-to-r from-primary via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                    Scalable Digital Systems
+                    Building Digital Infrastructure
                   </span>
                   <br />
-                  That{" "}
+                  For{" "}
                   <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-primary bg-clip-text text-transparent">
-                    Solve Real Problems
+                    Emerging Markets
                   </span>
                 </h1>
 
                 <p className="text-lg text-muted-foreground leading-relaxed max-w-lg">
-                  Senior full-stack engineer, systems architect, and technology consultant. 7+ years designing and deploying enterprise-grade solutions for organizations across Sub-Saharan Africa.
+                  Software engineer and technology consultant transforming business operations through scalable digital systems. 7+ years designing enterprise platforms that drive measurable outcomes across Sub-Saharan Africa.
                 </p>
               </motion.div>
 
