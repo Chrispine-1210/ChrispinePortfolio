@@ -55,8 +55,9 @@ export default function PortfolioAdvanced() {
     <div className="min-h-screen pt-16">
       <div className="bg-gradient-to-br from-background via-background to-accent/5 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h1 className="text-5xl sm:text-6xl font-bold text-foreground">
-            My Portfolio
+          <span className="text-[10px] font-mono text-primary uppercase tracking-widest">SYSTEM_NODE // CASE_STUDIES</span>
+          <h1 className="text-5xl sm:text-6xl font-black text-foreground uppercase tracking-tighter">
+            Case Studies
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Explore my work across MEL systems, ICT infrastructure, hardware engineering, and data analytics.

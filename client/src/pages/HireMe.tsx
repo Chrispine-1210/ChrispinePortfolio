@@ -103,14 +103,21 @@ export default function HireMe() {
           className="text-center space-y-6 mb-16"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 text-primary text-sm font-mono">
-            SPECIALIST_ENGAGEMENT_SYSTEM
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            ACCEPTING NEW ENGAGEMENTS — 2025
           </div>
           <h1 className="text-5xl sm:text-7xl font-black text-white uppercase tracking-tighter">
-            Let's Build <span className="text-primary">Together</span>
+            Engage a <span className="text-primary">Systems</span><br />Architect
           </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-mono">
-            Available for consulting, development, or full-time roles. Flexible engagement options for your project needs.
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Enterprise technology consulting for organizations that need digital systems built right the first time.
+            Project-based, retainer, or advisory engagements.
           </p>
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            {["Project-Based", "Retainer", "Advisory", "Fractional CTO"].map((t) => (
+              <span key={t} className="text-[10px] font-mono px-3 py-1.5 border border-primary/30 text-primary uppercase">{t}</span>
+            ))}
+          </div>
         </motion.div>
 
         {/* CTA Cards */}
