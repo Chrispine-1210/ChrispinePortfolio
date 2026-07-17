@@ -113,7 +113,7 @@ export default function Landing() {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
-    document.title = "Welcome | Chrispine Mndala";
+    document.title = "Chrispine Mndala | Systems Architect & Digital Transformation Consultant";
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -576,10 +576,10 @@ export default function Landing() {
             {[
               { title: "Business-First Engineering", desc: "Every technical decision is evaluated against business outcomes. I don't build features — I build solutions that generate measurable ROI." },
               { title: "Scalable Architecture Thinking", desc: "Systems designed to grow with you. Modular, well-documented, and built with future requirements in mind from day one." },
-              { title: "Emerging-Market Expertise", desc: "Deep experience deploying production systems in bandwidth-constrained, power-unreliable environments across 15+ African countries." },
+              { title: "Emerging-Market Expertise", desc: "Production deployments in Malawi, Zambia, and Zimbabwe. Systems designed for low-bandwidth, mobile-first, and intermittent-power environments." },
               { title: "End-to-End Delivery", desc: "From strategy to deployment. One point of contact across systems architecture, development, QA, infrastructure, and launch." },
               { title: "Technical + Business Fluency", desc: "Rare combination: engineering precision with strategic business thinking. Comfortable in boardrooms and code editors." },
-              { title: "Proven Track Record", desc: "82% engagement lifts. 99.9% uptime. 40-80% processing time reductions. Real results from delivered systems, not promises." },
+              { title: "Proven Track Record", desc: "Mtendere: 82% engagement increase. MEL system: 3 countries, 95% data accuracy. IoT gateway: 99.9% uptime. Verified results, not estimates." },
             ].map((item, idx) => (
               <motion.div key={idx} variants={itemVariants}>
                 <Card className="bg-card/50 border-white/10 h-full hover-elevate">

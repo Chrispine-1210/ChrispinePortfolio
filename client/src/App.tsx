@@ -28,6 +28,8 @@ import NewsletterManagement from "@/pages/NewsletterManagement";
 import ExternalPostsPage from "@/pages/ExternalPosts";
 import SoftwareConsultingMalawi from "@/pages/SoftwareConsultingMalawi";
 import DigitalTransformationAfrica from "@/pages/DigitalTransformationAfrica";
+import EducationTechnologySolutions from "@/pages/EducationTechnologySolutions";
+import CustomSoftwareDevelopment from "@/pages/CustomSoftwareDevelopment";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useCustomAuth();
@@ -71,6 +73,8 @@ function Router() {
           <Route path="/projects" component={Portfolio} />
           <Route path="/software-consulting-malawi" component={SoftwareConsultingMalawi} />
           <Route path="/digital-transformation-africa" component={DigitalTransformationAfrica} />
+          <Route path="/education-technology-solutions" component={EducationTechnologySolutions} />
+          <Route path="/custom-software-development" component={CustomSoftwareDevelopment} />
           <Route component={NotFound} />
         </Switch>
       </main>

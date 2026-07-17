@@ -15,7 +15,8 @@ const footerLinks: Record<string, Array<{ label: string; path: string; external?
     { label: "Book a Discovery Call", path: "/hire" },
     { label: "Software Consulting — Malawi", path: "/software-consulting-malawi" },
     { label: "Digital Transformation — Africa", path: "/digital-transformation-africa" },
-    { label: "View Case Studies", path: "/portfolio" },
+    { label: "EdTech Solutions", path: "/education-technology-solutions" },
+    { label: "Custom Software Development", path: "/custom-software-development" },
   ],
   connect: [
     { label: "LinkedIn Profile", path: "https://www.linkedin.com/in/chrispine-mndala-11a951206", external: true },
