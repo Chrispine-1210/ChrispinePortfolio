@@ -30,6 +30,7 @@ import SoftwareConsultingMalawi from "@/pages/SoftwareConsultingMalawi";
 import DigitalTransformationAfrica from "@/pages/DigitalTransformationAfrica";
 import EducationTechnologySolutions from "@/pages/EducationTechnologySolutions";
 import CustomSoftwareDevelopment from "@/pages/CustomSoftwareDevelopment";
+import GitHubProfile from "@/pages/GitHubProfile";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useCustomAuth();
@@ -75,6 +76,7 @@ function Router() {
           <Route path="/digital-transformation-africa" component={DigitalTransformationAfrica} />
           <Route path="/education-technology-solutions" component={EducationTechnologySolutions} />
           <Route path="/custom-software-development" component={CustomSoftwareDevelopment} />
+          <Route path="/github" component={GitHubProfile} />
           <Route component={NotFound} />
         </Switch>
       </main>
