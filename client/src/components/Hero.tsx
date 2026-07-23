@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { ArrowRight, Download, Terminal, Cpu, Globe } from "lucide-react";
 import { motion } from "framer-motion";
 import heroImage from "@assets/generated_images/Professional_headshot_portrait_eb0606b5.png";
+import { BinaryProfileCanvas } from "./BinaryProfileCanvas";
 
 const specializations = [
   "ICT Systems Strategist",
@@ -45,6 +46,9 @@ export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center bg-[#0a0c14] pt-16 overflow-hidden">
       <div className="tech-grid-bg opacity-30" />
+      <div className="absolute inset-y-16 right-0 w-full lg:w-[58%] opacity-50 [mask-image:linear-gradient(to_left,black,transparent)]">
+        <BinaryProfileCanvas />
+      </div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -119,6 +123,9 @@ export function Hero() {
             className="relative lg:block hidden"
           >
             <div className="relative tech-card p-2 group">
+              <div className="absolute left-4 top-4 z-20 border border-primary/30 bg-[#0a0c14]/90 px-3 py-2 font-mono text-[10px] tracking-[0.2em] text-primary backdrop-blur-md">
+                PROFESSIONAL_PROFILE // V1.0
+              </div>
               <div className="absolute -top-4 -left-4 w-20 h-20 border-t-2 border-l-2 border-primary/50" />
               <div className="absolute -bottom-4 -right-4 w-20 h-20 border-b-2 border-r-2 border-primary/50" />
               <img
