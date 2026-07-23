@@ -51,7 +51,7 @@ const fallbackPortfolioProjects = seedPortfolioProjects.map((project, index) => 
 const hasDatabase = () => Boolean(process.env.DATABASE_URL);
 
 // Note: Middleware utilities created but router uses standard patterns for now
-// const { sendResponse, sendError, ApiError, asyncHandler, requirePremium } from "./middleware";
+// const { sendResponse, sendError, ApiError, asyncHandler, requirePremium } from "./middleware.js";
 // These will be integrated in next phase
 
 const router = Router();

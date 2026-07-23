@@ -1,7 +1,7 @@
-import { IStorage } from "../storage";
-import { InsertBlogPost, BlogPost } from "../../shared/schema";
-import { BlogPostEntity } from "../entities/BlogPostEntity";
-import { ValidationError, NotFoundError } from "../errors/AppError";
+import { IStorage } from "../storage.js";
+import { InsertBlogPost, BlogPost } from "../../shared/schema.js";
+import { BlogPostEntity } from "../entities/BlogPostEntity.js";
+import { ValidationError, NotFoundError } from "../errors/AppError.js";
 
 /**
  * BlogService - Business logic layer for blog operations

@@ -1,5 +1,5 @@
-import { IStorage } from "../storage";
-import { PortfolioProject, InsertPortfolioProject } from "../../shared/schema";
+import { IStorage } from "../storage.js";
+import { PortfolioProject, InsertPortfolioProject } from "../../shared/schema.js";
 
 /**
  * PortfolioRepository - Data access layer for portfolio projects
