@@ -18,17 +18,17 @@ export class BlogPostEntity extends BaseEntity {
   publishedAt?: Date;
 
   constructor(data: BlogPost) {
-    super(data.id, data.createdAt, data.updatedAt);
+    super(data.id, data.createdAt ?? new Date(), data.updatedAt ?? new Date());
     this.title = data.title;
     this.slug = data.slug;
     this.excerpt = data.excerpt;
     this.content = data.content;
     this.category = data.category;
     this.tags = data.tags || [];
-    this.isPremium = data.isPremium;
-    this.isPublished = data.isPublished;
-    this.readTimeMinutes = data.readTimeMinutes;
-    this.publishedAt = data.publishedAt;
+    this.isPremium = data.isPremium ?? false;
+    this.isPublished = data.isPublished ?? false;
+    this.readTimeMinutes = data.readTimeMinutes ?? 5;
+    this.publishedAt = data.publishedAt ?? undefined;
   }
 
   /**

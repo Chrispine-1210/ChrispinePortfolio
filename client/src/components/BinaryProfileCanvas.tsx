@@ -55,7 +55,7 @@ export function BinaryProfileCanvas() {
       context.textBaseline = "middle";
 
       profileMatrix.forEach((row, rowIndex) => {
-        [...row].forEach((bit, columnIndex) => {
+        row.split("").forEach((bit, columnIndex) => {
           const distance = Math.abs(columnIndex - scanColumn);
           const active = distance < 3;
           const alpha = bit === "1" ? (active ? 0.82 : 0.28) : (active ? 0.3 : 0.08);

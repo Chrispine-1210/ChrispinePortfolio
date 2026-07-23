@@ -7,6 +7,8 @@ import { setupFilteringRoutes } from "./advanced-filtering.js";
 import { setupSeedTriggerRoutes } from "./seed-trigger.js";
 import { securityHeaders, requestLogger } from "./middleware.js";
 import routes from "./routes.js";
+import { env } from "./env.js";
+import { setupDatabaseAuthRoutes } from "./security/database-auth-routes.js";
 
 export function createApp() {
   const app = express();
@@ -25,7 +27,11 @@ export function createApp() {
   app.use(analyticsMiddleware);
 
   const customAuthRouter = express.Router();
-  setupAuthRoutes(customAuthRouter);
+  if (env.ADMIN_AUTH_MODE === "database") {
+    setupDatabaseAuthRoutes(customAuthRouter);
+  } else {
+    setupAuthRoutes(customAuthRouter);
+  }
   app.use(customAuthRouter);
 
   const analyticsRouter = express.Router();

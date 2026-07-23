@@ -1,6 +1,6 @@
 import { IStorage } from "../storage";
 import { InsertNewsletterSubscriber, NewsletterSubscriber } from "../../shared/schema";
-import { ValidationError, ConflictError } from "../errors/AppError";
+import { ValidationError, ConflictError, NotFoundError } from "../errors/AppError";
 
 /**
  * NewsletterService - Business logic for newsletter subscriptions
@@ -25,7 +25,9 @@ export class NewsletterService {
         throw new ConflictError("Email is already subscribed");
       }
       // Reactivate subscription
-      return this.storage.updateNewsletterSubscriberStatus(data.email, true);
+      const updated = await this.storage.updateNewsletterSubscriberStatus(data.email, true);
+      if (!updated) throw new NotFoundError("NewsletterSubscriber", data.email);
+      return updated;
     }
 
     return this.storage.createNewsletterSubscriber(data);

@@ -166,7 +166,7 @@ export function ContactForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Project Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                             <FormControl>
                               <SelectTrigger data-testid="select-project-type">
                                 <SelectValue placeholder="Select type" />
@@ -190,7 +190,7 @@ export function ContactForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Preferred Contact Method</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                             <FormControl>
                               <SelectTrigger data-testid="select-preferred-contact">
                                 <SelectValue placeholder="Select method" />

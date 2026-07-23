@@ -3,16 +3,29 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Activity, TrendingUp, AlertCircle } from "lucide-react";
 
+interface AnalyticsStats {
+  totalRequests: number;
+  avgResponseTime: number;
+  errorRate: string;
+  errorCount: number;
+}
+
+interface AnalyticsEvent {
+  route: string;
+  statusCode: number;
+  duration: number;
+}
+
 export default function Analytics() {
   useEffect(() => {
     document.title = "Analytics | Chrispine Mndala";
   }, []);
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<AnalyticsStats>({
     queryKey: ["/api/analytics/stats"],
   });
 
-  const { data: recentEvents } = useQuery({
+  const { data: recentEvents } = useQuery<AnalyticsEvent[]>({
     queryKey: ["/api/analytics/events"],
   });
 
@@ -79,7 +92,7 @@ export default function Analytics() {
           <CardContent>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {recentEvents && recentEvents.length > 0 ? (
-                recentEvents.map((event: any, idx: number) => (
+                recentEvents.map((event, idx) => (
                   <div key={idx} className="text-sm p-2 bg-background/50 rounded border border-border/30">
                     <div className="flex justify-between">
                       <span className="font-mono text-muted-foreground">{event.route}</span>

@@ -30,11 +30,11 @@ export class QueryCache {
   }
 
   invalidate(pattern: string) {
-    for (const key of this.cache.keys()) {
+    this.cache.forEach((_entry, key) => {
       if (key.includes(pattern)) {
         this.cache.delete(key);
       }
-    }
+    });
   }
 
   clear() {

@@ -64,7 +64,9 @@ export class PortfolioService {
       throw new NotFoundError("PortfolioProject", id);
     }
 
-    return this.storage.updateProject(id, data);
+    const updated = await this.storage.updateProject(id, data);
+    if (!updated) throw new NotFoundError("PortfolioProject", id);
+    return updated;
   }
 
   /**
