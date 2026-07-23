@@ -1,5 +1,5 @@
 import { IStorage } from "../storage";
-import { InsertBlogPost, BlogPost } from "@shared/schema";
+import { InsertBlogPost, BlogPost } from "../../shared/schema";
 import { BlogPostEntity } from "../entities/BlogPostEntity";
 import { ValidationError, NotFoundError } from "../errors/AppError";
 

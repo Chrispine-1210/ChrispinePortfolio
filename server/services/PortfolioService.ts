@@ -1,5 +1,5 @@
 import { IStorage } from "../storage";
-import { InsertPortfolioProject, PortfolioProject } from "@shared/schema";
+import { InsertPortfolioProject, PortfolioProject } from "../../shared/schema";
 import { ValidationError, NotFoundError } from "../errors/AppError";
 
 /**

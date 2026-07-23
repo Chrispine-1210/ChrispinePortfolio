@@ -9,7 +9,7 @@ import {
   insertBlogCommentSchema,
   insertEmailTemplateSchema,
   insertExternalPostSchema,
-} from "@shared/schema";
+} from "../shared/schema";
 import Stripe from "stripe";
 
 // Note: Middleware utilities created but router uses standard patterns for now

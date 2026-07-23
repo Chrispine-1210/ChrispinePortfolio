@@ -1,5 +1,5 @@
 import { IStorage } from "../storage";
-import { BlogPost, InsertBlogPost } from "@shared/schema";
+import { BlogPost, InsertBlogPost } from "../../shared/schema";
 
 /**
  * BlogRepository - Data access abstraction layer

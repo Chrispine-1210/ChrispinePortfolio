@@ -1,5 +1,5 @@
 import { IStorage } from "../storage";
-import { InsertNewsletterSubscriber, NewsletterSubscriber } from "@shared/schema";
+import { InsertNewsletterSubscriber, NewsletterSubscriber } from "../../shared/schema";
 import { ValidationError, ConflictError } from "../errors/AppError";
 
 /**

@@ -1,5 +1,5 @@
 import { BaseEntity } from "./BaseEntity";
-import { BlogPost } from "@shared/schema";
+import { BlogPost } from "../../shared/schema";
 
 /**
  * BlogPost Domain Entity
