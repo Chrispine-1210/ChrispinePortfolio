@@ -11,6 +11,37 @@ import {
   insertExternalPostSchema,
 } from "../shared/schema.js";
 import Stripe from "stripe";
+import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
+
+const fallbackBlogPosts = seedBlogPosts.map((post, index) => ({
+  ...post,
+  id: `seed-blog-${index + 1}`,
+  featuredImage: null,
+  isPremium: false,
+  isPublished: true,
+  publishedAt: new Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}));
+
+const fallbackPortfolioProjects = seedPortfolioProjects.map((project, index) => ({
+  ...project,
+  id: `seed-project-${index + 1}`,
+  challenge: project.challenge ?? null,
+  solution: project.solution ?? null,
+  outcome: project.outcome ?? null,
+  techStack: project.techStack ?? [],
+  featuredImage: null,
+  images: project.images ?? [],
+  liveUrl: project.liveUrl ?? null,
+  githubUrl: null,
+  featured: project.featured ?? false,
+  order: project.order ?? index,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}));
+
+const hasDatabase = () => Boolean(process.env.DATABASE_URL);
 
 // Note: Middleware utilities created but router uses standard patterns for now
 // const { sendResponse, sendError, ApiError, asyncHandler, requirePremium } from "./middleware";
@@ -23,7 +54,9 @@ router.get("/api/blog", async (req: Request, res: Response) => {
   try {
     // Set cache headers for better performance
     res.setHeader("Cache-Control", "public, max-age=300"); // 5 min cache
-    let posts = await storage.getPublishedBlogPosts();
+    let posts = hasDatabase()
+      ? await storage.getPublishedBlogPosts()
+      : fallbackBlogPosts;
     
     // Apply filters
     const { category, search, premium } = req.query;
@@ -69,7 +102,9 @@ router.get("/api/blog", async (req: Request, res: Response) => {
 router.get("/api/blog/recent", async (req: Request, res: Response) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
-    let posts = await storage.getRecentBlogPosts(limit);
+    let posts = hasDatabase()
+      ? await storage.getRecentBlogPosts(limit)
+      : fallbackBlogPosts.slice(0, limit);
     
     // For premium posts, omit content entirely (use excerpt for preview)
     const user = (req as any).user;
@@ -92,7 +127,9 @@ router.get("/api/blog/recent", async (req: Request, res: Response) => {
 
 router.get("/api/blog/:slug", async (req: Request, res: Response) => {
   try {
-    const post = await storage.getBlogPostBySlug(req.params.slug);
+    const post = hasDatabase()
+      ? await storage.getBlogPostBySlug(req.params.slug)
+      : fallbackBlogPosts.find((item) => item.slug === req.params.slug);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -160,7 +197,9 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
   try {
     // Set cache headers for portfolio
     res.setHeader("Cache-Control", "public, max-age=300");
-    let projects = await storage.getAllProjects();
+    let projects = hasDatabase()
+      ? await storage.getAllProjects()
+      : fallbackPortfolioProjects;
     
     // Apply filters
     const { category, search, featured } = req.query;
@@ -193,7 +232,9 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
 
 router.get("/api/portfolio/featured", async (req: Request, res: Response) => {
   try {
-    const projects = await storage.getFeaturedProjects();
+    const projects = hasDatabase()
+      ? await storage.getFeaturedProjects()
+      : fallbackPortfolioProjects.filter((project) => project.featured);
     res.json(projects);
   } catch (error) {
     console.error("Error fetching featured projects:", error);
@@ -203,7 +244,9 @@ router.get("/api/portfolio/featured", async (req: Request, res: Response) => {
 
 router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
   try {
-    const project = await storage.getProjectBySlug(req.params.slug);
+    const project = hasDatabase()
+      ? await storage.getProjectBySlug(req.params.slug)
+      : fallbackPortfolioProjects.find((item) => item.slug === req.params.slug);
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
