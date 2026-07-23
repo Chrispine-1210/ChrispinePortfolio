@@ -34,15 +34,15 @@ export function setSEO(title: string, description: string, path: string = "/", i
 
   updateOGTag('og:title', title);
   updateOGTag('og:description', description);
-  updateOGTag('og:url', `https://chrispine-portfolio.replit.dev${path}`);
+  updateOGTag('og:url', `${window.location.origin}${path}`);
   updateOGTag('og:type', 'website');
-  updateOGTag('og:image', image || 'https://chrispine-portfolio.replit.dev/favicon.png');
+  updateOGTag('og:image', image || `${window.location.origin}/favicon.png`);
 
   // Twitter Card tags
   updateMetaTag('twitter:card', 'summary_large_image');
   updateMetaTag('twitter:title', title);
   updateMetaTag('twitter:description', description);
-  updateMetaTag('twitter:image', image || 'https://chrispine-portfolio.replit.dev/favicon.png');
+  updateMetaTag('twitter:image', image || `${window.location.origin}/favicon.png`);
 
   // Canonical URL
   let canonical = document.querySelector('link[rel="canonical"]');
@@ -51,5 +51,5 @@ export function setSEO(title: string, description: string, path: string = "/", i
     canonical.setAttribute('rel', 'canonical');
     document.head.appendChild(canonical);
   }
-  canonical.setAttribute('href', `https://chrispine-portfolio.replit.dev${path}`);
+  canonical.setAttribute('href', `${window.location.origin}${path}`);
 }

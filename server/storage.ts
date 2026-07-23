@@ -35,7 +35,6 @@ const db = drizzle(pool);
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
-  getUserByReplitSub(sub: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(data: InsertUser): Promise<User>;
   updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined>;
@@ -99,11 +98,6 @@ export class DatabaseStorage implements IStorage {
   // Users
   async getUser(id: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return result[0];
-  }
-
-  async getUserByReplitSub(sub: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.replitSub, sub)).limit(1);
     return result[0];
   }
 

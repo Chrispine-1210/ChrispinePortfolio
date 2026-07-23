@@ -55,10 +55,10 @@
 ## Architecture Summary
 - **Backend**: Express with Drizzle ORM, PostgreSQL, Stripe
 - **Frontend**: React 18, TypeScript, TanStack Query, Tailwind
-- **Auth**: Replit Auth (OpenID Connect)
+- **Auth**: built-in admin authentication
 - **Payments**: Stripe integration
 - **Database**: PostgreSQL with 9 tables
-- **Deployment**: Replit hosting
+- **Deployment**: platform-neutral hosting
 
 ## Performance Notes
 - 73 frontend components (well-organized)

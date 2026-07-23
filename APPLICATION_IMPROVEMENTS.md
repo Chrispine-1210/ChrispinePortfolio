@@ -19,7 +19,7 @@
 - Request logging
 
 ### Key Features Implemented
-✅ **Authentication**: Replit OpenID Connect integration
+✅ **Authentication**: built-in admin authentication integration
 ✅ **Blog System**: Markdown posts, categories, tags, comments, likes
 ✅ **Portfolio**: Projects with filters, detailed views
 ✅ **Premium Subscriptions**: Stripe integration ready
@@ -118,7 +118,7 @@
 - **Queries**: Type-safe with Drizzle ORM
 
 ### Authentication
-- **Method**: Replit Auth (OpenID Connect)
+- **Method**: built-in admin authentication
 - **Status**: ✅ Configured
 - **User Management**: Working
 - **Session Handling**: Implemented
@@ -156,7 +156,7 @@
 
 3. **Deployment**
    - Run `npm run build` to create production build
-   - Deploy to Replit production or custom domain
+   - Deploy to your production host or custom domain
    - Monitor deployment logs
 
 4. **Post-Launch**
@@ -182,11 +182,11 @@
 - PostgreSQL
 - Drizzle ORM
 - Stripe SDK
-- Replit Auth
+- admin authentication
 
 **Deployment**
 - Vite build system
-- Replit hosting
+- platform-neutral hosting
 - Neon PostgreSQL
 - Environment variables
 

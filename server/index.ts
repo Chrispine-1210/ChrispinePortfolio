@@ -1,5 +1,4 @@
 import express, { type Request, type Response, type NextFunction } from "express";
-import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { setupAuthRoutes } from "./custom-auth";
 import { analyticsMiddleware } from "./analytics";
 import { setupAnalyticsRoutes } from "./api-analytics";
@@ -10,23 +9,6 @@ import { securityHeaders, requestLogger } from "./middleware";
 import { logger } from "./logger";
 import routes from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-
-declare global {
-  namespace Express {
-    interface User {
-      claims: {
-        sub: string;
-        email?: string;
-        given_name?: string;
-        family_name?: string;
-        picture?: string;
-      };
-      access_token?: string;
-      refresh_token?: string;
-      expires_at?: number;
-    }
-  }
-}
 
 const app = express();
 
@@ -104,12 +86,6 @@ app.use((req, res, next) => {
 
   next();
 });
-
-// Setup Replit Auth (BEFORE registering other routes)
-(async () => {
-  await setupAuth(app);
-  registerAuthRoutes(app);
-})();
 
 // Serve static files from attached_assets
 app.use("/attached_assets", express.static("attached_assets"));
