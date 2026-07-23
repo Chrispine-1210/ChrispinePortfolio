@@ -34,7 +34,7 @@
 - ExternalPosts: Embedded content display
 
 ### Database Schema
-✅ Users (Replit Auth integration)
+✅ Users (admin authentication integration)
 ✅ Blog Posts (premium flag, tags, categories)
 ✅ Portfolio Projects (tech stack, images, links)
 ✅ Newsletter Subscribers (auto-unsub support)
@@ -44,7 +44,7 @@
 ✅ External Posts
 
 ### Features Delivered
-✅ Authentication (Replit Auth with OAuth)
+✅ Authentication (built-in admin authentication)
 ✅ Premium Subscriptions (Stripe integration)
 ✅ Newsletter System (template manager)
 ✅ Blog with Search & Categories
@@ -110,12 +110,12 @@
 - **Frontend**: React 18 + TypeScript
 - **Backend**: Express.js + Node.js
 - **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Replit Auth (OpenID Connect)
+- **Authentication**: built-in admin authentication
 - **Payments**: Stripe
 - **Styling**: Tailwind CSS + Shadcn UI
 - **State Management**: TanStack Query
 - **Routing**: Wouter
-- **Hosting**: Replit
+- **Hosting**: Platform-neutral
 
 ## 📝 Next Steps for User
 1. Configure Stripe keys in environment
@@ -134,7 +134,7 @@
 - client/src/components/Footer.tsx - Fixed & enhanced
 - shared/schema.ts - Database schemas
 - client/src/lib/* - New utilities (api, seo, validation)
-- replit.md - Complete documentation
+- project documentation
 
 ---
 

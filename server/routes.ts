@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { storage } from "./storage";
-import { isAuthenticated } from "./replit_integrations/auth";
+import { adminMiddleware } from "./custom-auth";
 import {
   insertBlogPostSchema,
   insertPortfolioProjectSchema,
@@ -17,29 +17,6 @@ import Stripe from "stripe";
 // These will be integrated in next phase
 
 const router = Router();
-
-// User profile routes
-router.get("/api/user/profile", isAuthenticated, (req: Request, res: Response) => {
-  res.json((req as any).user);
-});
-
-router.put("/api/user/profile", isAuthenticated, async (req: Request, res: Response) => {
-  try {
-    const data = req.body;
-    const userId = (req as any).user.claims.sub;
-    
-    const updatedUser = await storage.updateUser(userId, data);
-
-    if (updatedUser) {
-      res.json(updatedUser);
-    } else {
-      res.status(404).json({ message: "User not found" });
-    }
-  } catch (error: any) {
-    console.error("Error updating user profile:", error);
-    res.status(500).json({ message: "Failed to update profile" });
-  }
-});
 
 // Blog routes - with caching headers
 router.get("/api/blog", async (req: Request, res: Response) => {
@@ -325,18 +302,8 @@ router.get("/api/blog/:id/likes", async (req, res) => {
   const count = await storage.getBlogLikes(req.params.id);
   const user = (req as any).user;
   let isLiked = false;
-  if (user?.claims?.sub) {
-    const like = await storage.getUserBlogLike(req.params.id, user.claims.sub);
-    isLiked = !!like;
-  }
+  // Likes remain readable without requiring a platform-specific identity provider.
   res.json({ count, isLiked });
-});
-
-router.post("/api/blog/:id/likes/toggle", async (req, res) => {
-  const userId = (req as any).user.claims.sub;
-  await storage.toggleBlogLike(req.params.id, userId);
-  const count = await storage.getBlogLikes(req.params.id);
-  res.json({ count, isLiked: true }); // Client can refine state
 });
 
 router.get("/api/blog/:id/comments", async (req, res) => {
@@ -344,38 +311,8 @@ router.get("/api/blog/:id/comments", async (req, res) => {
   res.json(comments);
 });
 
-router.post("/api/blog/:id/comments", async (req, res) => {
-  try {
-    const userId = (req as any).user.claims.sub;
-    const data = insertBlogCommentSchema.parse({
-      ...req.body,
-      blogPostId: req.params.id,
-      userId,
-    });
-    const comment = await storage.createBlogComment(data);
-    res.json(comment);
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
-    }
-    res.status(500).json({ message: "Failed to post comment" });
-  }
-});
-
-router.delete("/api/blog/comments/:id", async (req, res) => {
-  const userId = (req as any).user.claims.sub;
-  await storage.deleteBlogComment(req.params.id, userId);
-  res.json({ success: true });
-});
-
 // Admin Routes
-router.get("/api/admin/stats", async (req, res) => {
-  const user = (req as any).user;
-  const dbUser = await storage.getUserByReplitSub(user.claims.sub);
-  if (!dbUser?.isAdmin) {
-    return res.status(403).json({ message: "Admin access required" });
-  }
-
+router.get("/api/admin/stats", adminMiddleware, async (_req, res) => {
   const posts = await storage.getAllBlogPosts();
   const subscribers = await storage.getNewsletterSubscribers();
   const contacts = await storage.getAllContactRequests();
@@ -404,9 +341,6 @@ router.post("/api/create-payment-intent", async (req: Request, res: Response) =>
       currency: "usd",
       automatic_payment_methods: {
         enabled: true,
-      },
-      metadata: {
-        userId: (req as any).user.claims.sub.toString(),
       },
     });
 
