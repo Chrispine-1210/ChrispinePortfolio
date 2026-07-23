@@ -1,6 +1,6 @@
-import { IStorage } from "../storage";
-import { InsertPortfolioProject, PortfolioProject } from "../../shared/schema";
-import { ValidationError, NotFoundError } from "../errors/AppError";
+import { IStorage } from "../storage.js";
+import { InsertPortfolioProject, PortfolioProject } from "../../shared/schema.js";
+import { ValidationError, NotFoundError } from "../errors/AppError.js";
 
 /**
  * PortfolioService - Business logic for portfolio projects

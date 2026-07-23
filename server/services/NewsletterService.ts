@@ -1,6 +1,6 @@
-import { IStorage } from "../storage";
-import { InsertNewsletterSubscriber, NewsletterSubscriber } from "../../shared/schema";
-import { ValidationError, ConflictError, NotFoundError } from "../errors/AppError";
+import { IStorage } from "../storage.js";
+import { InsertNewsletterSubscriber, NewsletterSubscriber } from "../../shared/schema.js";
+import { ValidationError, ConflictError, NotFoundError } from "../errors/AppError.js";
 
 /**
  * NewsletterService - Business logic for newsletter subscriptions

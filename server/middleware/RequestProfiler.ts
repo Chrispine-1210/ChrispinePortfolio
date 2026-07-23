@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { logger } from "../utils/Logger";
+import { logger } from "../utils/Logger.js";
 
 /**
  * RequestProfiler - Middleware for tracking request performance
