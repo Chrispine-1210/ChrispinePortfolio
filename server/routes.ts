@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import { storage } from "./storage";
-import { adminMiddleware } from "./custom-auth";
+import { storage } from "./storage.js";
+import { adminMiddleware } from "./custom-auth.js";
 import {
   insertBlogPostSchema,
   insertPortfolioProjectSchema,
@@ -9,7 +9,7 @@ import {
   insertBlogCommentSchema,
   insertEmailTemplateSchema,
   insertExternalPostSchema,
-} from "../shared/schema";
+} from "../shared/schema.js";
 import Stripe from "stripe";
 
 // Note: Middleware utilities created but router uses standard patterns for now

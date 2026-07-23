@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
-import { storage } from "./storage";
-import { seedBlogPosts, seedPortfolioProjects } from "./seed-data";
-import { logger } from "./logger";
+import { storage } from "./storage.js";
+import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
+import { logger } from "./logger.js";
 
 export function setupSeedTriggerRoutes(router: Router) {
   // Admin-only endpoint to seed database with rich content

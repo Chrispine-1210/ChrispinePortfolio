@@ -1,12 +1,12 @@
 import express, { type Request, type Response, type NextFunction } from "express";
-import { setupAuthRoutes } from "./custom-auth";
-import { analyticsMiddleware } from "./analytics";
-import { setupAnalyticsRoutes } from "./api-analytics";
-import { setupSeedRoutes } from "./content-seeder";
-import { setupFilteringRoutes } from "./advanced-filtering";
-import { setupSeedTriggerRoutes } from "./seed-trigger";
-import { securityHeaders, requestLogger } from "./middleware";
-import routes from "./routes";
+import { setupAuthRoutes } from "./custom-auth.js";
+import { analyticsMiddleware } from "./analytics.js";
+import { setupAnalyticsRoutes } from "./api-analytics.js";
+import { setupSeedRoutes } from "./content-seeder.js";
+import { setupFilteringRoutes } from "./advanced-filtering.js";
+import { setupSeedTriggerRoutes } from "./seed-trigger.js";
+import { securityHeaders, requestLogger } from "./middleware.js";
+import routes from "./routes.js";
 
 export function createApp() {
   const app = express();
@@ -58,4 +58,3 @@ export function createApp() {
 }
 
 export const app = createApp();
-

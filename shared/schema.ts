@@ -14,7 +14,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Re-export auth models from models/auth.ts
-export * from "./models/auth";
+export * from "./models/auth.js";
 
 // Blog posts with performance indexes
 export const blogPosts = pgTable("blog_posts", {

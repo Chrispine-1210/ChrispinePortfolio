@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { seedBlogPosts, seedPortfolioProjects } from "./seed-data";
+import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
 
 export function setupSeedRoutes(router: Router) {
   // Get seed blog content for enriching database

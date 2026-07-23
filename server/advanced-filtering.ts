@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 
 export function setupFilteringRoutes(router: Router) {
   // Advanced blog search with pagination

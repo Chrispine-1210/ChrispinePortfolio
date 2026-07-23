@@ -25,7 +25,7 @@ import {
   type ExternalPost,
   type InsertEmailTemplate,
   type InsertExternalPost,
-} from "../shared/schema";
+} from "../shared/schema.js";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { eq, desc, and, or, like } from "drizzle-orm";
 

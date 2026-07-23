@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { analytics } from "./analytics";
+import { analytics } from "./analytics.js";
 
 export function setupAnalyticsRoutes(router: Router) {
   // Get current analytics stats
