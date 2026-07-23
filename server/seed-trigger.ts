@@ -2,17 +2,12 @@ import { Router, Request, Response } from "express";
 import { storage } from "./storage.js";
 import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
 import { logger } from "./logger.js";
+import { adminMiddleware } from "./custom-auth.js";
 
 export function setupSeedTriggerRoutes(router: Router) {
   // Admin-only endpoint to seed database with rich content
-  router.post("/api/admin/seed-database", async (req: Request, res: Response) => {
+  router.post("/api/admin/seed-database", adminMiddleware, async (req: Request, res: Response) => {
     try {
-      // Basic auth check - admin middleware would be better in production
-      const authHeader = req.headers.authorization;
-      if (!authHeader?.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
       const results = {
         blogsAdded: 0,
         projectsAdded: 0,

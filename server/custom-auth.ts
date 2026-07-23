@@ -1,7 +1,11 @@
 import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 
-const SECRET = process.env.AUTH_SECRET || "your-super-secret-key-change-in-prod";
+const isProduction = process.env.NODE_ENV === "production";
+const authConfigured = Boolean(
+  process.env.AUTH_SECRET && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD,
+);
+const SECRET = process.env.AUTH_SECRET || crypto.randomBytes(32).toString("hex");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@example.com";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
@@ -18,6 +22,8 @@ export function generateToken(email: string, isAdmin: boolean): string {
 
 // Verify token
 export function verifyToken(token: string): { email: string; isAdmin: boolean } | null {
+  if (isProduction && !authConfigured) return null;
+
   try {
     const [encoded, signature] = token.split(".");
     if (!encoded || !signature) return null;
@@ -83,6 +89,10 @@ export function setupAuthRoutes(router: any) {
   // Login
   router.post("/api/auth/login", (req: Request, res: Response) => {
     try {
+      if (isProduction && !authConfigured) {
+        return res.status(503).json({ message: "Admin authentication is not configured" });
+      }
+
       const { email, password } = req.body;
 
       if (email !== ADMIN_EMAIL) {
