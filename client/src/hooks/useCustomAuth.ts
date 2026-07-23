@@ -22,6 +22,7 @@ export function useCustomAuth() {
     mutationFn: async (credentials: { email: string; password: string }) => {
       const res = await fetch("/api/auth/login", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
@@ -52,7 +53,10 @@ export function useCustomAuth() {
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/auth/logout", { method: "POST" });
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Logout failed");
       return res.json();
     },

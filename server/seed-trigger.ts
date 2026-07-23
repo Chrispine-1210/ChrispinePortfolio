@@ -2,11 +2,14 @@ import { Router, Request, Response } from "express";
 import { storage } from "./storage.js";
 import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
 import { logger } from "./logger.js";
-import { adminMiddleware } from "./custom-auth.js";
+import { requireAdminPermission } from "./custom-auth.js";
+
+const manageSystemSettings = requireAdminPermission("security.settings.manage");
+const readContent = requireAdminPermission("content.read");
 
 export function setupSeedTriggerRoutes(router: Router) {
   // Admin-only endpoint to seed database with rich content
-  router.post("/api/admin/seed-database", adminMiddleware, async (req: Request, res: Response) => {
+  router.post("/api/admin/seed-database", manageSystemSettings, async (req: Request, res: Response) => {
     try {
       const results = {
         blogsAdded: 0,
@@ -62,7 +65,7 @@ export function setupSeedTriggerRoutes(router: Router) {
   });
 
   // Check seed status
-  router.get("/api/admin/seed-status", async (req: Request, res: Response) => {
+  router.get("/api/admin/seed-status", readContent, async (req: Request, res: Response) => {
     try {
       const blogs = await storage.getPublishedBlogPosts();
       const projects = await storage.getAllProjects();

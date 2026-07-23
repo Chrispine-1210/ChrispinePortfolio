@@ -45,8 +45,12 @@ export interface IStorage {
   getPublishedBlogPosts(): Promise<BlogPost[]>;
   getRecentBlogPosts(limit?: number): Promise<BlogPost[]>;
   getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  getPublishedBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
   createBlogPost(data: InsertBlogPost): Promise<BlogPost>;
-  updateBlogPost(id: string, data: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
+  updateBlogPost(
+    id: string,
+    data: Partial<InsertBlogPost> & { publishedAt?: Date | null },
+  ): Promise<BlogPost | undefined>;
   deleteBlogPost(id: string): Promise<void>;
 
   // Portfolio Projects
@@ -73,7 +77,7 @@ export interface IStorage {
   getBlogLikes(blogPostId: string): Promise<number>;
   getUserBlogLike(blogPostId: string, userId: string): Promise<BlogLike | undefined>;
   toggleBlogLike(blogPostId: string, userId: string): Promise<void>;
-  getBlogComments(blogPostId: string): Promise<(BlogComment & { user: User })[]>;
+  getBlogComments(blogPostId: string): Promise<(BlogComment & { user: PublicCommentUser })[]>;
   createBlogComment(data: any): Promise<BlogComment>;
   deleteBlogComment(id: string, userId: string): Promise<void>;
 
@@ -94,6 +98,11 @@ export interface IStorage {
   deleteExternalPost(id: string): Promise<void>;
 }
 
+export type PublicCommentUser = Pick<
+  User,
+  "id" | "firstName" | "lastName" | "profileImageUrl"
+>;
+
 export class DatabaseStorage implements IStorage {
   // Users
   async getUser(id: string): Promise<User | undefined> {
@@ -107,10 +116,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(data: InsertUser): Promise<User> {
-    const result = await db.insert(users).values({
-      ...data,
-      isAdmin: data.email === "chrispinemndala@gmail.com" // Set initial admin
-    }).returning();
+    const result = await db.insert(users).values(data).returning();
     return result[0];
   }
 
@@ -152,6 +158,15 @@ export class DatabaseStorage implements IStorage {
 
   async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
     const result = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async getPublishedBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const result = await db
+      .select()
+      .from(blogPosts)
+      .where(and(eq(blogPosts.slug, slug), eq(blogPosts.isPublished, true)))
+      .limit(1);
     return result[0];
   }
 
@@ -269,11 +284,16 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getBlogComments(blogPostId: string): Promise<(BlogComment & { user: User })[]> {
+  async getBlogComments(blogPostId: string): Promise<(BlogComment & { user: PublicCommentUser })[]> {
     const comments = await db
       .select({
         comment: blogComments,
-        user: users,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+        },
       })
       .from(blogComments)
       .innerJoin(users, eq(blogComments.userId, users.id))

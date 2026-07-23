@@ -73,10 +73,12 @@ export class BlogService {
     const entity = new BlogPostEntity(post);
     entity.publish();
 
-    return this.storage.updateBlogPost(id, {
+    const updated = await this.storage.updateBlogPost(id, {
       isPublished: true,
       publishedAt: entity.publishedAt,
     });
+    if (!updated) throw new NotFoundError("BlogPost", id);
+    return updated;
   }
 
   /**
@@ -92,7 +94,9 @@ export class BlogService {
     const entity = new BlogPostEntity(post);
     entity.unpublish();
 
-    return this.storage.updateBlogPost(id, { isPublished: false });
+    const updated = await this.storage.updateBlogPost(id, { isPublished: false });
+    if (!updated) throw new NotFoundError("BlogPost", id);
+    return updated;
   }
 
   /**

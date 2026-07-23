@@ -18,7 +18,7 @@ export default function PortfolioAdvanced() {
   }, []);
 
   // Fetch categories
-  const { data: categoriesData } = useQuery({
+  const { data: categoriesData } = useQuery<{ categories: string[] }>({
     queryKey: ["/api/categories/portfolio"],
   });
 
@@ -31,7 +31,16 @@ export default function PortfolioAdvanced() {
   ];
 
   // Fetch filtered projects
-  const { data: searchResults, isLoading } = useQuery({
+  const { data: searchResults, isLoading } = useQuery<{
+    data: PortfolioProject[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNextPage: boolean;
+    };
+  }>({
     queryKey: [
       "/api/portfolio/search",
       { q: searchQuery, category: selectedCategory, featured: showFeatured },

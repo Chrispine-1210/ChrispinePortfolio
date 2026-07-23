@@ -154,6 +154,7 @@ export function NewsletterForm({ variant = "inline" }: NewsletterFormProps) {
                         type="text"
                         placeholder="Your name (optional)"
                         {...field}
+                        value={field.value ?? ""}
                         data-testid="input-inline-newsletter-name"
                       />
                     </FormControl>

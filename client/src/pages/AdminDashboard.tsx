@@ -11,6 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { BarChart, Users, FileText, MessageSquare, Shield, LogOut, Plus, Edit, Trash2, Database } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import type { BlogPost } from "@shared/schema";
+
+interface SeedStatus {
+  totalBlogsSeeded: number;
+  totalProjectsSeeded: number;
+}
 
 export default function AdminDashboard() {
   const [, navigate] = useLocation();
@@ -75,21 +81,20 @@ export default function AdminDashboard() {
     queryKey: ["/api/admin/stats"],
   });
 
-  const { data: seedStatus } = useQuery({
+  const { data: seedStatus } = useQuery<SeedStatus>({
     queryKey: ["/api/admin/seed-status"],
   });
 
-  const { data: blogs, isLoading: blogsLoading } = useQuery({
+  const { data: blogs, isLoading: blogsLoading } = useQuery<BlogPost[]>({
     queryKey: ["/api/blog"],
   });
 
   const seedMutation = useMutation({
     mutationFn: async () => {
-      const token = localStorage.getItem("auth_token");
       const res = await fetch("/api/admin/seed-database", {
         method: "POST",
+        credentials: "include",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -116,6 +121,7 @@ export default function AdminDashboard() {
     mutationFn: async (data: any) => {
       const res = await fetch("/api/blog", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
@@ -132,7 +138,10 @@ export default function AdminDashboard() {
 
   const deleteBlogMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch(`/api/blog/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/blog/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to delete blog");
       return res.json();
     },

@@ -1,6 +1,13 @@
 import { Router, type Request, type Response } from "express";
 import { storage } from "./storage.js";
-import { adminMiddleware } from "./custom-auth.js";
+import { requireAdminPermission } from "./custom-auth.js";
+
+const createContent = requireAdminPermission("content.create");
+const updateContent = requireAdminPermission("content.update");
+const deleteContent = requireAdminPermission("content.delete");
+const managePortfolio = requireAdminPermission("portfolio.manage");
+const readContent = requireAdminPermission("content.read");
+const readAnalytics = requireAdminPermission("analytics.read");
 import {
   insertBlogPostSchema,
   insertPortfolioProjectSchema,
@@ -128,7 +135,7 @@ router.get("/api/blog/recent", async (req: Request, res: Response) => {
 router.get("/api/blog/:slug", async (req: Request, res: Response) => {
   try {
     const post = hasDatabase()
-      ? await storage.getBlogPostBySlug(req.params.slug)
+      ? await storage.getPublishedBlogPostBySlug(req.params.slug)
       : fallbackBlogPosts.find((item) => item.slug === req.params.slug);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -151,7 +158,7 @@ router.get("/api/blog/:slug", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/api/blog", async (req: Request, res: Response) => {
+router.post("/api/blog", createContent, async (req: Request, res: Response) => {
   try {
     const data = insertBlogPostSchema.parse(req.body);
     const post = await storage.createBlogPost(data);
@@ -165,7 +172,7 @@ router.post("/api/blog", async (req: Request, res: Response) => {
   }
 });
 
-router.put("/api/blog/:id", async (req: Request, res: Response) => {
+router.put("/api/blog/:id", updateContent, async (req: Request, res: Response) => {
   try {
     const data = insertBlogPostSchema.partial().parse(req.body);
     const post = await storage.updateBlogPost(req.params.id, data);
@@ -182,7 +189,7 @@ router.put("/api/blog/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.delete("/api/blog/:id", async (req: Request, res: Response) => {
+router.delete("/api/blog/:id", deleteContent, async (req: Request, res: Response) => {
   try {
     await storage.deleteBlogPost(req.params.id);
     res.json({ message: "Blog post deleted" });
@@ -257,7 +264,7 @@ router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/api/portfolio", async (req: Request, res: Response) => {
+router.post("/api/portfolio", managePortfolio, async (req: Request, res: Response) => {
   try {
     const data = insertPortfolioProjectSchema.parse(req.body);
     const project = await storage.createProject(data);
@@ -271,7 +278,7 @@ router.post("/api/portfolio", async (req: Request, res: Response) => {
   }
 });
 
-router.put("/api/portfolio/:id", async (req: Request, res: Response) => {
+router.put("/api/portfolio/:id", managePortfolio, async (req: Request, res: Response) => {
   try {
     const data = insertPortfolioProjectSchema.partial().parse(req.body);
     const project = await storage.updateProject(req.params.id, data);
@@ -288,7 +295,7 @@ router.put("/api/portfolio/:id", async (req: Request, res: Response) => {
   }
 });
 
-router.delete("/api/portfolio/:id", async (req: Request, res: Response) => {
+router.delete("/api/portfolio/:id", managePortfolio, async (req: Request, res: Response) => {
   try {
     await storage.deleteProject(req.params.id);
     res.json({ message: "Project deleted" });
@@ -355,7 +362,7 @@ router.get("/api/blog/:id/comments", async (req, res) => {
 });
 
 // Admin Routes
-router.get("/api/admin/stats", adminMiddleware, async (_req, res) => {
+router.get("/api/admin/stats", readAnalytics, async (_req, res) => {
   const posts = await storage.getAllBlogPosts();
   const subscribers = await storage.getNewsletterSubscribers();
   const contacts = await storage.getAllContactRequests();
@@ -395,7 +402,7 @@ router.post("/api/create-payment-intent", async (req: Request, res: Response) =>
 });
 
 // Email Templates routes
-router.get("/api/email-templates", async (req: Request, res: Response) => {
+router.get("/api/email-templates", readContent, async (req: Request, res: Response) => {
   try {
     const templates = await storage.getActiveEmailTemplates();
     res.json(templates);
@@ -405,7 +412,7 @@ router.get("/api/email-templates", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/api/email-templates", async (req: Request, res: Response) => {
+router.post("/api/email-templates", createContent, async (req: Request, res: Response) => {
   try {
     const data = insertEmailTemplateSchema.parse(req.body);
     const template = await storage.createEmailTemplate(data);

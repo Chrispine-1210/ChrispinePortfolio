@@ -9,6 +9,8 @@ import {
   varchar,
   boolean,
   integer,
+  primaryKey,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -25,9 +27,19 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false),
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
+  passwordHash: text("password_hash"),
+  status: varchar("status", { length: 24 }).notNull().default("active"),
+  emailVerifiedAt: timestamp("email_verified_at"),
+  lastLoginAt: timestamp("last_login_at"),
+  failedLoginAttempts: integer("failed_login_attempts").notNull().default(0),
+  lockedUntil: timestamp("locked_until"),
+  securityVersion: integer("security_version").notNull().default(1),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  emailIdx: uniqueIndex("users_email_idx").on(table.email),
+  statusIdx: index("users_status_idx").on(table.status),
+}));
 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -46,6 +58,141 @@ export const upsertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// Identity, authorization, session, and accountability foundation.
+export const roles = pgTable("roles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key", { length: 80 }).notNull().unique(),
+  name: varchar("name", { length: 120 }).notNull(),
+  description: text("description"),
+  isSystem: boolean("is_system").notNull().default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const permissions = pgTable("permissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key", { length: 120 }).notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const rolePermissions = pgTable("role_permissions", {
+  roleId: varchar("role_id")
+    .notNull()
+    .references(() => roles.id, { onDelete: "cascade" }),
+  permissionId: varchar("permission_id")
+    .notNull()
+    .references(() => permissions.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.roleId, table.permissionId] }),
+}));
+
+export const userRoles = pgTable("user_roles", {
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  roleId: varchar("role_id")
+    .notNull()
+    .references(() => roles.id, { onDelete: "cascade" }),
+  assignedBy: varchar("assigned_by").references(() => users.id, { onDelete: "set null" }),
+  assignedAt: timestamp("assigned_at").notNull().defaultNow(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.userId, table.roleId] }),
+  roleIdx: index("user_roles_role_idx").on(table.roleId),
+}));
+
+export const sessions = pgTable("sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: varchar("token_hash", { length: 64 }).notNull().unique(),
+  userSecurityVersion: integer("user_security_version").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  idleExpiresAt: timestamp("idle_expires_at").notNull(),
+  lastSeenAt: timestamp("last_seen_at").notNull().defaultNow(),
+  revokedAt: timestamp("revoked_at"),
+  revokedReason: text("revoked_reason"),
+  ipHash: varchar("ip_hash", { length: 64 }),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  userIdx: index("sessions_user_idx").on(table.userId),
+  expiryIdx: index("sessions_expiry_idx").on(table.expiresAt),
+  activeIdx: index("sessions_active_idx").on(table.userId, table.revokedAt),
+}));
+
+export const auditEvents = pgTable("audit_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  actorUserId: varchar("actor_user_id").references(() => users.id, { onDelete: "set null" }),
+  actorSessionId: varchar("actor_session_id").references(() => sessions.id, { onDelete: "set null" }),
+  action: varchar("action", { length: 160 }).notNull(),
+  resourceType: varchar("resource_type", { length: 100 }).notNull(),
+  resourceId: varchar("resource_id"),
+  result: varchar("result", { length: 24 }).notNull(),
+  justification: text("justification"),
+  requestId: varchar("request_id", { length: 100 }),
+  ipHash: varchar("ip_hash", { length: 64 }),
+  userAgent: text("user_agent"),
+  previousState: jsonb("previous_state"),
+  newState: jsonb("new_state"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  actorIdx: index("audit_events_actor_idx").on(table.actorUserId, table.createdAt),
+  resourceIdx: index("audit_events_resource_idx").on(table.resourceType, table.resourceId),
+  actionIdx: index("audit_events_action_idx").on(table.action, table.createdAt),
+}));
+
+export const authenticationAttempts = pgTable("authentication_attempts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  accountKeyHash: varchar("account_key_hash", { length: 64 }).notNull(),
+  networkKeyHash: varchar("network_key_hash", { length: 64 }).notNull(),
+  successful: boolean("successful").notNull().default(false),
+  attemptedAt: timestamp("attempted_at").notNull().defaultNow(),
+}, (table) => ({
+  accountTimeIdx: index("auth_attempts_account_time_idx").on(table.accountKeyHash, table.attemptedAt),
+  networkTimeIdx: index("auth_attempts_network_time_idx").on(table.networkKeyHash, table.attemptedAt),
+}));
+
+export const securityEvents = pgTable("security_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "set null" }),
+  sessionId: varchar("session_id").references(() => sessions.id, { onDelete: "set null" }),
+  type: varchar("type", { length: 120 }).notNull(),
+  severity: varchar("severity", { length: 24 }).notNull(),
+  requestId: varchar("request_id", { length: 100 }),
+  ipHash: varchar("ip_hash", { length: 64 }),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  typeTimeIdx: index("security_events_type_time_idx").on(table.type, table.createdAt),
+  userTimeIdx: index("security_events_user_time_idx").on(table.userId, table.createdAt),
+}));
+
+export const insertRoleSchema = createInsertSchema(roles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertPermissionSchema = createInsertSchema(permissions).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertAuditEventSchema = createInsertSchema(auditEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type Role = typeof roles.$inferSelect;
+export type Permission = typeof permissions.$inferSelect;
+export type Session = typeof sessions.$inferSelect;
+export type AuditEvent = typeof auditEvents.$inferSelect;
+export type InsertRole = z.infer<typeof insertRoleSchema>;
+export type InsertPermission = z.infer<typeof insertPermissionSchema>;
+export type InsertAuditEvent = z.infer<typeof insertAuditEventSchema>;
 
 // Blog posts with performance indexes
 export const blogPosts = pgTable("blog_posts", {

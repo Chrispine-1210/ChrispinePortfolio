@@ -10,7 +10,7 @@ export default function NewsletterManagement() {
     document.title = "NEWSLETTER_MANAGEMENT | Chrispine Mndala";
   }, []);
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{ totalSubscribers: number }>({
     queryKey: ["/api/admin/stats"],
   });
 
