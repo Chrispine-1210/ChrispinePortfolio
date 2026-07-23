@@ -1,9 +1,9 @@
-import { IStorage } from "../storage";
-import { BlogService } from "../services/BlogService";
-import { PortfolioService } from "../services/PortfolioService";
-import { NewsletterService } from "../services/NewsletterService";
-import { BlogRepository } from "../repositories/BlogRepository";
-import { PortfolioRepository } from "../repositories/PortfolioRepository";
+import { IStorage } from "../storage.js";
+import { BlogService } from "../services/BlogService.js";
+import { PortfolioService } from "../services/PortfolioService.js";
+import { NewsletterService } from "../services/NewsletterService.js";
+import { BlogRepository } from "../repositories/BlogRepository.js";
+import { PortfolioRepository } from "../repositories/PortfolioRepository.js";
 
 /**
  * ServiceFactory - Centralized factory for all services

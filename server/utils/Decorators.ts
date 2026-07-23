@@ -1,4 +1,4 @@
-import { logger } from "./Logger";
+import { logger } from "./Logger.js";
 
 /**
  * Method Decorators - Add logging, timing, and error handling to methods
