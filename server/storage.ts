@@ -38,7 +38,11 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(data: InsertUser): Promise<User>;
   updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined>;
-  updateUserPremiumStatus(id: string, isPremium: boolean, stripeSubscriptionId?: string): Promise<User | undefined>;
+  updateUserPremiumStatus(
+    id: string,
+    isPremium: boolean,
+    stripeSubscriptionId?: string,
+  ): Promise<User | undefined>;
 
   // Blog Posts
   getAllBlogPosts(): Promise<BlogPost[]>;
@@ -58,26 +62,44 @@ export interface IStorage {
   getFeaturedProjects(): Promise<PortfolioProject[]>;
   getProjectBySlug(slug: string): Promise<PortfolioProject | undefined>;
   createProject(data: InsertPortfolioProject): Promise<PortfolioProject>;
-  updateProject(id: string, data: Partial<InsertPortfolioProject>): Promise<PortfolioProject | undefined>;
+  updateProject(
+    id: string,
+    data: Partial<InsertPortfolioProject>,
+  ): Promise<PortfolioProject | undefined>;
   deleteProject(id: string): Promise<void>;
 
   // Newsletter
   getNewsletterSubscribers(): Promise<NewsletterSubscriber[]>;
-  getNewsletterSubscriberByEmail(email: string): Promise<NewsletterSubscriber | undefined>;
-  createNewsletterSubscriber(data: InsertNewsletterSubscriber): Promise<NewsletterSubscriber>;
-  updateNewsletterSubscriberStatus(email: string, isActive: boolean): Promise<NewsletterSubscriber | undefined>;
+  getNewsletterSubscriberByEmail(
+    email: string,
+  ): Promise<NewsletterSubscriber | undefined>;
+  createNewsletterSubscriber(
+    data: InsertNewsletterSubscriber,
+  ): Promise<NewsletterSubscriber>;
+  updateNewsletterSubscriberStatus(
+    email: string,
+    isActive: boolean,
+  ): Promise<NewsletterSubscriber | undefined>;
 
   // Contact Requests
   getAllContactRequests(): Promise<ContactRequest[]>;
   getContactRequest(id: string): Promise<ContactRequest | undefined>;
   createContactRequest(data: InsertContactRequest): Promise<ContactRequest>;
-  updateContactRequestStatus(id: string, isRead: boolean): Promise<ContactRequest | undefined>;
+  updateContactRequestStatus(
+    id: string,
+    isRead: boolean,
+  ): Promise<ContactRequest | undefined>;
 
   // Blog Engagement
   getBlogLikes(blogPostId: string): Promise<number>;
-  getUserBlogLike(blogPostId: string, userId: string): Promise<BlogLike | undefined>;
+  getUserBlogLike(
+    blogPostId: string,
+    userId: string,
+  ): Promise<BlogLike | undefined>;
   toggleBlogLike(blogPostId: string, userId: string): Promise<void>;
-  getBlogComments(blogPostId: string): Promise<(BlogComment & { user: PublicCommentUser })[]>;
+  getBlogComments(
+    blogPostId: string,
+  ): Promise<(BlogComment & { user: PublicCommentUser })[]>;
   createBlogComment(data: any): Promise<BlogComment>;
   deleteBlogComment(id: string, userId: string): Promise<void>;
 
@@ -86,7 +108,10 @@ export interface IStorage {
   getActiveEmailTemplates(): Promise<EmailTemplate[]>;
   getEmailTemplate(id: string): Promise<EmailTemplate | undefined>;
   createEmailTemplate(data: InsertEmailTemplate): Promise<EmailTemplate>;
-  updateEmailTemplate(id: string, data: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined>;
+  updateEmailTemplate(
+    id: string,
+    data: Partial<InsertEmailTemplate>,
+  ): Promise<EmailTemplate | undefined>;
   deleteEmailTemplate(id: string): Promise<void>;
 
   // External Posts
@@ -94,7 +119,10 @@ export interface IStorage {
   getActiveExternalPosts(): Promise<ExternalPost[]>;
   getExternalPostsByCategory(category: string): Promise<ExternalPost[]>;
   createExternalPost(data: InsertExternalPost): Promise<ExternalPost>;
-  updateExternalPost(id: string, data: Partial<InsertExternalPost>): Promise<ExternalPost | undefined>;
+  updateExternalPost(
+    id: string,
+    data: Partial<InsertExternalPost>,
+  ): Promise<ExternalPost | undefined>;
   deleteExternalPost(id: string): Promise<void>;
 }
 
@@ -106,12 +134,20 @@ export type PublicCommentUser = Pick<
 export class DatabaseStorage implements IStorage {
   // Users
   async getUser(id: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
     return result[0];
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
     return result[0];
   }
 
@@ -120,12 +156,23 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updateUser(id: string, data: Partial<InsertUser>): Promise<User | undefined> {
-    const result = await db.update(users).set(data).where(eq(users.id, id)).returning();
+  async updateUser(
+    id: string,
+    data: Partial<InsertUser>,
+  ): Promise<User | undefined> {
+    const result = await db
+      .update(users)
+      .set(data)
+      .where(eq(users.id, id))
+      .returning();
     return result[0];
   }
 
-  async updateUserPremiumStatus(id: string, isPremium: boolean, stripeSubscriptionId?: string): Promise<User | undefined> {
+  async updateUserPremiumStatus(
+    id: string,
+    isPremium: boolean,
+    stripeSubscriptionId?: string,
+  ): Promise<User | undefined> {
     const result = await db
       .update(users)
       .set({ isPremium, stripeSubscriptionId })
@@ -136,14 +183,23 @@ export class DatabaseStorage implements IStorage {
 
   // Blog Posts
   async getAllBlogPosts(): Promise<BlogPost[]> {
-    return await db.select().from(blogPosts).orderBy(desc(blogPosts.publishedAt));
+    return await db
+      .select()
+      .from(blogPosts)
+      .orderBy(desc(blogPosts.publishedAt));
   }
 
   async getPublishedBlogPosts(): Promise<BlogPost[]> {
     return await db
       .select()
       .from(blogPosts)
-      .where(eq(blogPosts.isPublished, true))
+      .where(
+        and(
+          eq(blogPosts.isPublished, true),
+          eq(blogPosts.workflowStatus, "published"),
+          eq(blogPosts.visibility, "public"),
+        ),
+      )
       .orderBy(desc(blogPosts.publishedAt));
   }
 
@@ -151,21 +207,43 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(blogPosts)
-      .where(eq(blogPosts.isPublished, true))
+      .where(
+        and(
+          eq(blogPosts.isPublished, true),
+          eq(blogPosts.workflowStatus, "published"),
+          eq(blogPosts.visibility, "public"),
+        ),
+      )
       .orderBy(desc(blogPosts.publishedAt))
       .limit(limit);
   }
 
   async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
-    const result = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug)).limit(1);
-    return result[0];
-  }
-
-  async getPublishedBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
     const result = await db
       .select()
       .from(blogPosts)
-      .where(and(eq(blogPosts.slug, slug), eq(blogPosts.isPublished, true)))
+      .where(eq(blogPosts.slug, slug))
+      .limit(1);
+    return result[0];
+  }
+
+  async getPublishedBlogPostBySlug(
+    slug: string,
+  ): Promise<BlogPost | undefined> {
+    const result = await db
+      .select()
+      .from(blogPosts)
+      .where(
+        and(
+          eq(blogPosts.slug, slug),
+          eq(blogPosts.isPublished, true),
+          eq(blogPosts.workflowStatus, "published"),
+          or(
+            eq(blogPosts.visibility, "public"),
+            eq(blogPosts.visibility, "unlisted"),
+          ),
+        ),
+      )
       .limit(1);
     return result[0];
   }
@@ -176,7 +254,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateBlogPost(id: string, data: any): Promise<BlogPost | undefined> {
-    const result = await db.update(blogPosts).set(data).where(eq(blogPosts.id, id)).returning();
+    const result = await db
+      .update(blogPosts)
+      .set(data)
+      .where(eq(blogPosts.id, id))
+      .returning();
     return result[0];
   }
 
@@ -186,7 +268,10 @@ export class DatabaseStorage implements IStorage {
 
   // Portfolio Projects
   async getAllProjects(): Promise<PortfolioProject[]> {
-    return await db.select().from(portfolioProjects).orderBy(desc(portfolioProjects.featured), desc(portfolioProjects.id));
+    return await db
+      .select()
+      .from(portfolioProjects)
+      .orderBy(desc(portfolioProjects.featured), desc(portfolioProjects.id));
   }
 
   async getFeaturedProjects(): Promise<PortfolioProject[]> {
@@ -198,7 +283,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProjectBySlug(slug: string): Promise<PortfolioProject | undefined> {
-    const result = await db.select().from(portfolioProjects).where(eq(portfolioProjects.slug, slug)).limit(1);
+    const result = await db
+      .select()
+      .from(portfolioProjects)
+      .where(eq(portfolioProjects.slug, slug))
+      .limit(1);
     return result[0];
   }
 
@@ -207,8 +296,15 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updateProject(id: string, data: Partial<InsertPortfolioProject>): Promise<PortfolioProject | undefined> {
-    const result = await db.update(portfolioProjects).set(data).where(eq(portfolioProjects.id, id)).returning();
+  async updateProject(
+    id: string,
+    data: Partial<InsertPortfolioProject>,
+  ): Promise<PortfolioProject | undefined> {
+    const result = await db
+      .update(portfolioProjects)
+      .set(data)
+      .where(eq(portfolioProjects.id, id))
+      .returning();
     return result[0];
   }
 
@@ -218,20 +314,37 @@ export class DatabaseStorage implements IStorage {
 
   // Newsletter
   async getNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
-    return await db.select().from(newsletterSubscribers).orderBy(desc(newsletterSubscribers.subscribedAt));
+    return await db
+      .select()
+      .from(newsletterSubscribers)
+      .orderBy(desc(newsletterSubscribers.subscribedAt));
   }
 
-  async getNewsletterSubscriberByEmail(email: string): Promise<NewsletterSubscriber | undefined> {
-    const result = await db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.email, email)).limit(1);
+  async getNewsletterSubscriberByEmail(
+    email: string,
+  ): Promise<NewsletterSubscriber | undefined> {
+    const result = await db
+      .select()
+      .from(newsletterSubscribers)
+      .where(eq(newsletterSubscribers.email, email))
+      .limit(1);
     return result[0];
   }
 
-  async createNewsletterSubscriber(data: InsertNewsletterSubscriber): Promise<NewsletterSubscriber> {
-    const result = await db.insert(newsletterSubscribers).values(data).returning();
+  async createNewsletterSubscriber(
+    data: InsertNewsletterSubscriber,
+  ): Promise<NewsletterSubscriber> {
+    const result = await db
+      .insert(newsletterSubscribers)
+      .values(data)
+      .returning();
     return result[0];
   }
 
-  async updateNewsletterSubscriberStatus(email: string, isActive: boolean): Promise<NewsletterSubscriber | undefined> {
+  async updateNewsletterSubscriberStatus(
+    email: string,
+    isActive: boolean,
+  ): Promise<NewsletterSubscriber | undefined> {
     const result = await db
       .update(newsletterSubscribers)
       .set({ isActive })
@@ -242,35 +355,59 @@ export class DatabaseStorage implements IStorage {
 
   // Contact Requests
   async getAllContactRequests(): Promise<ContactRequest[]> {
-    return await db.select().from(contactRequests).orderBy(desc(contactRequests.createdAt));
+    return await db
+      .select()
+      .from(contactRequests)
+      .orderBy(desc(contactRequests.createdAt));
   }
 
   async getContactRequest(id: string): Promise<ContactRequest | undefined> {
-    const result = await db.select().from(contactRequests).where(eq(contactRequests.id, id)).limit(1);
+    const result = await db
+      .select()
+      .from(contactRequests)
+      .where(eq(contactRequests.id, id))
+      .limit(1);
     return result[0];
   }
 
-  async createContactRequest(data: InsertContactRequest): Promise<ContactRequest> {
+  async createContactRequest(
+    data: InsertContactRequest,
+  ): Promise<ContactRequest> {
     const result = await db.insert(contactRequests).values(data).returning();
     return result[0];
   }
 
-  async updateContactRequestStatus(id: string, isRead: boolean): Promise<ContactRequest | undefined> {
-    const result = await db.update(contactRequests).set({ isRead }).where(eq(contactRequests.id, id)).returning();
+  async updateContactRequestStatus(
+    id: string,
+    isRead: boolean,
+  ): Promise<ContactRequest | undefined> {
+    const result = await db
+      .update(contactRequests)
+      .set({ isRead })
+      .where(eq(contactRequests.id, id))
+      .returning();
     return result[0];
   }
 
   // Blog Engagement Implementation
   async getBlogLikes(blogPostId: string): Promise<number> {
-    const result = await db.select().from(blogLikes).where(eq(blogLikes.blogPostId, blogPostId));
+    const result = await db
+      .select()
+      .from(blogLikes)
+      .where(eq(blogLikes.blogPostId, blogPostId));
     return result.length;
   }
 
-  async getUserBlogLike(blogPostId: string, userId: string): Promise<BlogLike | undefined> {
+  async getUserBlogLike(
+    blogPostId: string,
+    userId: string,
+  ): Promise<BlogLike | undefined> {
     const [like] = await db
       .select()
       .from(blogLikes)
-      .where(and(eq(blogLikes.blogPostId, blogPostId), eq(blogLikes.userId, userId)))
+      .where(
+        and(eq(blogLikes.blogPostId, blogPostId), eq(blogLikes.userId, userId)),
+      )
       .limit(1);
     return like;
   }
@@ -284,7 +421,9 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getBlogComments(blogPostId: string): Promise<(BlogComment & { user: PublicCommentUser })[]> {
+  async getBlogComments(
+    blogPostId: string,
+  ): Promise<(BlogComment & { user: PublicCommentUser })[]> {
     const comments = await db
       .select({
         comment: blogComments,
@@ -300,7 +439,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(blogComments.blogPostId, blogPostId))
       .orderBy(desc(blogComments.createdAt));
 
-    return comments.map(c => ({
+    return comments.map((c) => ({
       ...c.comment,
       user: c.user,
     }));
@@ -312,12 +451,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteBlogComment(id: string, userId: string): Promise<void> {
-    await db.delete(blogComments).where(and(eq(blogComments.id, id), eq(blogComments.userId, userId)));
+    await db
+      .delete(blogComments)
+      .where(and(eq(blogComments.id, id), eq(blogComments.userId, userId)));
   }
 
   // Email Templates
   async getEmailTemplates(): Promise<EmailTemplate[]> {
-    return await db.select().from(emailTemplates).orderBy(desc(emailTemplates.createdAt));
+    return await db
+      .select()
+      .from(emailTemplates)
+      .orderBy(desc(emailTemplates.createdAt));
   }
 
   async getActiveEmailTemplates(): Promise<EmailTemplate[]> {
@@ -329,7 +473,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getEmailTemplate(id: string): Promise<EmailTemplate | undefined> {
-    const result = await db.select().from(emailTemplates).where(eq(emailTemplates.id, id)).limit(1);
+    const result = await db
+      .select()
+      .from(emailTemplates)
+      .where(eq(emailTemplates.id, id))
+      .limit(1);
     return result[0];
   }
 
@@ -338,8 +486,15 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updateEmailTemplate(id: string, data: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined> {
-    const result = await db.update(emailTemplates).set(data).where(eq(emailTemplates.id, id)).returning();
+  async updateEmailTemplate(
+    id: string,
+    data: Partial<InsertEmailTemplate>,
+  ): Promise<EmailTemplate | undefined> {
+    const result = await db
+      .update(emailTemplates)
+      .set(data)
+      .where(eq(emailTemplates.id, id))
+      .returning();
     return result[0];
   }
 
@@ -349,7 +504,10 @@ export class DatabaseStorage implements IStorage {
 
   // External Posts
   async getExternalPosts(): Promise<ExternalPost[]> {
-    return await db.select().from(externalPosts).orderBy(desc(externalPosts.publishedAt));
+    return await db
+      .select()
+      .from(externalPosts)
+      .orderBy(desc(externalPosts.publishedAt));
   }
 
   async getActiveExternalPosts(): Promise<ExternalPost[]> {
@@ -364,7 +522,12 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(externalPosts)
-      .where(and(eq(externalPosts.isActive, true), eq(externalPosts.category, category)))
+      .where(
+        and(
+          eq(externalPosts.isActive, true),
+          eq(externalPosts.category, category),
+        ),
+      )
       .orderBy(desc(externalPosts.publishedAt));
   }
 
@@ -373,8 +536,15 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async updateExternalPost(id: string, data: Partial<InsertExternalPost>): Promise<ExternalPost | undefined> {
-    const result = await db.update(externalPosts).set(data).where(eq(externalPosts.id, id)).returning();
+  async updateExternalPost(
+    id: string,
+    data: Partial<InsertExternalPost>,
+  ): Promise<ExternalPost | undefined> {
+    const result = await db
+      .update(externalPosts)
+      .set(data)
+      .where(eq(externalPosts.id, id))
+      .returning();
     return result[0];
   }
 

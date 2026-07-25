@@ -1,53 +1,72 @@
 import { Router, type Request, type Response } from "express";
+import { z } from "zod";
 import { storage } from "./storage.js";
 import { requireAdminPermission } from "./custom-auth.js";
 
 const createContent = requireAdminPermission("content.create");
 const updateContent = requireAdminPermission("content.update");
-const deleteContent = requireAdminPermission("content.delete");
 const managePortfolio = requireAdminPermission("portfolio.manage");
 const readContent = requireAdminPermission("content.read");
 const readAnalytics = requireAdminPermission("analytics.read");
 import {
-  insertBlogPostSchema,
   insertPortfolioProjectSchema,
   insertNewsletterSubscriberSchema,
   insertContactRequestSchema,
   insertBlogCommentSchema,
   insertEmailTemplateSchema,
   insertExternalPostSchema,
+  type BlogPost,
 } from "../shared/schema.js";
 import Stripe from "stripe";
 import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
-import { enqueueContactAutomation, enqueueNewsletterWelcome } from "./email/automations.js";
+import {
+  enqueueContactAutomation,
+  enqueueNewsletterWelcome,
+} from "./email/automations.js";
+import { createLeadFromContact } from "./crm/lead-service.js";
 
-const fallbackBlogPosts = seedBlogPosts.map((post, index) => ({
+const fallbackBlogPosts: BlogPost[] = seedBlogPosts.map((post, index) => ({
   ...post,
   id: `seed-blog-${index + 1}`,
   featuredImage: null,
   isPremium: false,
   isPublished: true,
+  workflowStatus: "published",
+  scheduledAt: null,
+  approvedAt: new Date(),
+  authorId: null,
+  editorId: null,
+  approverId: null,
+  seoTitle: null,
+  seoDescription: null,
+  canonicalUrl: null,
+  ogImage: null,
+  visibility: "public",
+  currentVersion: 1,
+  archivedAt: null,
   publishedAt: new Date(),
   createdAt: new Date(),
   updatedAt: new Date(),
 }));
 
-const fallbackPortfolioProjects = seedPortfolioProjects.map((project, index) => ({
-  ...project,
-  id: `seed-project-${index + 1}`,
-  challenge: project.challenge ?? null,
-  solution: project.solution ?? null,
-  outcome: project.outcome ?? null,
-  techStack: project.techStack ?? [],
-  featuredImage: null,
-  images: project.images ?? [],
-  liveUrl: project.liveUrl ?? null,
-  githubUrl: null,
-  featured: project.featured ?? false,
-  order: project.order ?? index,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}));
+const fallbackPortfolioProjects = seedPortfolioProjects.map(
+  (project, index) => ({
+    ...project,
+    id: `seed-project-${index + 1}`,
+    challenge: project.challenge ?? null,
+    solution: project.solution ?? null,
+    outcome: project.outcome ?? null,
+    techStack: project.techStack ?? [],
+    featuredImage: null,
+    images: project.images ?? [],
+    liveUrl: project.liveUrl ?? null,
+    githubUrl: null,
+    featured: project.featured ?? false,
+    order: project.order ?? index,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }),
+);
 
 const hasDatabase = () => Boolean(process.env.DATABASE_URL);
 
@@ -65,33 +84,34 @@ router.get("/api/blog", async (req: Request, res: Response) => {
     let posts = hasDatabase()
       ? await storage.getPublishedBlogPosts()
       : fallbackBlogPosts;
-    
+
     // Apply filters
     const { category, search, premium } = req.query;
-    
+
     if (category && typeof category === "string") {
-      posts = posts.filter(p => p.category === category);
+      posts = posts.filter((p) => p.category === category);
     }
-    
+
     if (search && typeof search === "string") {
       const searchLower = search.toLowerCase();
-      posts = posts.filter(p => 
-        p.title.toLowerCase().includes(searchLower) ||
-        p.excerpt.toLowerCase().includes(searchLower) ||
-        (p.tags || []).some(tag => tag.toLowerCase().includes(searchLower))
+      posts = posts.filter(
+        (p) =>
+          p.title.toLowerCase().includes(searchLower) ||
+          p.excerpt.toLowerCase().includes(searchLower) ||
+          (p.tags || []).some((tag) => tag.toLowerCase().includes(searchLower)),
       );
     }
-    
+
     if (premium === "true") {
-      posts = posts.filter(p => p.isPremium);
+      posts = posts.filter((p) => p.isPremium);
     } else if (premium === "false") {
-      posts = posts.filter(p => !p.isPremium);
+      posts = posts.filter((p) => !p.isPremium);
     }
-    
+
     // For premium posts in collection, omit content entirely (use excerpt for preview)
     const user = (req as any).user;
     if (!user?.claims?.sub) {
-      posts = posts.map(post => {
+      posts = posts.map((post) => {
         if (post.isPremium) {
           const { content, ...postWithoutContent } = post;
           return postWithoutContent as any; // Omit full content, excerpt is preview
@@ -99,7 +119,7 @@ router.get("/api/blog", async (req: Request, res: Response) => {
         return post;
       });
     }
-    
+
     res.json(posts);
   } catch (error) {
     console.error("Error fetching blog posts:", error);
@@ -113,11 +133,11 @@ router.get("/api/blog/recent", async (req: Request, res: Response) => {
     let posts = hasDatabase()
       ? await storage.getRecentBlogPosts(limit)
       : fallbackBlogPosts.slice(0, limit);
-    
+
     // For premium posts, omit content entirely (use excerpt for preview)
     const user = (req as any).user;
     if (!user?.claims?.sub) {
-      posts = posts.map(post => {
+      posts = posts.map((post) => {
         if (post.isPremium) {
           const { content, ...postWithoutContent } = post;
           return postWithoutContent as any; // Omit full content, excerpt is preview
@@ -125,7 +145,7 @@ router.get("/api/blog/recent", async (req: Request, res: Response) => {
         return post;
       });
     }
-    
+
     res.json(posts);
   } catch (error) {
     console.error("Error fetching recent posts:", error);
@@ -145,7 +165,7 @@ router.get("/api/blog/:slug", async (req: Request, res: Response) => {
     // Enforce premium content access control
     const user = (req as any).user;
     if (post.isPremium && !user?.claims?.sub) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: "Premium subscription required to access this content",
         isPremium: true,
         excerpt: post.excerpt,
@@ -160,45 +180,30 @@ router.get("/api/blog/:slug", async (req: Request, res: Response) => {
 });
 
 router.post("/api/blog", createContent, async (req: Request, res: Response) => {
-  try {
-    const data = insertBlogPostSchema.parse(req.body);
-    const post = await storage.createBlogPost(data);
-    res.json(post);
-  } catch (error: any) {
-    console.error("Error creating blog post:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
-    }
-    res.status(500).json({ message: "Failed to create blog post" });
-  }
+  res
+    .status(410)
+    .json({ message: "This endpoint has moved to /api/admin/content/posts" });
 });
 
-router.put("/api/blog/:id", updateContent, async (req: Request, res: Response) => {
-  try {
-    const data = insertBlogPostSchema.partial().parse(req.body);
-    const post = await storage.updateBlogPost(req.params.id, data);
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-    res.json(post);
-  } catch (error: any) {
-    console.error("Error updating blog post:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
-    }
-    res.status(500).json({ message: "Failed to update blog post" });
-  }
-});
+router.put(
+  "/api/blog/:id",
+  updateContent,
+  async (req: Request, res: Response) => {
+    res
+      .status(410)
+      .json({
+        message: "This endpoint has moved to /api/admin/content/posts/:id",
+      });
+  },
+);
 
-router.delete("/api/blog/:id", deleteContent, async (req: Request, res: Response) => {
-  try {
-    await storage.deleteBlogPost(req.params.id);
-    res.json({ message: "Blog post deleted" });
-  } catch (error) {
-    console.error("Error deleting blog post:", error);
-    res.status(500).json({ message: "Failed to delete blog post" });
-  }
-});
+router.delete(
+  "/api/blog/:id",
+  requireAdminPermission("content.delete"),
+  async (req: Request, res: Response) => {
+    res.status(410).json({ message: "Permanent deletion is disabled; archive the post through the content workflow" });
+  },
+);
 
 // Portfolio routes
 router.get("/api/portfolio", async (req: Request, res: Response) => {
@@ -208,29 +213,32 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
     let projects = hasDatabase()
       ? await storage.getAllProjects()
       : fallbackPortfolioProjects;
-    
+
     // Apply filters
     const { category, search, featured } = req.query;
-    
+
     if (category && typeof category === "string") {
-      projects = projects.filter(p => p.category === category);
+      projects = projects.filter((p) => p.category === category);
     }
-    
+
     if (search && typeof search === "string") {
       const searchLower = search.toLowerCase();
-      projects = projects.filter(p =>
-        p.title.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower) ||
-        (p.techStack || []).some(tech => tech.toLowerCase().includes(searchLower))
+      projects = projects.filter(
+        (p) =>
+          p.title.toLowerCase().includes(searchLower) ||
+          p.description.toLowerCase().includes(searchLower) ||
+          (p.techStack || []).some((tech) =>
+            tech.toLowerCase().includes(searchLower),
+          ),
       );
     }
-    
+
     if (featured === "true") {
-      projects = projects.filter(p => p.featured);
+      projects = projects.filter((p) => p.featured);
     } else if (featured === "false") {
-      projects = projects.filter(p => !p.featured);
+      projects = projects.filter((p) => !p.featured);
     }
-    
+
     res.json(projects);
   } catch (error) {
     console.error("Error fetching projects:", error);
@@ -265,90 +273,125 @@ router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/api/portfolio", managePortfolio, async (req: Request, res: Response) => {
-  try {
-    const data = insertPortfolioProjectSchema.parse(req.body);
-    const project = await storage.createProject(data);
-    res.json(project);
-  } catch (error: any) {
-    console.error("Error creating project:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+router.post(
+  "/api/portfolio",
+  managePortfolio,
+  async (req: Request, res: Response) => {
+    try {
+      const data = insertPortfolioProjectSchema.parse(req.body);
+      const project = await storage.createProject(data);
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error creating project:", error);
+      if (error.name === "ZodError") {
+        return res
+          .status(400)
+          .json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create project" });
     }
-    res.status(500).json({ message: "Failed to create project" });
-  }
-});
+  },
+);
 
-router.put("/api/portfolio/:id", managePortfolio, async (req: Request, res: Response) => {
-  try {
-    const data = insertPortfolioProjectSchema.partial().parse(req.body);
-    const project = await storage.updateProject(req.params.id, data);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
+router.put(
+  "/api/portfolio/:id",
+  managePortfolio,
+  async (req: Request, res: Response) => {
+    try {
+      const data = insertPortfolioProjectSchema.partial().parse(req.body);
+      const project = await storage.updateProject(req.params.id, data);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error updating project:", error);
+      if (error.name === "ZodError") {
+        return res
+          .status(400)
+          .json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update project" });
     }
-    res.json(project);
-  } catch (error: any) {
-    console.error("Error updating project:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
-    }
-    res.status(500).json({ message: "Failed to update project" });
-  }
-});
+  },
+);
 
-router.delete("/api/portfolio/:id", managePortfolio, async (req: Request, res: Response) => {
-  try {
-    await storage.deleteProject(req.params.id);
-    res.json({ message: "Project deleted" });
-  } catch (error) {
-    console.error("Error deleting project:", error);
-    res.status(500).json({ message: "Failed to delete project" });
-  }
-});
+router.delete(
+  "/api/portfolio/:id",
+  managePortfolio,
+  async (req: Request, res: Response) => {
+    try {
+      await storage.deleteProject(req.params.id);
+      res.json({ message: "Project deleted" });
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      res.status(500).json({ message: "Failed to delete project" });
+    }
+  },
+);
 
 // Newsletter routes
-router.post("/api/newsletter/subscribe", async (req: Request, res: Response) => {
-  try {
-    const data = insertNewsletterSubscriberSchema.parse(req.body);
+router.post(
+  "/api/newsletter/subscribe",
+  async (req: Request, res: Response) => {
+    try {
+      const data = insertNewsletterSubscriberSchema.parse(req.body);
 
-    // Check if already subscribed
-    const existing = await storage.getNewsletterSubscriberByEmail(data.email);
-    if (existing) {
-      if (!existing.isActive) {
-        // Resubscribe
-        await storage.updateNewsletterSubscriberStatus(data.email, true);
-        await enqueueNewsletterWelcome(existing).catch((error) =>
-          console.error("Failed to enqueue newsletter welcome automation", error));
-        return res.json({ message: "Resubscribed successfully" });
+      // Check if already subscribed
+      const existing = await storage.getNewsletterSubscriberByEmail(data.email);
+      if (existing) {
+        if (!existing.isActive) {
+          // Resubscribe
+          await storage.updateNewsletterSubscriberStatus(data.email, true);
+          await enqueueNewsletterWelcome(existing).catch((error) =>
+            console.error(
+              "Failed to enqueue newsletter welcome automation",
+              error,
+            ),
+          );
+          return res.json({ message: "Resubscribed successfully" });
+        }
+        return res.status(400).json({ message: "Already subscribed" });
       }
-      return res.status(400).json({ message: "Already subscribed" });
-    }
 
-    const subscriber = await storage.createNewsletterSubscriber(data);
-    await enqueueNewsletterWelcome(subscriber).catch((error) =>
-      console.error("Failed to enqueue newsletter welcome automation", error));
-    res.json(subscriber);
-  } catch (error: any) {
-    console.error("Error subscribing to newsletter:", error);
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      const subscriber = await storage.createNewsletterSubscriber(data);
+      await enqueueNewsletterWelcome(subscriber).catch((error) =>
+        console.error("Failed to enqueue newsletter welcome automation", error),
+      );
+      res.json(subscriber);
+    } catch (error: any) {
+      console.error("Error subscribing to newsletter:", error);
+      if (error.name === "ZodError") {
+        return res
+          .status(400)
+          .json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to subscribe" });
     }
-    res.status(500).json({ message: "Failed to subscribe" });
-  }
-});
+  },
+);
 
 // Contact routes
 router.post("/api/contact", async (req: Request, res: Response) => {
   try {
     const data = insertContactRequestSchema.parse(req.body);
     const request = await storage.createContactRequest(data);
+    await createLeadFromContact(
+      request,
+      req.get("referer") || "/contact",
+    ).catch((error) =>
+      console.error("Failed to create CRM lead from contact request", error),
+    );
     await enqueueContactAutomation(request).catch((error) =>
-      console.error("Failed to enqueue contact automation", error));
+      console.error("Failed to enqueue contact automation", error),
+    );
     res.json(request);
   } catch (error: any) {
     console.error("Error creating contact request:", error);
     if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      return res
+        .status(400)
+        .json({ message: "Invalid data", errors: error.errors });
     }
     res.status(500).json({ message: "Failed to submit contact request" });
   }
@@ -381,56 +424,69 @@ router.get("/api/admin/stats", readAnalytics, async (_req, res) => {
   });
 });
 
-router.post("/api/create-payment-intent", async (req: Request, res: Response) => {
-  try {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ message: "Stripe not configured" });
+router.post(
+  "/api/create-payment-intent",
+  async (req: Request, res: Response) => {
+    try {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: "Stripe not configured" });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+      // Server-side pricing - don't trust client
+      const amount = 9; // $9/month
+
+      // Create payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount * 100, // Convert to cents
+        currency: "usd",
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
+
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ message: "Failed to create payment intent" });
     }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    
-    // Server-side pricing - don't trust client
-    const amount = 9; // $9/month
-
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100, // Convert to cents
-      currency: "usd",
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    });
-
-    res.json({ clientSecret: paymentIntent.client_secret });
-  } catch (error) {
-    console.error("Error creating payment intent:", error);
-    res.status(500).json({ message: "Failed to create payment intent" });
-  }
-});
+  },
+);
 
 // Email Templates routes
-router.get("/api/email-templates", readContent, async (req: Request, res: Response) => {
-  try {
-    const templates = await storage.getActiveEmailTemplates();
-    res.json(templates);
-  } catch (error) {
-    console.error("Error fetching email templates:", error);
-    res.status(500).json({ message: "Failed to fetch templates" });
-  }
-});
-
-router.post("/api/email-templates", createContent, async (req: Request, res: Response) => {
-  try {
-    const data = insertEmailTemplateSchema.parse(req.body);
-    const template = await storage.createEmailTemplate(data);
-    res.json(template);
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.errors });
+router.get(
+  "/api/email-templates",
+  readContent,
+  async (req: Request, res: Response) => {
+    try {
+      const templates = await storage.getActiveEmailTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching email templates:", error);
+      res.status(500).json({ message: "Failed to fetch templates" });
     }
-    res.status(500).json({ message: "Failed to create template" });
-  }
-});
+  },
+);
+
+router.post(
+  "/api/email-templates",
+  createContent,
+  async (req: Request, res: Response) => {
+    try {
+      const data = insertEmailTemplateSchema.parse(req.body);
+      const template = await storage.createEmailTemplate(data);
+      res.json(template);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res
+          .status(400)
+          .json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create template" });
+    }
+  },
+);
 
 // External Posts routes (returns mock data until table exists)
 router.get("/api/external-posts", async (req: Request, res: Response) => {
@@ -441,15 +497,17 @@ router.get("/api/external-posts", async (req: Request, res: Response) => {
         title: "Building Scalable MEL Systems",
         source: "LinkedIn",
         url: "https://linkedin.com",
-        excerpt: "Insights on designing robust monitoring and evaluation frameworks.",
-        featuredImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
+        excerpt:
+          "Insights on designing robust monitoring and evaluation frameworks.",
+        featuredImage:
+          "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
         publishedAt: new Date(),
         category: "MEL",
         embedCode: null,
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-      }
+      },
     ];
     res.json(mockPosts);
   } catch (error) {
@@ -475,7 +533,7 @@ router.post("/api/stripe-webhook", async (req: Request, res: Response) => {
     const event = stripe.webhooks.constructEvent(
       (req as any).rawBody,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ""
+      process.env.STRIPE_WEBHOOK_SECRET || "",
     );
 
     if (event.type === "payment_intent.succeeded") {

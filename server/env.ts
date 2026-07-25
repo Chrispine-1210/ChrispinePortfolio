@@ -39,6 +39,10 @@ const environmentSchema = z
       (value) => (value === "" ? undefined : value),
       z.string().min(32, "NOTIFICATION_WORKER_SECRET must contain at least 32 characters").optional(),
     ),
+    CRON_SECRET: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().min(32, "CRON_SECRET must contain at least 32 characters").optional(),
+    ),
     APP_BASE_URL: z.preprocess((value) => value === "" ? undefined : value, z.string().url().optional()),
     ADMIN_NOTIFICATION_EMAIL: z.preprocess((value) => value === "" ? undefined : value, z.string().email().optional()),
     ADMIN_INBOX_USER_ID: optionalNonEmptyString,

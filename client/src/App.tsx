@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -31,6 +31,13 @@ import DigitalTransformationAfrica from "@/pages/DigitalTransformationAfrica";
 import EducationTechnologySolutions from "@/pages/EducationTechnologySolutions";
 import CustomSoftwareDevelopment from "@/pages/CustomSoftwareDevelopment";
 import GitHubProfile from "@/pages/GitHubProfile";
+import ContactsManagement from "@/pages/admin/ContactsManagement";
+import AudienceManagement from "@/pages/admin/AudienceManagement";
+import ContentManagement from "@/pages/admin/ContentManagement";
+import PortfolioManagement from "@/pages/admin/PortfolioManagement";
+import LeadPipeline from "@/pages/admin/LeadPipeline";
+import SecurityManagement from "@/pages/admin/SecurityManagement";
+import UserManagement from "@/pages/admin/UserManagement";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useCustomAuth();
@@ -42,10 +49,12 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 
 function Router() {
   const { isAuthenticated, isLoading, user, isAdmin } = useCustomAuth();
+  const [location] = useLocation();
+  const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/newsletter-manage";
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navigation />
+      {!adminSurface && <Navigation />}
       <main className="flex-1">
         <Switch>
           {isLoading || !isAuthenticated ? (
@@ -67,6 +76,14 @@ function Router() {
           <Route path="/login" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/communications" component={NewsletterManagement} />
+          <Route path="/admin/contacts" component={ContactsManagement} />
+          <Route path="/admin/audience" component={AudienceManagement} />
+          <Route path="/admin/content" component={ContentManagement} />
+          <Route path="/admin/portfolio" component={PortfolioManagement} />
+          <Route path="/admin/pipeline" component={LeadPipeline} />
+          <Route path="/admin/security" component={SecurityManagement} />
+          <Route path="/admin/users" component={UserManagement} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/newsletter" component={Landing} />
           <Route path="/newsletter-manage" component={NewsletterManagement} />
@@ -80,7 +97,7 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </main>
-      <Footer />
+      {!adminSurface && <Footer />}
       </div>
   );
 }

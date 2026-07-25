@@ -6,6 +6,7 @@ export interface AuthUser {
   id: string;
   email: string;
   isAdmin: boolean;
+  permissions?: string[];
 }
 
 export function useCustomAuth() {
