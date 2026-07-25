@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ArrowRight, Download, Terminal, Cpu, Globe } from "lucide-react";
 import { motion } from "framer-motion";
-import heroImage from "@assets/generated_images/Professional_headshot_portrait_eb0606b5.png";
+import heroImage from "@assets/portfolio_photos/chrispine-hero-tech.png";
 import { BinaryProfileCanvas } from "./BinaryProfileCanvas";
 
 const specializations = [

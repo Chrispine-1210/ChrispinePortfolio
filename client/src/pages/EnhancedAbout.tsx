@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Briefcase, GraduationCap, Award, Users, Terminal } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import aboutImage from "@assets/generated_images/Professional_consulting_presentation_photo_e36fb9f8.png";
+import aboutImage from "@assets/portfolio_photos/chrispine-profile-headshot.png";
 import { HeroSection } from "@/components/HeroSection";
 import { StatsSection } from "@/components/StatsSection";
 

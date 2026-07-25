@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Terminal, Github, Briefcase, FileText, User, Home, Phone, BookOpen, X, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import profileImage from "@assets/portfolio_photos/chrispine-profile-headshot.png";
 
 const navItems = [
   { label: "Home", path: "/", icon: Home },
@@ -59,7 +60,7 @@ export function Navigation() {
               <div className="relative w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
                 style={{ background: "linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 91% 65%) 100%)" }}
               >
-                <Terminal className="text-white w-4 h-4" />
+                <img src={profileImage} alt="Chrispine Mndala" className="h-full w-full object-cover" />
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                   style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.15), transparent)" }}
                 />
@@ -169,10 +170,8 @@ export function Navigation() {
               <div className="flex flex-col h-full">
                 {/* Mobile header */}
                 <div className="flex items-center gap-3 p-6 border-b border-white/[0.06]">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg, hsl(217 91% 60%), hsl(271 91% 65%))" }}
-                  >
-                    <Terminal className="w-4 h-4 text-white" />
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden border border-white/10">
+                    <img src={profileImage} alt="Chrispine Mndala" className="h-full w-full object-cover" />
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white">Chrispine</div>

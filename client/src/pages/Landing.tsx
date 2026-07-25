@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import heroImage from "@assets/generated_images/Professional_headshot_portrait_eb0606b5.png";
+import heroImage from "@assets/portfolio_photos/chrispine-hero-tech.png";
 import { TechArchitectureDiagram } from "@/components/TechArchitectureDiagram";
 
 /* ─── Animation Variants ────────────────────────────────── */
