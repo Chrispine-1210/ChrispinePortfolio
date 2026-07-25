@@ -19,6 +19,7 @@ import {
 } from "../shared/schema.js";
 import Stripe from "stripe";
 import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
+import { enqueueContactAutomation, enqueueNewsletterWelcome } from "./email/automations.js";
 
 const fallbackBlogPosts = seedBlogPosts.map((post, index) => ({
   ...post,
@@ -316,12 +317,16 @@ router.post("/api/newsletter/subscribe", async (req: Request, res: Response) => 
       if (!existing.isActive) {
         // Resubscribe
         await storage.updateNewsletterSubscriberStatus(data.email, true);
+        await enqueueNewsletterWelcome(existing).catch((error) =>
+          console.error("Failed to enqueue newsletter welcome automation", error));
         return res.json({ message: "Resubscribed successfully" });
       }
       return res.status(400).json({ message: "Already subscribed" });
     }
 
     const subscriber = await storage.createNewsletterSubscriber(data);
+    await enqueueNewsletterWelcome(subscriber).catch((error) =>
+      console.error("Failed to enqueue newsletter welcome automation", error));
     res.json(subscriber);
   } catch (error: any) {
     console.error("Error subscribing to newsletter:", error);
@@ -337,6 +342,8 @@ router.post("/api/contact", async (req: Request, res: Response) => {
   try {
     const data = insertContactRequestSchema.parse(req.body);
     const request = await storage.createContactRequest(data);
+    await enqueueContactAutomation(request).catch((error) =>
+      console.error("Failed to enqueue contact automation", error));
     res.json(request);
   } catch (error: any) {
     console.error("Error creating contact request:", error);

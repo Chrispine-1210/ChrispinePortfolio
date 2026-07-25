@@ -429,4 +429,64 @@ describe("secure-foundation migration", () => {
       await database.close();
     }
   }, 30_000);
+
+  it("applies the email delivery foundation idempotently", async () => {
+    const foundation = await readFile("migrations/0000_secure_foundation.sql", "utf8");
+    const emailFoundation = await readFile("migrations/0001_email_delivery_foundation.sql", "utf8");
+    const database = new PGlite();
+    try {
+      await database.exec(foundation);
+      await database.exec(emailFoundation);
+      await database.exec(emailFoundation);
+
+      const permissionCount = await database.query<{ count: number }>(
+        "select count(*)::int as count from permissions",
+      );
+      const tableCount = await database.query<{ count: number }>(
+        `select count(*)::int as count from information_schema.tables
+         where table_schema = 'public'
+           and table_name in ('email_outbox', 'email_delivery_events', 'email_suppressions')`,
+      );
+      const superAdministratorEmailPermissions = await database.query<{ count: number }>(
+        `select count(*)::int as count
+         from role_permissions rp
+         join roles r on r.id = rp.role_id
+         join permissions p on p.id = rp.permission_id
+         where r.key = 'super_administrator' and p.key like 'email.%'`,
+      );
+
+      expect(permissionCount.rows[0]?.count).toBe(23);
+      expect(tableCount.rows[0]?.count).toBe(3);
+      expect(superAdministratorEmailPermissions.rows[0]?.count).toBe(4);
+    } finally {
+      await database.close();
+    }
+  }, 30_000);
+
+  it("applies the multichannel notification platform idempotently", async () => {
+    const foundation = await readFile("migrations/0000_secure_foundation.sql", "utf8");
+    const emailFoundation = await readFile("migrations/0001_email_delivery_foundation.sql", "utf8");
+    const notifications = await readFile("migrations/0002_notification_platform.sql", "utf8");
+    const database = new PGlite();
+    try {
+      await database.exec(foundation);
+      await database.exec(emailFoundation);
+      await database.exec(notifications);
+      await database.exec(notifications);
+      const tables = await database.query<{ count: number }>(
+        `select count(*)::int as count from information_schema.tables where table_schema = 'public'
+         and table_name in ('notification_campaigns', 'notification_inbox', 'notification_action_tokens',
+           'push_subscriptions', 'channel_outbox')`,
+      );
+      const permissions = await database.query<{ count: number }>(
+        `select count(*)::int as count from role_permissions rp join roles r on r.id = rp.role_id
+         join permissions p on p.id = rp.permission_id where r.key = 'super_administrator'
+         and p.key in ('campaigns.manage', 'notifications.manage', 'notifications.read')`,
+      );
+      expect(tables.rows[0]?.count).toBe(5);
+      expect(permissions.rows[0]?.count).toBe(3);
+    } finally {
+      await database.close();
+    }
+  }, 30_000);
 });

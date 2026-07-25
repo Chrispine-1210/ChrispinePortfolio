@@ -359,6 +359,158 @@ export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).omit
 export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 
+// Durable email delivery. Request handlers enqueue immutable messages; a
+// separate worker claims and delivers them through a configured provider.
+export const emailOutbox = pgTable("email_outbox", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  templateId: varchar("template_id").references(() => emailTemplates.id, { onDelete: "set null" }),
+  messageType: varchar("message_type", { length: 24 }).notNull().default("transactional"),
+  toEmail: varchar("to_email", { length: 320 }).notNull(),
+  fromEmail: varchar("from_email", { length: 320 }).notNull(),
+  fromName: varchar("from_name", { length: 160 }),
+  replyTo: varchar("reply_to", { length: 320 }),
+  subject: text("subject").notNull(),
+  htmlBody: text("html_body").notNull(),
+  textBody: text("text_body"),
+  status: varchar("status", { length: 24 }).notNull().default("pending"),
+  provider: varchar("provider", { length: 80 }),
+  providerMessageId: varchar("provider_message_id", { length: 255 }),
+  idempotencyKey: varchar("idempotency_key", { length: 255 }).notNull().unique(),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  maxAttempts: integer("max_attempts").notNull().default(5),
+  availableAt: timestamp("available_at").notNull().defaultNow(),
+  lockedAt: timestamp("locked_at"),
+  lockedBy: varchar("locked_by", { length: 120 }),
+  lastError: text("last_error"),
+  metadata: jsonb("metadata"),
+  sentAt: timestamp("sent_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  dispatchIdx: index("email_outbox_dispatch_idx").on(table.status, table.availableAt),
+  recipientIdx: index("email_outbox_recipient_idx").on(table.toEmail, table.createdAt),
+  providerMessageIdx: index("email_outbox_provider_message_idx").on(table.provider, table.providerMessageId),
+}));
+
+export const emailDeliveryEvents = pgTable("email_delivery_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  outboxId: varchar("outbox_id").notNull().references(() => emailOutbox.id, { onDelete: "cascade" }),
+  eventType: varchar("event_type", { length: 40 }).notNull(),
+  provider: varchar("provider", { length: 80 }),
+  providerEventId: varchar("provider_event_id", { length: 255 }).unique(),
+  occurredAt: timestamp("occurred_at").notNull().defaultNow(),
+  payload: jsonb("payload"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  outboxTimeIdx: index("email_delivery_events_outbox_time_idx").on(table.outboxId, table.occurredAt),
+  eventTimeIdx: index("email_delivery_events_type_time_idx").on(table.eventType, table.occurredAt),
+}));
+
+export const emailSuppressions = pgTable("email_suppressions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  reason: varchar("reason", { length: 80 }).notNull(),
+  source: varchar("source", { length: 80 }).notNull(),
+  notes: text("notes"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  activeIdx: index("email_suppressions_active_idx").on(table.email, table.expiresAt),
+}));
+
+export type EmailOutboxMessage = typeof emailOutbox.$inferSelect;
+export type EmailDeliveryEvent = typeof emailDeliveryEvents.$inferSelect;
+export type EmailSuppression = typeof emailSuppressions.$inferSelect;
+
+export const notificationCampaigns = pgTable("notification_campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 180 }).notNull(),
+  subject: text("subject"),
+  htmlContent: text("html_content"),
+  textContent: text("text_content"),
+  channels: text("channels").array().notNull().default(sql`ARRAY['email']::text[]`),
+  audience: jsonb("audience").notNull().default(sql`'{}'::jsonb`),
+  status: varchar("status", { length: 24 }).notNull().default("draft"),
+  scheduledAt: timestamp("scheduled_at"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  scheduleIdx: index("notification_campaigns_schedule_idx").on(table.status, table.scheduledAt),
+}));
+
+export const notificationInbox = pgTable("notification_inbox", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  category: varchar("category", { length: 80 }).notNull().default("system"),
+  title: varchar("title", { length: 240 }).notNull(),
+  body: text("body").notNull(),
+  actionUrl: text("action_url"),
+  metadata: jsonb("metadata"),
+  readAt: timestamp("read_at"),
+  archivedAt: timestamp("archived_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  unreadIdx: index("notification_inbox_unread_idx").on(table.userId, table.readAt, table.createdAt),
+}));
+
+export const notificationActionTokens = pgTable("notification_action_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tokenHash: varchar("token_hash", { length: 64 }).notNull().unique(),
+  purpose: varchar("purpose", { length: 48 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  subscriberId: varchar("subscriber_id").references(() => newsletterSubscribers.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at").notNull(),
+  consumedAt: timestamp("consumed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  lookupIdx: index("notification_action_tokens_lookup_idx").on(table.tokenHash, table.purpose),
+}));
+
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: text("user_agent"),
+  expiresAt: timestamp("expires_at"),
+  revokedAt: timestamp("revoked_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  userIdx: index("push_subscriptions_user_idx").on(table.userId, table.revokedAt),
+}));
+
+export const channelOutbox = pgTable("channel_outbox", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  channel: varchar("channel", { length: 24 }).notNull(),
+  recipient: text("recipient").notNull(),
+  payload: jsonb("payload").notNull(),
+  status: varchar("status", { length: 24 }).notNull().default("pending"),
+  provider: varchar("provider", { length: 80 }),
+  providerMessageId: varchar("provider_message_id", { length: 255 }),
+  idempotencyKey: varchar("idempotency_key", { length: 255 }).notNull().unique(),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  maxAttempts: integer("max_attempts").notNull().default(5),
+  availableAt: timestamp("available_at").notNull().defaultNow(),
+  lockedAt: timestamp("locked_at"),
+  lockedBy: varchar("locked_by", { length: 120 }),
+  lastError: text("last_error"),
+  sentAt: timestamp("sent_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  dispatchIdx: index("channel_outbox_dispatch_idx").on(table.channel, table.status, table.availableAt),
+}));
+
+export type NotificationCampaign = typeof notificationCampaigns.$inferSelect;
+export type InboxNotification = typeof notificationInbox.$inferSelect;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+
 // External Posts (for embedding external content)
 export const externalPosts = pgTable("external_posts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
