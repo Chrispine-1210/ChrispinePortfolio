@@ -9,6 +9,7 @@ import {
   varchar,
   boolean,
   integer,
+  numeric,
   primaryKey,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
@@ -205,9 +206,22 @@ export const blogPosts = pgTable("blog_posts", {
   category: text("category").notNull(),
   tags: text("tags").array().default(sql`ARRAY[]::text[]`),
   isPremium: boolean("is_premium").default(false),
-  isPublished: boolean("is_published").default(true),
+  isPublished: boolean("is_published").default(false),
   readTimeMinutes: integer("read_time_minutes").default(5),
-  publishedAt: timestamp("published_at").defaultNow(),
+  publishedAt: timestamp("published_at"),
+  workflowStatus: varchar("workflow_status", { length: 24 }).notNull().default("draft"),
+  scheduledAt: timestamp("scheduled_at"),
+  approvedAt: timestamp("approved_at"),
+  authorId: varchar("author_id").references(() => users.id, { onDelete: "set null" }),
+  editorId: varchar("editor_id").references(() => users.id, { onDelete: "set null" }),
+  approverId: varchar("approver_id").references(() => users.id, { onDelete: "set null" }),
+  seoTitle: varchar("seo_title", { length: 70 }),
+  seoDescription: varchar("seo_description", { length: 170 }),
+  canonicalUrl: text("canonical_url"),
+  ogImage: text("og_image"),
+  visibility: varchar("visibility", { length: 24 }).notNull().default("public"),
+  currentVersion: integer("current_version").notNull().default(1),
+  archivedAt: timestamp("archived_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => ({
@@ -215,6 +229,7 @@ export const blogPosts = pgTable("blog_posts", {
   publishedIdx: index("blog_published_idx").on(table.isPublished),
   publishedAtIdx: index("blog_published_at_idx").on(table.publishedAt),
   slugIdx: index("blog_slug_idx").on(table.slug),
+  workflowIdx: index("blog_workflow_idx").on(table.workflowStatus, table.scheduledAt),
 }));
 
 export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
@@ -226,6 +241,21 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+
+export const contentVersions = pgTable("content_versions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postId: varchar("post_id").notNull().references(() => blogPosts.id, { onDelete: "cascade" }),
+  version: integer("version").notNull(),
+  snapshot: jsonb("snapshot").notNull(),
+  changeSummary: varchar("change_summary", { length: 500 }),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  postVersionIdx: uniqueIndex("content_versions_post_version_idx").on(table.postId, table.version),
+  postTimeIdx: index("content_versions_post_time_idx").on(table.postId, table.createdAt),
+}));
+
+export type ContentVersion = typeof contentVersions.$inferSelect;
 
 // Portfolio projects with performance indexes
 export const portfolioProjects = pgTable("portfolio_projects", {
@@ -300,6 +330,59 @@ export const insertContactRequestSchema = createInsertSchema(contactRequests).om
 
 export type InsertContactRequest = z.infer<typeof insertContactRequestSchema>;
 export type ContactRequest = typeof contactRequests.$inferSelect;
+
+export const leads = pgTable("leads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  contactRequestId: varchar("contact_request_id").unique().references(() => contactRequests.id, { onDelete: "set null" }),
+  name: varchar("name", { length: 180 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 80 }),
+  organization: varchar("organization", { length: 220 }),
+  country: varchar("country", { length: 120 }),
+  industry: varchar("industry", { length: 160 }),
+  leadType: varchar("lead_type", { length: 80 }).notNull().default("contact_enquiry"),
+  serviceInterest: varchar("service_interest", { length: 180 }),
+  budgetRange: varchar("budget_range", { length: 120 }),
+  expectedTimeline: varchar("expected_timeline", { length: 120 }),
+  source: varchar("source", { length: 120 }).notNull().default("contact_form"),
+  campaign: varchar("campaign", { length: 180 }),
+  landingPage: text("landing_page"),
+  message: text("message"),
+  assignedOwnerId: varchar("assigned_owner_id").references(() => users.id, { onDelete: "set null" }),
+  priority: varchar("priority", { length: 24 }).notNull().default("normal"),
+  qualificationScore: integer("qualification_score").notNull().default(0),
+  stage: varchar("stage", { length: 32 }).notNull().default("new"),
+  estimatedValue: numeric("estimated_value", { precision: 14, scale: 2 }),
+  currency: varchar("currency", { length: 3 }).notNull().default("USD"),
+  probability: integer("probability").notNull().default(10),
+  nextAction: text("next_action"),
+  followUpAt: timestamp("follow_up_at"),
+  lostReason: text("lost_reason"),
+  consentStatus: varchar("consent_status", { length: 32 }).notNull().default("unknown"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  archivedAt: timestamp("archived_at"),
+}, (table) => ({
+  stageIdx: index("leads_stage_idx").on(table.stage, table.updatedAt),
+  followUpIdx: index("leads_follow_up_idx").on(table.followUpAt, table.stage),
+  ownerIdx: index("leads_owner_idx").on(table.assignedOwnerId, table.stage),
+  emailIdx: index("leads_email_idx").on(table.email),
+}));
+
+export const leadActivities = pgTable("lead_activities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  leadId: varchar("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+  actorUserId: varchar("actor_user_id").references(() => users.id, { onDelete: "set null" }),
+  type: varchar("type", { length: 48 }).notNull(),
+  body: text("body"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  leadTimeIdx: index("lead_activities_lead_time_idx").on(table.leadId, table.createdAt),
+}));
+
+export type Lead = typeof leads.$inferSelect;
+export type LeadActivity = typeof leadActivities.$inferSelect;
 
 // Blog Likes
 export const blogLikes = pgTable("blog_likes", {

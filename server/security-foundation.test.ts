@@ -489,4 +489,76 @@ describe("secure-foundation migration", () => {
       await database.close();
     }
   }, 30_000);
+
+  it("applies the CRM pipeline idempotently and backfills contact enquiries", async () => {
+    const foundation = await readFile("migrations/0000_secure_foundation.sql", "utf8");
+    const emailFoundation = await readFile("migrations/0001_email_delivery_foundation.sql", "utf8");
+    const notifications = await readFile("migrations/0002_notification_platform.sql", "utf8");
+    const crm = await readFile("migrations/0003_crm_pipeline.sql", "utf8");
+    const database = new PGlite();
+    try {
+      await database.exec(foundation);
+      await database.exec(emailFoundation);
+      await database.exec(notifications);
+      await database.exec(`insert into contact_requests (name, email, project_type, message)
+        values ('Pipeline Test', 'pipeline@example.com', 'Consulting', 'CRM migration test')`);
+      await database.exec(crm);
+      await database.exec(crm);
+      const tables = await database.query<{ count: number }>(
+        `select count(*)::int as count from information_schema.tables where table_schema = 'public'
+         and table_name in ('leads', 'lead_activities')`,
+      );
+      const leads = await database.query<{ count: number }>("select count(*)::int as count from leads");
+      const activities = await database.query<{ count: number }>("select count(*)::int as count from lead_activities");
+      const permissions = await database.query<{ count: number }>(
+        `select count(*)::int as count from role_permissions rp join roles r on r.id = rp.role_id
+         join permissions p on p.id = rp.permission_id where r.key = 'super_administrator'
+         and p.key in ('leads.export', 'pipeline.financial.read')`,
+      );
+      expect(tables.rows[0]?.count).toBe(2);
+      expect(leads.rows[0]?.count).toBe(1);
+      expect(activities.rows[0]?.count).toBe(1);
+      expect(permissions.rows[0]?.count).toBe(2);
+    } finally {
+      await database.close();
+    }
+  }, 40_000);
+
+  it("applies the content workflow idempotently and creates a baseline version", async () => {
+    const foundation = await readFile("migrations/0000_secure_foundation.sql", "utf8");
+    const emailFoundation = await readFile("migrations/0001_email_delivery_foundation.sql", "utf8");
+    const notifications = await readFile("migrations/0002_notification_platform.sql", "utf8");
+    const crm = await readFile("migrations/0003_crm_pipeline.sql", "utf8");
+    const contentWorkflow = await readFile("migrations/0004_content_workflow.sql", "utf8");
+    const database = new PGlite();
+    try {
+      await database.exec(foundation);
+      await database.exec(emailFoundation);
+      await database.exec(notifications);
+      await database.exec(crm);
+      await database.exec(`insert into blog_posts
+        (title, slug, excerpt, content, category, is_published)
+        values ('Workflow Test', 'workflow-test', 'Migration test', 'Versioned content', 'Testing', true)`);
+      await database.exec(contentWorkflow);
+      await database.exec(contentWorkflow);
+      const post = await database.query<{ workflow_status: string; current_version: number }>(
+        "select workflow_status, current_version from blog_posts where slug = 'workflow-test'",
+      );
+      const versions = await database.query<{ count: number }>(
+        "select count(*)::int as count from content_versions",
+      );
+      const constraints = await database.query<{ count: number }>(
+        `select count(*)::int as count from information_schema.table_constraints
+         where table_name = 'blog_posts' and constraint_name in ('blog_workflow_status_valid', 'blog_visibility_valid')`,
+      );
+      expect(post.rows[0]).toEqual({ workflow_status: "published", current_version: 1 });
+      expect(versions.rows[0]?.count).toBe(1);
+      expect(constraints.rows[0]?.count).toBe(2);
+      await expect(
+        database.exec("update content_versions set change_summary = 'tampered'"),
+      ).rejects.toThrow(/immutable/i);
+    } finally {
+      await database.close();
+    }
+  }, 45_000);
 });

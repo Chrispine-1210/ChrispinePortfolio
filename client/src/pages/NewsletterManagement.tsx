@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { AdminShell } from "@/components/admin/AdminShell";
 
 type OutboxMessage = { id: string; toEmail: string; subject: string; status: string; createdAt: string };
 type Campaign = { id: string; name: string; status: string; channels: string[]; scheduledAt: string | null };
@@ -39,8 +40,8 @@ export default function NewsletterManagement() {
     onSuccess: () => { setCampaignName(""); setScheduledAt(""); queryClient.invalidateQueries({ queryKey: ["/api/admin/campaigns"] }); },
   });
 
-  return <div className="min-h-screen pt-24 pb-16 bg-[#0a0c14]">
-    <main className="max-w-7xl mx-auto px-4 space-y-8">
+  return <AdminShell title="Communications" description="Email delivery, campaigns, suppressions, and channel operations">
+    <div className="max-w-7xl mx-auto space-y-8">
       <div><h1 className="text-4xl font-black text-white uppercase"><span className="text-primary">// </span>Communication Command</h1>
         <p className="text-muted-foreground font-mono mt-2">EMAIL · CAMPAIGNS · DELIVERY · SUPPRESSIONS</p></div>
       <div className="grid sm:grid-cols-4 gap-4">
@@ -70,6 +71,6 @@ export default function NewsletterManagement() {
         {outbox.data?.map(item => <div key={item.id} className="border border-border p-3 flex flex-wrap justify-between gap-2"><div><p className="text-white font-medium">{item.subject}</p><p className="text-xs text-muted-foreground">{item.toEmail}</p></div><Badge variant="outline">{item.status}</Badge></div>)}
         {!outbox.isLoading && !outbox.data?.length && <p className="text-muted-foreground">No queued emails yet.</p>}
       </CardContent></Card>
-    </main>
-  </div>;
+    </div>
+  </AdminShell>;
 }
