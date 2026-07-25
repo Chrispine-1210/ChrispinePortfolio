@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { ArrowRight, TrendingUp, Globe, Zap, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import transformationImage from "@assets/portfolio_photos/chrispine-executive-transformation.png";
 
 export default function DigitalTransformationAfrica() {
   useEffect(() => {
@@ -19,7 +20,7 @@ export default function DigitalTransformationAfrica() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="py-16 space-y-6"
+          className="py-16 space-y-8"
         >
           <Badge variant="outline" className="font-mono text-[10px] uppercase">Sub-Saharan Africa · Digital Transformation</Badge>
           <h1 className="text-5xl font-black text-white uppercase tracking-tighter leading-tight">
@@ -41,6 +42,7 @@ export default function DigitalTransformationAfrica() {
               <Link href="/portfolio">View Case Studies</Link>
             </Button>
           </div>
+          <img src={transformationImage} alt="Chrispine Mndala presenting digital systems in an executive technology setting" className="max-h-[680px] w-full rounded-2xl border border-primary/20 object-cover object-top shadow-2xl" />
         </motion.div>
 
         <motion.section

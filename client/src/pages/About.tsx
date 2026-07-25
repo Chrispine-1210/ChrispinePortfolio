@@ -6,7 +6,7 @@ import { Download, Briefcase, GraduationCap, Award, Users, Terminal, Cpu, Shield
 import { motion } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "wouter";
-import aboutImage from "@assets/generated_images/Professional_consulting_presentation_photo_e36fb9f8.png";
+import aboutImage from "@assets/portfolio_photos/chrispine-about-campus.png";
 
 const TechTerm = ({ children, definition }: { children: React.ReactNode, definition: string }) => (
   <TooltipProvider>
