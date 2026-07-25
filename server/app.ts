@@ -9,11 +9,16 @@ import { securityHeaders, requestLogger } from "./middleware.js";
 import routes from "./routes.js";
 import { env } from "./env.js";
 import { setupDatabaseAuthRoutes } from "./security/database-auth-routes.js";
+import { setupPostmarkWebhookRoute } from "./email/postmark-webhook-route.js";
+import { createNotificationRouter } from "./notifications/routes.js";
+import { createEmailRouter } from "./email/routes.js";
+import { createTwilioWebhookRouter } from "./notifications/twilio-webhook-route.js";
 
 export function createApp() {
   const app = express();
 
   app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
+  setupPostmarkWebhookRoute(app);
   app.use(express.json({
     verify: (req: any, _res, buf) => {
       req.rawBody = buf;
@@ -52,6 +57,9 @@ export function createApp() {
 
   app.use("/attached_assets", express.static("attached_assets"));
   app.use(routes);
+  app.use(createEmailRouter());
+  app.use(createNotificationRouter());
+  app.use(createTwilioWebhookRouter());
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     console.error("Server error:", err);

@@ -9,6 +9,7 @@ const environmentSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     ADMIN_AUTH_MODE: z.enum(["temporary", "database"]).default("temporary"),
+    EMAIL_PROVIDER: z.enum(["disabled", "postmark"]).default("disabled"),
     DATABASE_URL: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z.string().url().optional(),
@@ -21,6 +22,34 @@ const environmentSchema = z
       (value) => (value === "" ? undefined : value),
       z.string().min(32, "AUTH_KEY_PEPPER must contain at least 32 characters").optional(),
     ),
+    POSTMARK_SERVER_TOKEN: optionalNonEmptyString,
+    POSTMARK_FROM_EMAIL: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().email().optional(),
+    ),
+    POSTMARK_FROM_NAME: optionalNonEmptyString,
+    POSTMARK_TRANSACTIONAL_STREAM: optionalNonEmptyString,
+    POSTMARK_BROADCAST_STREAM: optionalNonEmptyString,
+    POSTMARK_WEBHOOK_USERNAME: optionalNonEmptyString,
+    POSTMARK_WEBHOOK_PASSWORD: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().min(24, "POSTMARK_WEBHOOK_PASSWORD must contain at least 24 characters").optional(),
+    ),
+    NOTIFICATION_WORKER_SECRET: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().min(32, "NOTIFICATION_WORKER_SECRET must contain at least 32 characters").optional(),
+    ),
+    APP_BASE_URL: z.preprocess((value) => value === "" ? undefined : value, z.string().url().optional()),
+    ADMIN_NOTIFICATION_EMAIL: z.preprocess((value) => value === "" ? undefined : value, z.string().email().optional()),
+    ADMIN_INBOX_USER_ID: optionalNonEmptyString,
+    TWILIO_ACCOUNT_SID: optionalNonEmptyString,
+    TWILIO_AUTH_TOKEN: optionalNonEmptyString,
+    TWILIO_SMS_FROM: optionalNonEmptyString,
+    TWILIO_WHATSAPP_FROM: optionalNonEmptyString,
+    PUBLIC_WEBHOOK_BASE_URL: z.preprocess((value) => value === "" ? undefined : value, z.string().url().optional()),
+    VAPID_SUBJECT: optionalNonEmptyString,
+    VAPID_PUBLIC_KEY: optionalNonEmptyString,
+    VAPID_PRIVATE_KEY: optionalNonEmptyString,
     ADMIN_EMAIL: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z.string().email().optional(),
@@ -33,6 +62,21 @@ const environmentSchema = z
     STRIPE_WEBHOOK_SECRET: optionalNonEmptyString,
   })
   .superRefine((environment, context) => {
+    if (environment.EMAIL_PROVIDER === "postmark") {
+      const required: Array<[string, unknown]> = [
+        ["POSTMARK_SERVER_TOKEN", environment.POSTMARK_SERVER_TOKEN],
+        ["POSTMARK_FROM_EMAIL", environment.POSTMARK_FROM_EMAIL],
+        ["POSTMARK_WEBHOOK_USERNAME", environment.POSTMARK_WEBHOOK_USERNAME],
+        ["POSTMARK_WEBHOOK_PASSWORD", environment.POSTMARK_WEBHOOK_PASSWORD],
+      ];
+      for (const [path, value] of required) {
+        if (!value) context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `${path} is required when EMAIL_PROVIDER=postmark`,
+          path: [path],
+        });
+      }
+    }
     if (environment.ADMIN_AUTH_MODE === "database") {
       if (!environment.DATABASE_URL) {
         context.addIssue({
