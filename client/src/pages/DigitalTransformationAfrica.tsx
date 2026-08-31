@@ -92,14 +92,14 @@ export default function DigitalTransformationAfrica() {
           viewport={{ once: true }}
           className="py-16 border-t border-white/5"
         >
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">Transformation Track Record</h2>
+          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">Public Evidence Boundary</h2>
           <div className="space-y-4">
             {[
-              "Deployed education management platform serving students across Malawi — 82% engagement increase",
-              "MEL monitoring system used in 3 countries, processing 2,000+ data points daily at 95% accuracy",
-              "IoT gateway infrastructure handling 50M+ messages monthly at 99.9% uptime",
-              "Business automation cutting administrative processing from weeks to 3–5 days",
-              "Digital systems supporting NGOs and development partners across Sub-Saharan Africa",
+              "Mtendere Education Consult case study: source, migrations, test suites, and public endpoint scope",
+              "Aöthothe Enterprise OS case study: draft governed commercial controls with a recorded HOLD release decision",
+              "Client operational metrics and adoption figures are excluded until approved evidence is available",
+              "Public claims distinguish prototype, draft, and deployed states",
+              "Architecture and delivery discussions begin with the operating problem and acceptance evidence",
             ].map((result, idx) => (
               <div key={idx} className="flex items-start gap-3 text-sm text-muted-foreground">
                 <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />

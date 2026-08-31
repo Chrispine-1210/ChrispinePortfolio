@@ -60,7 +60,7 @@ const fallbackPortfolioProjects = seedPortfolioProjects.map(
     featuredImage: null,
     images: project.images ?? [],
     liveUrl: project.liveUrl ?? null,
-    githubUrl: null,
+    githubUrl: project.githubUrl ?? null,
     featured: project.featured ?? false,
     order: project.order ?? index,
     createdAt: new Date(),
@@ -210,9 +210,10 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
   try {
     // Set cache headers for portfolio
     res.setHeader("Cache-Control", "public, max-age=300");
-    let projects = hasDatabase()
-      ? await storage.getAllProjects()
-      : fallbackPortfolioProjects;
+    // Public case studies are curated in source until the evidence workflow can
+    // approve database-backed publication records. This prevents legacy CMS data
+    // from surfacing unsupported outcome claims.
+    let projects = fallbackPortfolioProjects;
 
     // Apply filters
     const { category, search, featured } = req.query;
@@ -248,9 +249,7 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
 
 router.get("/api/portfolio/featured", async (req: Request, res: Response) => {
   try {
-    const projects = hasDatabase()
-      ? await storage.getFeaturedProjects()
-      : fallbackPortfolioProjects.filter((project) => project.featured);
+    const projects = fallbackPortfolioProjects.filter((project) => project.featured);
     res.json(projects);
   } catch (error) {
     console.error("Error fetching featured projects:", error);
@@ -260,9 +259,7 @@ router.get("/api/portfolio/featured", async (req: Request, res: Response) => {
 
 router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
   try {
-    const project = hasDatabase()
-      ? await storage.getProjectBySlug(req.params.slug)
-      : fallbackPortfolioProjects.find((item) => item.slug === req.params.slug);
+    const project = fallbackPortfolioProjects.find((item) => item.slug === req.params.slug);
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }

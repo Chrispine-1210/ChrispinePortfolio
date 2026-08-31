@@ -45,7 +45,7 @@ const services = [
   {
     icon: Code2,
     title: "Full-Stack Engineering",
-    description: "End-to-end web platform development. React, TypeScript, Node.js, PostgreSQL — production-grade from day one.",
+    description: "End-to-end web platform development with an evidence-led approach to build, test, and release decisions.",
     tags: ["React", "TypeScript", "Node.js", "PostgreSQL"],
     color: "from-blue-500/10 to-cyan-500/5",
     iconColor: "text-blue-400",
@@ -72,17 +72,17 @@ const services = [
 ];
 
 const metrics = [
-  { value: 7, suffix: "+", label: "Years Experience", sub: "In ICT & MEL" },
-  { value: 12, suffix: "+", label: "Systems Deployed", sub: "Across Africa" },
-  { value: 500, suffix: "+", label: "Data Collectors", sub: "Across 3 countries" },
-  { value: 82, suffix: "%", label: "Engagement Lift", sub: "Mtendere Education Platform" },
+  { value: 2, suffix: "", label: "Case Studies", sub: "evidence-scoped" },
+  { value: 1, suffix: "", label: "Public CV", sub: "privacy-redacted" },
+  { value: 1, suffix: "", label: "Release Standard", sub: "claims need proof" },
+  { value: 0, suffix: "", label: "Client Metrics", sub: "published without approval" },
 ];
 
 const trustSignals = [
-  { icon: Shield, text: "Enterprise-grade security on all builds" },
-  { icon: Activity, text: "99.9% uptime on deployed systems" },
-  { icon: Layers, text: "Fully documented architecture handoff" },
-  { icon: CheckCircle2, text: "30-day post-launch support included" },
+  { icon: Shield, text: "Public claims are limited to inspectable evidence" },
+  { icon: Activity, text: "Release verification is recorded with the source" },
+  { icon: Layers, text: "Draft work is labelled as draft, not deployed" },
+  { icon: CheckCircle2, text: "Client outcomes require approved evidence before publication" },
 ];
 
 const engagementTypes = ["Project-Based", "Retainer", "Advisory", "Fractional CTO"];
@@ -90,15 +90,15 @@ const engagementTypes = ["Project-Based", "Retainer", "Advisory", "Fractional CT
 const featuredProject = {
   title: "Mtendere Education Consult",
   category: "EdTech Platform",
-  description: "Full-stack education management platform serving students, educators, and administrators across Malawi. Built from zero to production in 3 months.",
+  description: "Full-stack education-consultancy platform documented through source, migration, test, and public-endpoint evidence.",
   outcomes: [
-    "82% student engagement increase post-launch",
-    "3–5 day application processing (down from 2–3 weeks)",
-    "Multi-program management across institutions",
-    "Mobile-first design for 80%+ mobile user base",
+    "React, TypeScript, Node.js, PostgreSQL, and Drizzle ORM delivery",
+    "Public content and protected administrative workflow scope",
+    "Automated-test suites maintained in the repository",
+    "Client performance metrics excluded pending approved evidence",
   ],
   stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Drizzle ORM"],
-  liveUrl: "https://mtendereeducationconsult.com/",
+  evidenceUrl: "https://github.com/Chrispine-1210/MEC",
   slug: "mtendere-education-platform",
 };
 
@@ -146,7 +146,7 @@ export default function Landing() {
               <motion.div variants={fadeUp}>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm text-[11px] font-mono text-white/60">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  ACCEPTING ENGAGEMENTS · 2025
+                  ACCEPTING ENGAGEMENTS · 2026
                 </div>
               </motion.div>
 
@@ -160,17 +160,17 @@ export default function Landing() {
                   <span className="text-white/90">for Africa</span>
                 </h1>
                 <p className="text-lg text-white/50 leading-relaxed max-w-lg">
-                  Building enterprise-grade digital infrastructure for organizations in emerging markets.
-                  7+ years of production deployments across Malawi, Zambia, and Zimbabwe.
+                  Building software, systems, and operational foundations for organisations in emerging markets.
+                  Public claims are deliberately limited to evidence that can be inspected.
                 </p>
               </motion.div>
 
               {/* Quick stats */}
               <motion.div variants={fadeUp} className="flex flex-wrap gap-6">
                 {[
-                  { n: "7+", label: "Years" },
-                  { n: "12+", label: "Systems" },
-                  { n: "3", label: "Countries" },
+                  { n: "2", label: "Case Studies" },
+                  { n: "1", label: "Public CV" },
+                  { n: "Proof", label: "First" },
                 ].map(({ n, label }) => (
                   <div key={label} className="flex items-baseline gap-1.5">
                     <span className="text-2xl font-black text-white">{n}</span>
@@ -257,14 +257,14 @@ export default function Landing() {
                     <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Live Platform</span>
                   </div>
                   <div className="text-sm font-semibold text-white">Mtendere Education</div>
-                  <div className="text-[11px] text-white/40 mt-0.5">82% engagement increase</div>
+                  <div className="text-[11px] text-white/40 mt-0.5">Source repository linked</div>
                   <a
-                    href="https://mtendereeducationconsult.com/"
+                    href="https://github.com/Chrispine-1210/MEC"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1 mt-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
                   >
-                    <ExternalLink className="w-3 h-3" /> Visit Platform
+                    <ExternalLink className="w-3 h-3" /> View Source
                   </a>
                 </motion.div>
 
@@ -296,7 +296,7 @@ export default function Landing() {
                 >
                   <div className="flex items-center gap-2">
                     <Globe className="w-4 h-4 text-blue-400" />
-                    <span className="text-[11px] text-white/60">3 Countries Deployed</span>
+                    <span className="text-[11px] text-white/60">Evidence-led release</span>
                   </div>
                 </motion.div>
               </div>
@@ -347,7 +347,7 @@ export default function Landing() {
               What I Build
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/40 max-w-xl mx-auto text-lg">
-              Enterprise technology consulting with 7+ years of production deployments.
+              Systems and technology work presented with a clear evidence boundary.
             </motion.p>
           </motion.div>
 
@@ -437,13 +437,13 @@ export default function Landing() {
                     {featuredProject.category}
                   </Badge>
                   <a
-                    href={featuredProject.liveUrl}
+                    href={featuredProject.evidenceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    LIVE
+                    SOURCE
                   </a>
                 </div>
 
@@ -471,9 +471,9 @@ export default function Landing() {
 
                 <div className="flex gap-3 pt-2">
                   <Button size="sm" asChild className="rounded-lg h-9 px-4">
-                    <a href={featuredProject.liveUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={featuredProject.evidenceUrl} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                      Visit Platform
+                      View Source
                     </a>
                   </Button>
                   <Button size="sm" variant="outline" asChild className="rounded-lg h-9 px-4 border-white/10 bg-white/[0.03] text-white/60 hover:text-white">
@@ -498,7 +498,7 @@ export default function Landing() {
                       <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
                       <div className="flex-1 mx-3 h-4 rounded bg-white/[0.04] text-[9px] font-mono text-white/20 flex items-center px-2">
-                        mtendereeducationconsult.com
+                        github.com/Chrispine-1210/MEC
                       </div>
                     </div>
                     <div className="p-4 space-y-2">
@@ -506,11 +506,11 @@ export default function Landing() {
                       <div className="h-2 rounded bg-white/[0.06] w-full" />
                       <div className="h-2 rounded bg-white/[0.06] w-5/6" />
                       <div className="grid grid-cols-3 gap-2 mt-3">
-                        {[82, 500, 3].map((n, i) => (
+                        {["UI", "API", "DB"].map((n, i) => (
                           <div key={i} className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-2 text-center">
-                            <div className="text-sm font-black text-white">{n}{i === 0 ? "%" : "+"}</div>
+                            <div className="text-sm font-black text-white">{n}</div>
                             <div className="text-[8px] text-white/30 mt-0.5">
-                              {["Engage", "Users", "Countries"][i]}
+                              {["Interface", "Service", "Data"][i]}
                             </div>
                           </div>
                         ))}
@@ -531,8 +531,8 @@ export default function Landing() {
                     </div>
                     <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-3">
                       <div className="text-[10px] text-emerald-400/60 font-mono mb-1">STATUS</div>
-                      <div className="text-[11px] font-semibold text-emerald-300">Production</div>
-                      <div className="text-[10px] text-emerald-400/40 mt-0.5">Live & serving</div>
+                      <div className="text-[11px] font-semibold text-emerald-300">SOURCE</div>
+                      <div className="text-[10px] text-emerald-400/40 mt-0.5">Direct inspection</div>
                     </div>
                   </div>
                 </div>
@@ -590,15 +590,15 @@ export default function Landing() {
                 Why Organizations<br />Choose Me
               </h2>
               <p className="text-white/40 text-lg mb-10">
-                Seven years of enterprise delivery across three countries. Every project ships with documentation,
-                a production deployment, and real business outcomes.
+                This release separates working software evidence from customer outcomes. Source, test, and deployment
+                evidence may be published; private results are not presented as public fact.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { title: "Business-First", desc: "Every decision evaluated against ROI" },
-                  { title: "End-to-End", desc: "Strategy → code → deployment → support" },
-                  { title: "Verified Results", desc: "Named projects with real metrics" },
-                  { title: "Emerging Markets", desc: "Malawi · Zambia · Zimbabwe" },
+                  { title: "Business-First", desc: "Scope tied to a real operating problem" },
+                  { title: "Traceable", desc: "Claims point to a checkable artifact" },
+                  { title: "Release-aware", desc: "Draft and production states stay distinct" },
+                  { title: "Privacy-minded", desc: "Client and personal data stays controlled" },
                 ].map(({ title, desc }) => (
                   <div key={title} className="space-y-1">
                     <div className="text-sm font-semibold text-white">{title}</div>
@@ -782,7 +782,7 @@ export default function Landing() {
                   className="h-14 px-8 text-[16px] font-semibold rounded-xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.07]"
                   data-testid="button-cta-cv"
                 >
-                  <a href="/attached_assets/Chrispine Mndala CV (1)_1762954002259.pdf" download>
+                  <a href="/attached_assets/Chrispine-Mndala-CV-2026.pdf" download>
                     <Download className="w-5 h-5 mr-2" />
                     Download CV
                   </a>

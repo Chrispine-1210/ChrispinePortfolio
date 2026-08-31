@@ -23,7 +23,7 @@ const authorityArticles = [
   },
   {
     title: "Building Scalable Technology Infrastructure in Emerging Markets",
-    description: "Lessons from deploying production systems across Malawi, Zambia, and Tanzania — from unreliable connectivity to regulatory compliance.",
+    description: "Practical lessons on delivery constraints, connectivity, operating controls, and digital transformation in emerging markets.",
     readTime: "10 min read",
     category: "Infrastructure",
     icon: BookOpen

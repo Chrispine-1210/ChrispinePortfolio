@@ -56,7 +56,10 @@ export function createApp() {
   setupSeedTriggerRoutes(seedTriggerRouter);
   app.use(seedTriggerRouter);
 
-  app.use("/attached_assets", express.static("attached_assets"));
+  // Missing public assets must not fall through to the single-page-app shell;
+  // in particular, retired document paths should return 404 rather than a 200
+  // HTML response that can be mistaken for an available file.
+  app.use("/attached_assets", express.static("attached_assets", { fallthrough: false }));
   app.use(routes);
   app.use(createAdminRouter());
   app.use(createEmailRouter());

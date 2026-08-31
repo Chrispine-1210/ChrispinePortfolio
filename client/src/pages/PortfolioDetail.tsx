@@ -124,12 +124,12 @@ export default function PortfolioDetail() {
               </h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-2 border-b border-white/5">
-                  <span className="font-mono text-[10px] text-muted-foreground uppercase">Environment</span>
-                  <span className="font-mono text-[10px] text-white uppercase">Production</span>
+                  <span className="font-mono text-[10px] text-muted-foreground uppercase">Release state</span>
+                  <span className="font-mono text-[10px] text-white uppercase">{project.liveUrl ? "Public endpoint" : "Draft / controlled"}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-white/5">
-                  <span className="font-mono text-[10px] text-muted-foreground uppercase">Protocol</span>
-                  <span className="font-mono text-[10px] text-white uppercase text-right">HTTPS / TLS 1.3</span>
+                  <span className="font-mono text-[10px] text-muted-foreground uppercase">Evidence model</span>
+                  <span className="font-mono text-[10px] text-white uppercase text-right">Inspectable scope</span>
                 </div>
                 <div>
                   <span className="font-mono text-[10px] text-muted-foreground uppercase block mb-3">Technology Stack</span>
@@ -263,28 +263,12 @@ export default function PortfolioDetail() {
                   <Activity className="text-primary w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono text-primary uppercase tracking-widest">04 // Measurable Results</span>
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Business Impact</h3>
+                  <span className="text-[10px] font-mono text-primary uppercase tracking-widest">04 // Evidence Status</span>
+                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Release and Evidence Boundary</h3>
                 </div>
               </div>
               <div className="prose prose-invert max-w-none">
                 <p className="text-muted-foreground leading-relaxed text-lg">{project.outcome}</p>
-              </div>
-              <div className="mt-8 p-6 bg-primary/10 border border-primary/20">
-                <h4 className="text-sm font-bold text-primary uppercase mb-4">Key Performance Indicators</h4>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[
-                    { metric: "82%", label: "Engagement Increase" },
-                    { metric: "3-5 Days", label: "Processing Time" },
-                    { metric: "15+", label: "Countries Served" },
-                    { metric: "99.9%", label: "System Uptime" }
-                  ].map((kpi, idx) => (
-                    <div key={idx} className="text-center p-4 bg-black/40">
-                      <div className="text-2xl font-black text-white">{kpi.metric}</div>
-                      <div className="text-[10px] text-muted-foreground uppercase mt-1">{kpi.label}</div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </motion.section>
           )}

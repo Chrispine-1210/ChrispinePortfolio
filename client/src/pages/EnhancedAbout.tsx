@@ -124,7 +124,7 @@ export default function EnhancedAbout() {
               <Link href="/hire">Let's Engage</Link>
             </Button>
             <Button asChild variant="outline" data-testid="button-download-cv">
-              <a href="#" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+              <a href="/attached_assets/Chrispine-Mndala-CV-2026.pdf" download className="flex items-center gap-2">
                 <Download className="w-4 h-4" />
                 Download CV
               </a>

@@ -101,7 +101,7 @@ export default function About() {
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild data-testid="button-download-cv">
-                  <a href="/attached_assets/Chrispine Mndala CV (1)_1762954002259.pdf" download className="flex items-center gap-2">
+                  <a href="/attached_assets/Chrispine-Mndala-CV-2026.pdf" download className="flex items-center gap-2">
                     <Download className="mr-2 h-5 w-5" />
                     DOWNLOAD_CV
                   </a>
@@ -142,10 +142,10 @@ export default function About() {
             className="grid grid-cols-2 md:grid-cols-4 gap-8"
           >
             {[
-              { number: "7+", label: "Years Experience" },
-              { number: "15+", label: "Countries Reached" },
-              { number: "82%", label: "Avg Engagement Lift" },
-              { number: "50M+", label: "IoT Messages/Month" },
+              { number: "2", label: "Case Studies" },
+              { number: "1", label: "Public CV" },
+              { number: "Proof", label: "Publication Standard" },
+              { number: "0", label: "Unapproved Client Metrics" },
             ].map((stat, idx) => (
               <motion.div
                 key={stat.label}
@@ -257,7 +257,7 @@ export default function About() {
                 { title: "Automation", desc: "Eliminate repetitive manual work through intelligent automation. Every system I design reduces operational overhead and frees teams to focus on strategic priorities." },
                 { title: "Data-Driven Decisions", desc: "Transform raw data into actionable intelligence. Real-time dashboards and analytics that enable leadership to make informed decisions faster." },
                 { title: "Cloud Systems", desc: "Cloud-native architecture designed for reliability and scale. Infrastructure that grows with your business without proportional cost increases." },
-                { title: "Infrastructure Reliability", desc: "Enterprise-grade uptime and security. Systems engineered for 99.9% availability with automated failover and disaster recovery." },
+                { title: "Infrastructure Reliability", desc: "Reliability, security, recovery, and operational controls are treated as release requirements rather than marketing claims." },
                 { title: "Human-Centered Design", desc: "Technology should serve people, not the other way around. Interfaces and workflows designed around how teams actually work, not how systems want them to work." },
                 { title: "Scalable Architecture", desc: "Build once, scale infinitely. Modular systems that adapt to changing business needs without requiring fundamental redesign." }
               ].map((item, idx) => (
@@ -368,7 +368,7 @@ export default function About() {
                 {
                   name: "Mtendere Education Consult",
                   role: "Co-Founder & CTO",
-                  desc: "Education technology platform connecting African students with international universities. Digital infrastructure for 1000+ students across 15+ countries.",
+                  desc: "Education-consultancy platform case study limited to inspectable engineering scope and public endpoint evidence.",
                   focus: "EdTech"
                 },
                 {
@@ -526,7 +526,7 @@ export default function About() {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      ["React + TypeScript", "95%"],
+                      ["React + TypeScript", "Working"],
                       ["Node.js / Express", "93%"],
                       ["PostgreSQL", "90%"],
                       ["REST API Design", "92%"],

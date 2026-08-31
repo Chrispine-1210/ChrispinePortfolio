@@ -76,7 +76,7 @@ export function Hero() {
               </div>
               <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl leading-relaxed border-l-2 border-primary/30 pl-6" data-testid="text-hero-description">
                 Engineering high-performance digital systems with <strong>7+ years</strong> of expertise. 
-                Architecting data-driven solutions that deliver <strong>60% efficiency gains</strong> across multiple sectors.
+                Architecting data-driven systems with claims limited to inspectable delivery evidence.
               </p>
             </div>
 
@@ -88,7 +88,7 @@ export function Hero() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="rounded-none border-primary/50 text-primary hover:bg-primary/10" asChild data-testid="button-download-cv">
-                <a href="/attached_assets/Chrispine Mndala CV (1)_1762954002259.pdf" download>
+                <a href="/attached_assets/Chrispine-Mndala-CV-2026.pdf" download>
                   <Download className="mr-2 h-5 w-5" />
                   PULL_DATA_CV
                 </a>

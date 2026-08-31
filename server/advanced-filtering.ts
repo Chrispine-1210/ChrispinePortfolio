@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { storage } from "./storage.js";
+import { seedPortfolioProjects } from "./seed-data.js";
 
 export function setupFilteringRoutes(router: Router) {
   // Advanced blog search with pagination
@@ -80,7 +81,24 @@ export function setupFilteringRoutes(router: Router) {
         featured = "",
       } = req.query;
 
-      let projects = await storage.getAllProjects();
+      // Keep public search aligned with the evidence-approved collection instead
+      // of allowing legacy database content to republish unsupported claims.
+      let projects = seedPortfolioProjects.map((project, index) => ({
+        ...project,
+        id: `seed-project-${index + 1}`,
+        challenge: project.challenge ?? null,
+        solution: project.solution ?? null,
+        outcome: project.outcome ?? null,
+        techStack: project.techStack ?? [],
+        featuredImage: null,
+        images: project.images ?? [],
+        liveUrl: project.liveUrl ?? null,
+        githubUrl: project.githubUrl ?? null,
+        featured: project.featured ?? false,
+        order: project.order ?? index,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
 
       // Filter by search query
       if (q && typeof q === "string") {
@@ -147,7 +165,7 @@ export function setupFilteringRoutes(router: Router) {
     "/api/categories/portfolio",
     async (req: Request, res: Response) => {
       try {
-        const projects = await storage.getAllProjects();
+        const projects = seedPortfolioProjects;
         const categories = Array.from(
           new Set(projects.map((p) => p.category))
         ).sort();

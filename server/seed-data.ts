@@ -214,135 +214,53 @@ Program Adjustment & Iteration
 
 export const seedPortfolioProjects = [
   {
-    title: "Mtendere Education Consult - Platform & Management System",
+    title: "Mtendere Education Consult - Full-Stack Platform Delivery",
     slug: "mtendere-education-platform",
-    description: "Comprehensive education consultancy platform connecting African students with international universities. Full-stack web application with student portal, admin CRM, partner management, and analytics.",
-    challenge: "Build a scalable platform to digitize education consultancy operations for 1000+ students, manage university partnerships across 15+ countries, handle application workflows, and provide real-time analytics for decision-making.",
-    solution: `Architected and built a complete full-stack platform using React, TypeScript, Node.js, and PostgreSQL. Implemented student self-service portal, admin CRM dashboard, university partner management, application tracking, scholarship management, and automated reporting.
+    description: "A public education-consultancy platform and administrative workspace. This study is limited to inspectable engineering evidence; it makes no client adoption, revenue, or operational-impact claim.",
+    challenge: "Deliver a maintainable web platform for public information and operational workflows while keeping data, role boundaries, and release work under control. Client performance metrics and acceptance records are not public evidence and are deliberately excluded.",
+    solution: `## Evidence scope
+This case study is based on the project's source repository, migration history, and automated tests. It does not present private client data, public-service availability, or unsupported business outcomes.
 
-### Architecture
-- **Frontend**: React 18 + TypeScript + Tailwind CSS + shadcn/ui, responsive design
-- **Backend**: Node.js + Express with structured API design, authentication middleware
-- **Database**: PostgreSQL with Drizzle ORM, relational schema for students, applications, partners
-- **Infrastructure**: Cloud-deployed with CI/CD, DNS management, SSL
-- **Features**: Student portal, admin CRM, partner management, application tracking, events, jobs, blog, analytics
+## Engineering contribution
+- React and TypeScript client with a Node.js and Express service layer.
+- PostgreSQL and Drizzle-backed data model with recorded migrations.
+- Public content and application flows alongside protected administration, role, and MFA-related test coverage.
+- Test suites for unit, integration, end-to-end, and smoke scenarios are maintained in the repository.
 
-### Key Results
-| Metric | Before | After |
-|--------|--------|-------|
-| Application Processing | 2-3 weeks | 3-5 days |
-| Student Engagement | 45% | 82% |
-| Partner Response Time | 5 days | <24 hours |
-| Admin Efficiency | 40% | 85% |
-
-Live: https://mtendereeducationconsult.com/`,
-    outcome: "Digitized education consultancy operations, improved student engagement by 82%, reduced application processing time from weeks to days, and enabled management of 15+ university partnerships from a single platform.",
-    category: "ICT Infrastructure",
+## Release evidence
+- The portfolio release records the exact verification commands and outcomes in its release note.
+- The public source repository is linked for direct inspection.
+- Operational adoption, turnaround-time, engagement, and partner claims remain out of scope until a client-approved evidence record exists.`,
+    outcome: "Evidence status: source-backed delivery case study. Client outcome metrics and public-service availability are not published as verified facts.",
+    category: "Full-Stack Delivery",
     techStack: ["React", "TypeScript", "Node.js", "Express", "PostgreSQL", "Drizzle ORM", "Tailwind CSS", "Vite"],
-    images: [
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800",
-      "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800"
-    ],
+    images: [],
     featured: true,
-    liveUrl: "https://mtendereeducationconsult.com/",
+    liveUrl: null,
+    githubUrl: "https://github.com/Chrispine-1210/MEC",
     order: 1,
   },
   {
-    title: "Smart Gateway Infrastructure System",
-    slug: "smart-gateway-infrastructure",
-    description: "Enterprise-grade IoT gateway system supporting LoRaWAN, LTE-M, and NB-IoT with real-time processing and cloud integration.",
-    challenge: "Design a scalable gateway architecture that handles 1000+ concurrent sensor connections with sub-second latency, manages duty cycle compliance, and provides redundancy across multiple connectivity options.",
-    solution: `Implemented multi-radio gateway with adaptive frequency selection, local edge processing for critical alerts, cloud sync for analytics, and automatic failover between cellular and WiFi backhaul. Built custom firmware using C++ with RTOS scheduling.
+    title: "Aöthothe Enterprise OS - Governed Commercial Foundation",
+    slug: "aothothe-enterprise-os-commercial-foundation",
+    description: "An internal enterprise operating-system slice for governed catalogues, pricing, proposals, and quotations. It is presented as a draft engineering release, not as a deployed product or customer deployment.",
+    challenge: "Create controlled commercial workflows that preserve price history, prevent unauthorized changes, and retain decision evidence before any client or financial activity is enabled.",
+    solution: `## Delivered in the recorded draft
+- Governed catalogue, pricing, proposal, and quotation workflows with evidence-backed price overrides and maker-checker approval.
+- Versioned templates, immutable approved history, database-enforced lifecycle controls, protected commercial UI, and audit/evidence views.
+- Clean and populated migration checks, strict TypeScript and production-build checks, security review, secret scan, licence policy, and dependency audit.
 
-### Technical Architecture
-- **Gateway Core**: ARM Cortex-A72 quad-core processor running Linux with custom packet routing
-- **Radio Stack**: SX1308 LoRaWAN concentrator + Quectel LTE modem + dual WiFi modules
-- **Edge Processing**: Local decision engine processing 10K+ packets/second with <50ms latency
-- **Cloud Sync**: Intelligent buffering with exponential backoff, 99.99% delivery guarantee
-- **Monitoring**: Real-time metrics via Prometheus, alerting via PagerDuty
+## Verification record
+The draft pull request records 37/37 integration and service tests and 18/18 Playwright desktop/mobile journeys. It also records a successful production build and zero high-severity production dependency vulnerabilities.
 
-### Performance Specifications
-| Metric | Target | Achieved |
-|--------|--------|----------|
-| Throughput | 5K pkt/s | 8.2K pkt/s |
-| Latency (p99) | 100ms | 47ms |
-| Uptime | 99% | 99.87% |
-| Failover Time | <2s | 340ms |
-| Data Loss | <0.1% | 0.006% |`,
-    outcome: "Deployed across 5 regional networks, processing 50M+ messages/month with 99.9% uptime. Reduced latency from 3s to 200ms. Saved 40% on cellular costs through intelligent traffic shaping.",
-    category: "Infrastructure",
-    techStack: ["C++", "RTOS", "LoRaWAN", "LTE-M", "NB-IoT", "PostgreSQL", "Docker"],
-    images: [
-      "https://images.unsplash.com/photo-1516321318423-f06f70504504?w=800",
-      "https://images.unsplash.com/photo-1579440236e312515ee341e7eaf8557e11184d5f8b4f8f8f?w=800"
-    ],
+## Release boundary
+The pull request remains a draft and its recorded decision is HOLD. GitHub Actions startup failure is unresolved; the work is not merged to the protected release line, deployed, connected to live pricing/taxes, or used for contracts, collections, or client operations.`,
+    outcome: "Evidence status: draft engineering release with recorded local verification. No production deployment, client usage, revenue, security-certification, or operational-outcome claim is made.",
+    category: "Enterprise Systems",
+    techStack: ["Next.js", "TypeScript", "PostgreSQL", "Playwright", "RBAC", "Audit Evidence"],
+    images: [],
     featured: true,
-    order: 1,
-  },
-  {
-    title: "MEL Monitoring Dashboard System",
-    slug: "mel-monitoring-dashboard",
-    description: "Real-time data collection and visualization platform for development programs with offline-first mobile app and web analytics dashboard.",
-    challenge: "Build a system that works in areas with poor connectivity, supports 20+ concurrent data collectors, enforces data quality validation, and provides actionable insights to program managers.",
-    solution: `Developed React/Node.js stack with local-first database (PouchDB), real-time sync queue, automated validation rules engine, and responsive dashboard. Integrated GIS mapping for spatial analysis.
-
-### System Components
-- **Mobile Collector App**: Offline-first React Native app with local SQLite, auto-sync when connected
-- **Web Dashboard**: Real-time analytics with D3.js visualizations, 95% data accuracy monitoring
-- **Validation Engine**: 50+ data quality rules (range checks, consistency, completeness, outliers)
-- **Geospatial Analysis**: Mapbox integration for spatial distribution analysis and cluster detection
-- **API Backend**: Node.js/Express with GraphQL subscriptions for real-time updates
-
-### MEL Framework Integration
-- **Indicator Hierarchy**: Impact → Outcome → Output → Process tracking
-- **Data Collection**: CAPI (Computer-Assisted Personal Interviewing) methodology
-- **Quality Assurance**: Automated anomaly detection, manual review workflows
-- **Learning Loop**: Automated insights generation with hypothesis testing
-
-### Deployment Statistics
-- **Countries**: Ghana, Kenya, Uganda
-- **Programs**: 12 concurrent programs
-- **Data Collectors**: 500+ trained staff
-- **Data Points**: 2,000+ collected daily
-- **Accuracy Rate**: 95%+ (verified through field audits)
-- **Data Entry Error Reduction**: 85% (from 12% to 1.8% error rate)`,
-    outcome: "Deployed in 3 countries across 12 programs. 500+ data collectors. Reduced data entry errors by 85% through validation. Processing 2000+ data points daily with 95%+ accuracy.",
-    category: "MEL Systems",
-    techStack: ["React", "Node.js", "PouchDB", "PostgreSQL", "Mapbox", "D3.js"],
-    images: [
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800"
-    ],
-    featured: true,
+    liveUrl: null,
     order: 2,
-  },
-  {
-    title: "5G Network Optimization Engine",
-    slug: "5g-network-optimization",
-    description: "Machine learning-powered system for real-time 5G network optimization, predictive maintenance, and resource allocation.",
-    challenge: "Process massive volume of network telemetry (1M+ events/minute), predict failures 24 hours in advance, optimize radio resource allocation across 100+ cell sites.",
-    solution: "Implemented Python/ML pipeline with time-series forecasting (Prophet, LSTM), reinforcement learning for resource allocation, and real-time optimization engine. Stream processing with Kafka.",
-    outcome: "Improved network availability to 99.95%. Reduced maintenance costs by 35%. Decreased network congestion by 28%. Processed 30B+ events monthly with sub-minute latency.",
-    category: "Infrastructure",
-    techStack: ["Python", "TensorFlow", "Kafka", "Spark", "PostgreSQL", "Kubernetes"],
-    images: [
-      "https://images.unsplash.com/photo-1518611505868-48510c2e2e38?w=800",
-      "https://images.unsplash.com/photo-1551434678-e076c8e7f1d4?w=800"
-    ],
-    featured: true,
-    order: 3,
-  },
-  {
-    title: "LoRaWAN Hardware Reference Design",
-    slug: "lorawan-hardware-design",
-    description: "Production-ready LoRaWAN end-device reference design with ultra-low power consumption and extended range capabilities.",
-    challenge: "Design a multiplatform IoT device achieving >10 year battery life on AA batteries while supporting multiple sensors and over 25km range in open terrain.",
-    solution: "Custom PCB design with SX1276 radio, STM32L0 MCU, and optimized power management. Implemented dynamic spreading factor adjustment, sleep mode orchestration, and flash-based configuration.",
-    outcome: "Validated design across 5000+ field deployments. Average battery life: 12 years. Max range achieved: 28km. Cost: $35/unit in volume. Successfully licensed to 3 manufacturers.",
-    category: "Hardware Engineering",
-    techStack: ["ARM Cortex-M0", "LoRaWAN", "C/C++", "KiCad", "RF Design"],
-    liveUrl: "https://github.com/projects/lorawan-hardware",
-    featured: false,
-    order: 5,
   },
 ];
