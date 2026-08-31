@@ -21,7 +21,7 @@ const footerLinks: Record<string, Array<{ label: string; path: string; external?
   connect: [
     { label: "LinkedIn Profile", path: "https://www.linkedin.com/in/chrispine-mndala-11a951206", external: true },
     { label: "GitHub Projects", path: "https://github.com/Chrispine-1210", external: true },
-    { label: "Mtendere Platform", path: "https://mtendereeducationconsult.com/", external: true },
+    { label: "MEC Source Evidence", path: "https://github.com/Chrispine-1210/MEC", external: true },
     { label: "Email Directly", path: "mailto:peterschrispine@gmail.com", external: true },
   ],
 };

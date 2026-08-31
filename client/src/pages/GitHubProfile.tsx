@@ -48,62 +48,37 @@ const LANG_COLORS: Record<string, string> = {
 const STATIC_PROFILE = {
   login: "Chrispine-1210",
   name: "Chrispine Mndala",
-  bio: "Systems Architect & Digital Transformation Consultant. Building scalable digital infrastructure for emerging markets.",
-  public_repos: 12,
-  followers: 8,
-  following: 15,
+  bio: "Public evidence sources for software and systems delivery work.",
+  public_repos: 0,
+  followers: 0,
+  following: 0,
   avatar_url: "https://github.com/Chrispine-1210.png",
   html_url: "https://github.com/Chrispine-1210",
-  blog: "https://mtendereeducationconsult.com/",
+  blog: "https://github.com/Chrispine-1210",
   location: "Malawi, Africa",
-  company: "Aothothe LLC",
+  company: "Aöthothe Technologies",
 };
 
 const STATIC_REPOS = [
   {
-    id: 1, name: "mtendere-education-platform", description: "Full-stack education management platform. React + TypeScript + Node.js + PostgreSQL.",
-    stargazers_count: 4, forks_count: 1, language: "TypeScript", html_url: "https://github.com/Chrispine-1210",
-    homepage: "https://mtendereeducationconsult.com/", updated_at: "2024-11-15T00:00:00Z", topics: ["react", "typescript", "nodejs", "edtech"],
+    id: 1125692556, name: "MEC", description: "Public source repository supporting the Mtendere Education Consult case study.",
+    stargazers_count: 0, forks_count: 0, language: "TypeScript", html_url: "https://github.com/Chrispine-1210/MEC",
+    homepage: null, updated_at: "2026-08-31T00:00:00Z", topics: ["react", "typescript", "nodejs", "postgresql"],
   },
   {
-    id: 2, name: "lorawan-gateway-system", description: "IoT LoRaWAN gateway system for agriculture and environmental monitoring in Sub-Saharan Africa.",
-    stargazers_count: 3, forks_count: 0, language: "JavaScript", html_url: "https://github.com/Chrispine-1210",
-    homepage: null, updated_at: "2024-09-20T00:00:00Z", topics: ["iot", "lorawan", "javascript"],
-  },
-  {
-    id: 3, name: "mel-data-platform", description: "Monitoring, Evaluation & Learning data platform. Mobile data collection, validation, and dashboards.",
-    stargazers_count: 5, forks_count: 2, language: "TypeScript", html_url: "https://github.com/Chrispine-1210",
-    homepage: null, updated_at: "2024-08-10T00:00:00Z", topics: ["mel", "data", "typescript", "analytics"],
-  },
-  {
-    id: 4, name: "digital-portfolio-platform", description: "This platform — enterprise personal operating system built with React, TypeScript, Node.js, Drizzle ORM, PostgreSQL.",
-    stargazers_count: 2, forks_count: 0, language: "TypeScript", html_url: "https://github.com/Chrispine-1210",
-    homepage: null, updated_at: "2025-01-05T00:00:00Z", topics: ["portfolio", "typescript", "react", "express"],
-  },
-  {
-    id: 5, name: "network-infrastructure-toolkit", description: "Toolkit for network deployment, configuration management, and performance monitoring in enterprise environments.",
-    stargazers_count: 1, forks_count: 1, language: "Python", html_url: "https://github.com/Chrispine-1210",
-    homepage: null, updated_at: "2024-06-01T00:00:00Z", topics: ["networking", "python", "devops"],
-  },
-  {
-    id: 6, name: "data-collection-mobile-app", description: "Offline-first mobile data collection app for field researchers. Works without internet, syncs when connected.",
-    stargazers_count: 3, forks_count: 0, language: "JavaScript", html_url: "https://github.com/Chrispine-1210",
-    homepage: null, updated_at: "2024-05-12T00:00:00Z", topics: ["mobile", "offline", "javascript", "react-native"],
+    id: 1309806023, name: "ChrispinePortfolio", description: "The source repository for this proof-driven portfolio release.",
+    stargazers_count: 0, forks_count: 0, language: "TypeScript", html_url: "https://github.com/Chrispine-1210/ChrispinePortfolio",
+    homepage: null, updated_at: "2026-08-31T00:00:00Z", topics: ["portfolio", "typescript", "react", "express"],
   },
 ];
 
-const STATIC_LANGS = [
-  { name: "TypeScript", percent: 62 },
-  { name: "JavaScript", percent: 22 },
-  { name: "Python", percent: 10 },
-  { name: "HTML/CSS", percent: 6 },
-];
+const STATIC_LANGS: Array<{ name: string; percent: number }> = [];
 
 const CONTRIB_STATS = [
-  { label: "Total Commits", value: "340+", icon: GitCommit, color: "text-blue-400" },
-  { label: "Repositories", value: "12+", icon: Package, color: "text-purple-400" },
-  { label: "Pull Requests", value: "48+", icon: GitBranch, color: "text-emerald-400" },
-  { label: "Issues Closed", value: "95+", icon: Activity, color: "text-orange-400" },
+  { label: "Evidence Sources", value: "2", icon: GitCommit, color: "text-blue-400" },
+  { label: "Repositories", value: "Selected", icon: Package, color: "text-purple-400" },
+  { label: "Release State", value: "Scoped", icon: GitBranch, color: "text-emerald-400" },
+  { label: "Client Metrics", value: "Withheld", icon: Activity, color: "text-orange-400" },
 ];
 
 function RepoCard({ repo, idx }: { repo: typeof STATIC_REPOS[0]; idx: number }) {

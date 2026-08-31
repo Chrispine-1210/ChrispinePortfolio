@@ -72,9 +72,9 @@ const engagementPaths = [
 ];
 
 const benefits = [
-  "Systems architect with 7+ years enterprise experience",
-  "Proven track record: 82% engagement increases, 99.9% uptime",
-  "Full-stack capabilities from strategy to deployment",
+  "Software, systems, and operations experience across delivery and commercial work",
+  "Public claims are limited to traceable engineering evidence",
+  "Full-stack capabilities from discovery through release support",
   "Emerging markets expertise: Africa-focused solutions",
   "Entrepreneur who understands business, not just code",
   "Measurable outcomes, not just deliverables"

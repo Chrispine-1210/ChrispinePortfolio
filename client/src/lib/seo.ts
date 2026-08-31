@@ -38,12 +38,12 @@ export function setMetaTags(tags: MetaTags) {
 
 export const pageMetaTags = {
   home: {
-    title: "Chrispine Mndala | ICT & MEL Specialist | Portfolio & Blog",
-    description: "7+ years of ICT Infrastructure, MEL Systems, and Data Analytics expertise. View my portfolio of 60%+ efficiency gains projects.",
+    title: "Chrispine Mndala | Software, Systems & Operations Portfolio",
+    description: "Evidence-led portfolio covering software delivery, systems operations, data analysis, and project execution.",
   },
   portfolio: {
     title: "Portfolio | Chrispine Mndala - Project Showcase",
-    description: "Explore 9+ completed projects in MEL Systems, ICT Infrastructure, Web Development, and Data Analytics.",
+    description: "Explore evidence-scoped case studies in full-stack delivery and enterprise systems.",
   },
   blog: {
     title: "TECH_LOGS | Chrispine Mndala - Blog & Insights",
@@ -51,7 +51,7 @@ export const pageMetaTags = {
   },
   about: {
     title: "About | Chrispine Mndala - Professional Profile",
-    description: "Learn about my 7+ years of experience in ICT and MEL systems implementation and optimization.",
+    description: "Learn about Chrispine Mndala's software, systems, data, and operations background.",
   },
   contact: {
     title: "Contact | Chrispine Mndala - Get In Touch",

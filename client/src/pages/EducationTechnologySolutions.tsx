@@ -47,11 +47,11 @@ export default function EducationTechnologySolutions() {
   ];
 
   const outcomes = [
-    "Mtendere Education Consult platform — 82% student engagement increase post-launch",
-    "3–5 day application processing (reduced from 2–3 weeks) via digital workflows",
-    "Live at mtendereeducationconsult.com — operational in production",
-    "Multi-institution architecture supports concurrent programs at scale",
-    "Mobile-first design — 80%+ of users in Sub-Saharan Africa access via mobile",
+    "Mtendere Education Consult: source-backed platform delivery case study",
+    "Public source repository linked for direct inspection",
+    "Repository includes application, administration, migration, and test artefacts",
+    "Client adoption, process-time, and engagement measures are not published without approved evidence",
+    "The case study clearly separates engineering scope from customer outcomes",
   ];
 
   return (
@@ -80,9 +80,7 @@ export default function EducationTechnologySolutions() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <a href="https://mtendereeducationconsult.com/" target="_blank" rel="noopener noreferrer">
-                See Live Example
-              </a>
+              <Link href="/portfolio/mtendere-education-platform">Read Case Study</Link>
             </Button>
           </div>
           <img src={edtechImage} alt="Chrispine Mndala in a modern African learning and technology space" className="max-h-[640px] w-full rounded-2xl border border-white/10 object-cover object-top shadow-2xl" />
@@ -112,7 +110,7 @@ export default function EducationTechnologySolutions() {
           viewport={{ once: true }}
           className="py-16 border-t border-white/5"
         >
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">Verified Outcomes</h2>
+          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">Published Evidence Scope</h2>
           <div className="space-y-4">
             {outcomes.map((outcome, idx) => (
               <div key={idx} className="flex items-start gap-3">

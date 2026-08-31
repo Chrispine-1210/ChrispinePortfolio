@@ -3,27 +3,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Quote } from "lucide-react";
 
 /**
- * Testimonials - Professional client testimonials section
+ * Evidence standards section. Client quotations are not published without
+ * recorded permission and independently reviewable source material.
  */
 
-const testimonials = [
+const evidenceNotes = [
   {
-    text: "Chrispine transformed our education consultancy operations entirely. The platform he built increased our student engagement by 82% and reduced application processing from weeks to days. His strategic approach to digital transformation is exceptional.",
-    author: "Mtendere Education Consult",
-    role: "Education Consultancy Platform",
-    company: "Founder & Director"
+    text: "Source code, migrations, automated tests, and a public endpoint can support an engineering delivery claim. They do not by themselves prove customer adoption or commercial impact.",
+    author: "Engineering evidence",
+    role: "Publication requirement",
+    company: "Traceable artefacts"
   },
   {
-    text: "Combining deep technical expertise with strategic thinking, Chrispine delivered a production-grade MEL dashboard in just 3 months. The system now processes 2,000+ data points daily with 95% accuracy across 3 countries.",
-    author: "International Development Partner",
-    role: "MEL Monitoring Dashboard",
-    company: "Program Director"
+    text: "Client names, quotations, financial figures, operational measures, and logos are withheld unless approval and provenance are recorded.",
+    author: "Client evidence",
+    role: "Permission requirement",
+    company: "Controlled disclosure"
   },
   {
-    text: "The IoT gateway system Chrispine designed handles 50M+ messages monthly with 99.9% uptime. His infrastructure optimization saved us 40% on cellular costs while improving latency from 3 seconds to under 200ms.",
-    author: "Regional Network Provider",
-    role: "Smart Gateway Infrastructure",
-    company: "CTO"
+    text: "Draft, prototype, and deployed states are labelled separately. A passing local test suite is not represented as a production release.",
+    author: "Release discipline",
+    role: "State requirement",
+    company: "No implied production status"
   }
 ];
 
@@ -37,16 +38,14 @@ export function Testimonials() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tighter">
-            What Clients Say
-          </h2>
+          <h2 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tighter">Evidence Before Claims</h2>
           <p className="text-lg text-muted-foreground">
-            Real results from real partnerships
+            The publication standard used across this portfolio
           </p>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, idx) => (
+          {evidenceNotes.map((testimonial, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 20 }}
