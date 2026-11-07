@@ -292,6 +292,145 @@ export const insertPortfolioProjectSchema = createInsertSchema(portfolioProjects
 export type InsertPortfolioProject = z.infer<typeof insertPortfolioProjectSchema>;
 export type PortfolioProject = typeof portfolioProjects.$inferSelect;
 
+// Internal project records are intentionally separated from public case studies.
+// A project can exist without ever becoming public.
+export const projects = pgTable("projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectCode: varchar("project_code", { length: 80 }).notNull().unique(),
+  name: varchar("name", { length: 240 }).notNull(),
+  organizationName: varchar("organization_name", { length: 240 }),
+  sector: varchar("sector", { length: 160 }),
+  country: varchar("country", { length: 120 }),
+  status: varchar("status", { length: 32 }).notNull().default("active"),
+  confidentiality: varchar("confidentiality", { length: 32 }).notNull().default("internal"),
+  internalSummary: text("internal_summary"),
+  commercialValue: numeric("commercial_value", { precision: 14, scale: 2 }),
+  currency: varchar("currency", { length: 3 }).notNull().default("USD"),
+  startDate: timestamp("start_date"),
+  targetDate: timestamp("target_date"),
+  repositoryUrl: text("repository_url"),
+  deploymentUrl: text("deployment_url"),
+  ownerId: varchar("owner_id").references(() => users.id, { onDelete: "set null" }),
+  legacyPortfolioProjectId: varchar("legacy_portfolio_project_id").unique()
+    .references(() => portfolioProjects.id, { onDelete: "set null" }),
+  archivedAt: timestamp("archived_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  statusIdx: index("projects_status_idx").on(table.status, table.updatedAt),
+  ownerIdx: index("projects_owner_idx").on(table.ownerId, table.status),
+  confidentialityIdx: index("projects_confidentiality_idx").on(table.confidentiality),
+}));
+
+export const caseStudies = pgTable("case_studies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
+  title: varchar("title", { length: 300 }).notNull(),
+  slug: varchar("slug", { length: 240 }).notNull().unique(),
+  summary: text("summary").notNull(),
+  challenge: text("challenge"),
+  constraints: text("constraints"),
+  objectives: text("objectives"),
+  solution: text("solution"),
+  architecture: text("architecture"),
+  technologies: text("technologies").array().notNull().default(sql`ARRAY[]::text[]`),
+  securityControls: text("security_controls"),
+  integrations: text("integrations"),
+  roleDescription: text("role_description"),
+  teamDescription: text("team_description"),
+  timeline: text("timeline"),
+  outcome: text("outcome"),
+  lessons: text("lessons"),
+  nextPhase: text("next_phase"),
+  category: varchar("category", { length: 160 }).notNull(),
+  featuredImage: text("featured_image"),
+  images: text("images").array().notNull().default(sql`ARRAY[]::text[]`),
+  liveUrl: text("live_url"),
+  githubUrl: text("github_url"),
+  workflowStatus: varchar("workflow_status", { length: 24 }).notNull().default("draft"),
+  visibility: varchar("visibility", { length: 24 }).notNull().default("private"),
+  evidenceGateStatus: varchar("evidence_gate_status", { length: 24 }).notNull().default("blocked"),
+  featured: boolean("featured").notNull().default(false),
+  order: integer("order").notNull().default(0),
+  seoTitle: varchar("seo_title", { length: 70 }),
+  seoDescription: varchar("seo_description", { length: 170 }),
+  canonicalUrl: text("canonical_url"),
+  ogImage: text("og_image"),
+  approvedAt: timestamp("approved_at"),
+  publishedAt: timestamp("published_at"),
+  archivedAt: timestamp("archived_at"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  updatedBy: varchar("updated_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  slugIdx: uniqueIndex("case_studies_slug_idx").on(table.slug),
+  publicationIdx: index("case_studies_publication_idx").on(
+    table.workflowStatus,
+    table.visibility,
+    table.evidenceGateStatus,
+    table.order,
+  ),
+  projectIdx: index("case_studies_project_idx").on(table.projectId),
+}));
+
+export const caseStudyEvidence = pgTable("case_study_evidence", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  caseStudyId: varchar("case_study_id").notNull()
+    .references(() => caseStudies.id, { onDelete: "cascade" }),
+  claim: text("claim").notNull(),
+  claimType: varchar("claim_type", { length: 80 }).notNull().default("delivery"),
+  sourceType: varchar("source_type", { length: 80 }).notNull(),
+  sourceReference: text("source_reference").notNull(),
+  measurementPeriod: varchar("measurement_period", { length: 160 }),
+  calculationMethod: text("calculation_method"),
+  verificationStatus: varchar("verification_status", { length: 32 }).notNull().default("unverified"),
+  disclosureStatus: varchar("disclosure_status", { length: 32 }).notNull().default("private"),
+  verifiedBy: varchar("verified_by").references(() => users.id, { onDelete: "set null" }),
+  verifiedAt: timestamp("verified_at"),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  caseStudyIdx: index("case_study_evidence_case_study_idx").on(table.caseStudyId, table.createdAt),
+  verificationIdx: index("case_study_evidence_verification_idx").on(
+    table.caseStudyId,
+    table.verificationStatus,
+    table.disclosureStatus,
+  ),
+  uniqueClaimIdx: uniqueIndex("case_study_evidence_unique_claim_idx").on(table.caseStudyId, table.claim),
+}));
+
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  archivedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertCaseStudySchema = createInsertSchema(caseStudies).omit({
+  id: true,
+  evidenceGateStatus: true,
+  approvedAt: true,
+  publishedAt: true,
+  archivedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertCaseStudyEvidenceSchema = createInsertSchema(caseStudyEvidence).omit({
+  id: true,
+  verifiedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Project = typeof projects.$inferSelect;
+export type CaseStudy = typeof caseStudies.$inferSelect;
+export type CaseStudyEvidence = typeof caseStudyEvidence.$inferSelect;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
+export type InsertCaseStudyEvidence = z.infer<typeof insertCaseStudyEvidenceSchema>;
+
 // Newsletter subscribers
 export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
