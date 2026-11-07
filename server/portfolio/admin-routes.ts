@@ -85,13 +85,22 @@ const caseStudyCreateInput = z.object({
 
 const caseStudyPatchInput = z.object(caseStudyFields).partial().strict();
 
-const evidenceFields = {
+const evidenceContentFields = {
   claim: z.string().trim().min(1).max(20_000),
   claimType: z.string().trim().min(1).max(80),
   sourceType: z.string().trim().min(1).max(80),
   sourceReference: z.string().trim().min(1).max(4000),
   measurementPeriod: z.string().trim().max(160).nullable().optional(),
   calculationMethod: z.string().max(20_000).nullable().optional(),
+  notes: z.string().max(20_000).nullable().optional(),
+};
+
+const evidenceCreateInput = z.object({
+  ...evidenceContentFields,
+  claimType: evidenceContentFields.claimType.default("delivery"),
+}).strict();
+
+const evidenceApprovalInput = z.object({
   verificationStatus: z.enum([
     "unverified",
     "internally_verified",
@@ -100,16 +109,7 @@ const evidenceFields = {
   ]),
   disclosureStatus: z.enum(["private", "review", "approved_public", "rejected"]),
   notes: z.string().max(20_000).nullable().optional(),
-};
-
-const evidenceCreateInput = z.object({
-  ...evidenceFields,
-  claimType: evidenceFields.claimType.default("delivery"),
-  verificationStatus: evidenceFields.verificationStatus.default("unverified"),
-  disclosureStatus: evidenceFields.disclosureStatus.default("private"),
 }).strict();
-
-const evidencePatchInput = z.object(evidenceFields).partial().strict();
 
 async function refreshEvidenceGate(transaction: any, caseStudyId: string) {
   const records = await transaction
@@ -299,11 +299,12 @@ export function createPortfolioGovernanceRouter() {
       const [caseStudy] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
       if (!caseStudy) return { outcome: "missing" as const };
       if (!["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
-      const verified = ["internally_verified", "externally_verified"].includes(input.verificationStatus);
       const [created] = await transaction.insert(caseStudyEvidence).values({
         ...input,
-        verifiedBy: verified ? request.securityPrincipal?.userId ?? null : null,
-        verifiedAt: verified ? new Date() : null,
+        verificationStatus: "unverified",
+        disclosureStatus: "private",
+        verifiedBy: null,
+        verifiedAt: null,
         createdBy: request.securityPrincipal?.userId ?? null,
       }).returning();
       const gate = await refreshEvidenceGate(transaction, caseStudy.id);
@@ -319,8 +320,8 @@ export function createPortfolioGovernanceRouter() {
     response.status(201).json({ evidence: result.record, gate: result.gate });
   });
 
-  router.patch("/api/admin/case-study-evidence/:id", requireAdminPermission("portfolio.manage"), async (request, response) => {
-    const input = evidencePatchInput.parse(request.body);
+  router.patch("/api/admin/case-study-evidence/:id", requireAdminPermission("portfolio.approve"), async (request, response) => {
+    const input = evidenceApprovalInput.parse(request.body);
     const result = await db.transaction(async (transaction) => {
       const [previous] = await transaction.select().from(caseStudyEvidence).where(eq(caseStudyEvidence.id, request.params.id)).limit(1);
       if (!previous) return { outcome: "missing" as const };
@@ -360,6 +361,13 @@ export function createPortfolioGovernanceRouter() {
       archive: { from: ["draft", "in_review", "approved", "published"], to: "archived" },
       restore: { from: ["archived"], to: "draft" },
     }[input.action];
+    if (
+      ["approve", "publish"].includes(input.action) &&
+      request.securityPrincipal &&
+      !request.securityPrincipal.permissions.includes("portfolio.approve")
+    ) {
+      return response.status(403).json({ message: "Portfolio approval permission required" });
+    }
     if (input.action === "archive" && (!input.justification || input.justification.length < 8)) {
       return response.status(400).json({ message: "Archive justification must contain at least 8 characters" });
     }
