@@ -111,8 +111,7 @@ CREATE TABLE IF NOT EXISTS case_study_evidence (
   notes text,
   created_by varchar REFERENCES users(id) ON DELETE SET NULL,
   created_at timestamp NOT NULL DEFAULT now(),
-  updated_at timestamp NOT NULL DEFAULT now(),
-  CONSTRAINT case_study_evidence_unique_claim UNIQUE (case_study_id, claim)
+  updated_at timestamp NOT NULL DEFAULT now()
 );
 
 DO $$ BEGIN
@@ -124,6 +123,8 @@ DO $$ BEGIN
     CHECK (disclosure_status IN ('private','review','approved_public','rejected'));
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+CREATE UNIQUE INDEX IF NOT EXISTS case_study_evidence_unique_claim_idx
+  ON case_study_evidence(case_study_id, claim);
 CREATE INDEX IF NOT EXISTS case_study_evidence_case_study_idx
   ON case_study_evidence(case_study_id, created_at);
 CREATE INDEX IF NOT EXISTS case_study_evidence_verification_idx
