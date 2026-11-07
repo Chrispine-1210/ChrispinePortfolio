@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [],
+  "files": [
+    "client/src/App.tsx",
+    "client/src/components/PortfolioShowcase.tsx",
+    "client/src/components/admin/AdminShell.tsx",
+    "client/src/pages/AdminDashboard.tsx",
+    "client/src/pages/Landing.tsx",
+    "client/src/pages/PortfolioAdvanced.tsx",
+    "client/src/pages/PortfolioDetail.tsx",
+    "client/src/pages/admin/CaseStudyManagement.tsx",
+    "client/src/pages/admin/ProjectManagement.tsx"
+  ]
+}
