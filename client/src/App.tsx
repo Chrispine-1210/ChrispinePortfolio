@@ -38,6 +38,7 @@ import PortfolioManagement from "@/pages/admin/PortfolioManagement";
 import LeadPipeline from "@/pages/admin/LeadPipeline";
 import SecurityManagement from "@/pages/admin/SecurityManagement";
 import UserManagement from "@/pages/admin/UserManagement";
+import CaseStudyManagement from "@/pages/admin/CaseStudyManagement";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useCustomAuth();
@@ -76,6 +77,7 @@ function Router() {
           <Route path="/login" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/case-studies" component={CaseStudyManagement} />
           <Route path="/admin/communications" component={NewsletterManagement} />
           <Route path="/admin/contacts" component={ContactsManagement} />
           <Route path="/admin/audience" component={AudienceManagement} />
