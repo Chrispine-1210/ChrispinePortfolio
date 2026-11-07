@@ -1149,6 +1149,7 @@ export function createAdminRouter(): Router {
         [posts],
         [publishedPosts],
         [projectCount],
+        [publicCaseStudyCount],
         [featuredCaseStudyCount],
         [subscribers],
         [activeSubscribers],
@@ -1175,7 +1176,20 @@ export function createAdminRouter(): Router {
         db
           .select({ count })
           .from(caseStudies)
-          .where(and(eq(caseStudies.featured, true), eq(caseStudies.workflowStatus, "published"), eq(caseStudies.evidenceGateStatus, "approved"))),
+          .where(and(
+            eq(caseStudies.workflowStatus, "published"),
+            eq(caseStudies.visibility, "public"),
+            eq(caseStudies.evidenceGateStatus, "approved"),
+          )),
+        db
+          .select({ count })
+          .from(caseStudies)
+          .where(and(
+            eq(caseStudies.featured, true),
+            eq(caseStudies.workflowStatus, "published"),
+            eq(caseStudies.visibility, "public"),
+            eq(caseStudies.evidenceGateStatus, "approved"),
+          )),
         db.select({ count }).from(newsletterSubscribers),
         db
           .select({ count })
@@ -1292,7 +1306,8 @@ export function createAdminRouter(): Router {
             (posts?.count ?? 0) - (publishedPosts?.count ?? 0),
           ),
           projects: projectCount?.count ?? 0,
-          featuredProjects: featuredCaseStudyCount?.count ?? 0,
+          caseStudies: publicCaseStudyCount?.count ?? 0,
+          featuredCaseStudies: featuredCaseStudyCount?.count ?? 0,
         },
         audience: {
           subscribers: subscribers?.count ?? 0,
