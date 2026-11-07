@@ -83,6 +83,19 @@ describe("project and case-study separation migration", () => {
       const evidence = await database.query<{ count: number }>(`
         select count(*)::int as count from case_study_evidence
       `);
+      const approvalPermission = await database.query<{ count: number }>(`
+        select count(*)::int as count
+        from permissions
+        where "key" = 'portfolio.approve'
+      `);
+      const approvalRoleMappings = await database.query<{ count: number }>(`
+        select count(*)::int as count
+        from role_permissions rp
+        join permissions p on p.id = rp.permission_id
+        join roles r on r.id = rp.role_id
+        where p."key" = 'portfolio.approve'
+          and r."key" in ('super_administrator', 'administrator', 'content_manager')
+      `);
 
       expect(legacyInternal.rows[0]?.count).toBe(1);
       expect(legacyPublic.rows[0]?.count).toBe(0);
@@ -96,6 +109,8 @@ describe("project and case-study separation migration", () => {
         row.evidence_gate_status === "approved"
       )).toBe(true);
       expect(evidence.rows[0]?.count).toBe(2);
+      expect(approvalPermission.rows[0]?.count).toBe(1);
+      expect(approvalRoleMappings.rows[0]?.count).toBe(3);
     } finally {
       await database.close();
     }
@@ -123,6 +138,26 @@ describe("project and case-study separation migration", () => {
       const study = await database.query<{ id: string }>(
         "select id from case_studies limit 1",
       );
+
+      await database.exec(`
+        insert into case_study_evidence
+          (case_study_id, claim, source_type, source_reference)
+        values
+          ('${study.rows[0]!.id}', 'Default private evidence', 'test', 'test-default')
+      `);
+      const defaultEvidence = await database.query<{
+        verification_status: string;
+        disclosure_status: string;
+      }>(`
+        select verification_status, disclosure_status
+        from case_study_evidence
+        where claim = 'Default private evidence'
+      `);
+      expect(defaultEvidence.rows[0]).toMatchObject({
+        verification_status: "unverified",
+        disclosure_status: "private",
+      });
+
       await expect(database.exec(`
         insert into case_study_evidence
           (case_study_id, claim, source_type, source_reference, verification_status)
