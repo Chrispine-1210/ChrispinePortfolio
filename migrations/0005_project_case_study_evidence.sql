@@ -1,3 +1,14 @@
+INSERT INTO permissions ("key", "description")
+VALUES ('portfolio.approve', 'Verify evidence and approve or publish public case studies.')
+ON CONFLICT ("key") DO NOTHING;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT roles.id, permissions.id
+FROM roles
+JOIN permissions ON permissions.key = 'portfolio.approve'
+WHERE roles.key IN ('super_administrator', 'administrator', 'content_manager')
+ON CONFLICT DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS projects (
   id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
   project_code varchar(80) NOT NULL UNIQUE,
