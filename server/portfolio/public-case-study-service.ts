@@ -71,7 +71,7 @@ export async function listPublicCaseStudies(): Promise<PortfolioProject[]> {
         ),
       )
       .orderBy(asc(caseStudies.order), asc(caseStudies.title));
-    return records.length ? records.map(toPublicPortfolioProject) : fallbackProjects();
+    return records.map(toPublicPortfolioProject);
   } catch (error) {
     if (isMissingCaseStudyTable(error)) return fallbackProjects();
     throw error;
@@ -100,9 +100,7 @@ export async function getPublicCaseStudyBySlug(
         ),
       )
       .limit(1);
-    return record
-      ? toPublicPortfolioProject(record)
-      : fallbackProjects().find((item) => item.slug === slug);
+    return record ? toPublicPortfolioProject(record) : undefined;
   } catch (error) {
     if (isMissingCaseStudyTable(error)) {
       return fallbackProjects().find((record) => record.slug === slug);
