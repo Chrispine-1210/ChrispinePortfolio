@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -39,11 +40,16 @@ import LeadPipeline from "@/pages/admin/LeadPipeline";
 import SecurityManagement from "@/pages/admin/SecurityManagement";
 import UserManagement from "@/pages/admin/UserManagement";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated, isLoading } = useCustomAuth();
-  
+function AdminProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { isAdmin, isLoading } = useCustomAuth();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAdmin) navigate("/login");
+  }, [isAdmin, isLoading, navigate]);
+
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (!isAuthenticated) return <Route path="/login" component={Login} />;
+  if (!isAdmin) return null;
   return <Component />;
 }
 
@@ -75,7 +81,7 @@ function Router() {
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/login" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin" component={() => <AdminProtectedRoute component={AdminDashboard} />} />
           <Route path="/admin/communications" component={NewsletterManagement} />
           <Route path="/admin/contacts" component={ContactsManagement} />
           <Route path="/admin/audience" component={AudienceManagement} />
