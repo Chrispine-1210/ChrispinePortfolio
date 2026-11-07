@@ -1148,8 +1148,8 @@ export function createAdminRouter(): Router {
       const [
         [posts],
         [publishedPosts],
-        [projects],
-        [featuredProjects],
+        [projectCount],
+        [featuredCaseStudyCount],
         [subscribers],
         [activeSubscribers],
         [contacts],
@@ -1291,8 +1291,8 @@ export function createAdminRouter(): Router {
             0,
             (posts?.count ?? 0) - (publishedPosts?.count ?? 0),
           ),
-          projects: projects?.count ?? 0,
-          featuredProjects: featuredProjects?.count ?? 0,
+          projects: projectCount?.count ?? 0,
+          featuredProjects: featuredCaseStudyCount?.count ?? 0,
         },
         audience: {
           subscribers: subscribers?.count ?? 0,
