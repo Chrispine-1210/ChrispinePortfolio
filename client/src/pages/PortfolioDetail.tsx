@@ -5,7 +5,7 @@ import { setSEO } from "@/lib/seoHelper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Github, Terminal, Cpu, Zap, Activity, Share2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Github, Terminal, Cpu, Zap, Activity } from "lucide-react";
 import { motion } from "framer-motion";
 import type { PortfolioProject } from "@shared/schema";
 
@@ -217,7 +217,7 @@ export default function PortfolioDetail() {
             </motion.section>
           )}
 
-          {/* 3. Technical Architecture */}
+          {/* 3. Published Technology Evidence */}
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -229,23 +229,19 @@ export default function PortfolioDetail() {
                 <Terminal className="text-emerald-400 w-6 h-6" />
               </div>
               <div>
-                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">03 // System Design</span>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Technical Architecture</h3>
+                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">03 // Published Evidence</span>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Technology Scope</h3>
               </div>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { label: "Frontend", desc: "React 18 + TypeScript + Tailwind CSS + shadcn/ui. Component-driven architecture with responsive design system." },
-                { label: "Backend", desc: "Node.js + Express with structured API design. RESTful endpoints with authentication middleware and request validation." },
-                { label: "Database", desc: "PostgreSQL with Drizzle ORM. Relational schema optimized for complex queries and data integrity." },
-                { label: "APIs", desc: "REST API design with standardized response formats, Zod validation, and comprehensive error handling." },
-                { label: "Security", desc: "Token-based authentication, role-based access control, input sanitization, and security headers." },
-                { label: "Infrastructure", desc: "Cloud-deployed with CI/CD pipelines, DNS management, SSL certificates, and automated backups." }
-              ].map((arch, idx) => (
-                <div key={idx} className="p-4 bg-white/5 border border-white/10">
-                  <h4 className="text-sm font-bold text-white uppercase mb-2">{arch.label}</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{arch.desc}</p>
-                </div>
+            <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
+              Only technologies included in the approved case-study record are shown here. Architecture,
+              security, operational, and performance claims are not inferred from the technology list.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(project.techStack || []).map((technology) => (
+                <span key={technology} className="border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs font-mono text-emerald-300">
+                  {technology}
+                </span>
               ))}
             </div>
           </motion.section>
@@ -273,35 +269,6 @@ export default function PortfolioDetail() {
             </motion.section>
           )}
 
-          {/* 5. My Role */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="tech-card p-8 lg:p-12 bg-card/30"
-          >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 bg-amber-500/10 flex items-center justify-center">
-                <Share2 className="text-amber-400 w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">05 // Leadership</span>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">My Role</h3>
-              </div>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { role: "Lead Systems Architect", desc: "Designed end-to-end system architecture, database schema, and API structure. Made strategic technology decisions aligned with business goals." },
-                { role: "Technical Project Lead", desc: "Managed full development lifecycle from requirements analysis through deployment. Coordinated stakeholders and ensured delivery milestones." },
-                { role: "Solution Designer", desc: "Translated complex business processes into scalable digital workflows. Designed user experiences that drive adoption and efficiency." }
-              ].map((item, idx) => (
-                <div key={idx} className="p-6 bg-white/5 border border-white/10">
-                  <h4 className="text-sm font-bold text-white uppercase mb-3">{item.role}</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </motion.section>
         </div>
 
         {/* Gallery Grid */}
