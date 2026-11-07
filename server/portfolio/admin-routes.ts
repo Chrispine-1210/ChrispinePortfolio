@@ -226,6 +226,15 @@ export function createPortfolioGovernanceRouter() {
         updatedBy: request.securityPrincipal?.userId ?? null,
         updatedAt: new Date(),
       }).where(eq(caseStudies.id, previous.id)).returning();
+      // Any editorial change invalidates prior public-disclosure approval until
+      // the supporting evidence is explicitly reviewed again.
+      await transaction.update(caseStudyEvidence).set({
+        disclosureStatus: "review",
+        updatedAt: new Date(),
+      }).where(and(
+        eq(caseStudyEvidence.caseStudyId, previous.id),
+        eq(caseStudyEvidence.disclosureStatus, "approved_public"),
+      ));
       await refreshEvidenceGate(transaction, previous.id);
       await transaction.insert(auditEvents).values({
         ...auditValues(request), action: "case_study.update", resourceType: "case_study",
