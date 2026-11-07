@@ -55,9 +55,9 @@ function AdminProtectedRoute({ component: Component }: { component: React.Compon
 }
 
 function Router() {
-  const { isAuthenticated, isLoading, user, isAdmin } = useCustomAuth();
+  const { isAuthenticated, isLoading } = useCustomAuth();
   const [location] = useLocation();
-  const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/newsletter-manage";
+  const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/analytics" || location === "/newsletter-manage" || location === "/external-posts";
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -93,10 +93,10 @@ function Router() {
           <Route path="/admin/pipeline" component={() => <AdminProtectedRoute component={LeadPipeline} />} />
           <Route path="/admin/security" component={() => <AdminProtectedRoute component={SecurityManagement} />} />
           <Route path="/admin/users" component={() => <AdminProtectedRoute component={UserManagement} />} />
-          <Route path="/analytics" component={Analytics} />
+          <Route path="/analytics" component={() => <AdminProtectedRoute component={Analytics} />} />
           <Route path="/newsletter" component={Landing} />
-          <Route path="/newsletter-manage" component={NewsletterManagement} />
-          <Route path="/external-posts" component={ExternalPostsPage} />
+          <Route path="/newsletter-manage" component={() => <AdminProtectedRoute component={NewsletterManagement} />} />
+          <Route path="/external-posts" component={() => <AdminProtectedRoute component={ExternalPostsPage} />} />
           <Route path="/projects" component={Portfolio} />
           <Route path="/software-consulting-malawi" component={SoftwareConsultingMalawi} />
           <Route path="/digital-transformation-africa" component={DigitalTransformationAfrica} />
