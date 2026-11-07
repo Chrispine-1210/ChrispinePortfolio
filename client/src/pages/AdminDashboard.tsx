@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface AdminOverview {
-  content: { posts: number; publishedPosts: number; draftPosts: number; projects: number; featuredProjects: number };
+  content: { posts: number; publishedPosts: number; draftPosts: number; projects: number; caseStudies: number; featuredCaseStudies: number };
   audience: { subscribers: number; activeSubscribers: number; contacts: number; unreadContacts: number };
   delivery: { pendingEmail: number; failedEmail: number; scheduledCampaigns: number; unreadNotifications: number };
   security: { activeSessions: number };
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
   const data = overview.data;
   const metrics = data ? [
     { label: "Published posts", value: data.content.publishedPosts, detail: `${data.content.draftPosts} drafts`, icon: FileText, color: "text-blue-400" },
-    { label: "Portfolio projects", value: data.content.projects, detail: `${data.content.featuredProjects} featured`, icon: BriefcaseBusiness, color: "text-violet-400" },
+    { label: "Internal projects", value: data.content.projects, detail: `${data.content.caseStudies} published case studies · ${data.content.featuredCaseStudies} featured`, icon: BriefcaseBusiness, color: "text-violet-400" },
     { label: "Active subscribers", value: data.audience.activeSubscribers, detail: `${data.audience.subscribers} total`, icon: Users, color: "text-emerald-400" },
     { label: "Unread contacts", value: data.audience.unreadContacts, detail: `${data.audience.contacts} total leads`, icon: MessageSquare, color: "text-amber-400" },
   ] : [];
