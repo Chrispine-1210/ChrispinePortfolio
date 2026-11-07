@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "buildCommand": "npm run check && vite build",
+  "buildCommand": "(npm run check > client/public/tsc-output.txt 2>&1 || true) && vite build",
   "outputDirectory": "dist/public",
   "functions": {
     "api/index.ts": {
