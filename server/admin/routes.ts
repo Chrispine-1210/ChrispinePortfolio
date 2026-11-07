@@ -24,7 +24,8 @@ import {
   notificationCampaigns,
   notificationInbox,
   permissions,
-  portfolioProjects,
+  caseStudies,
+  projects,
   rolePermissions,
   roles,
   securityEvents,
@@ -1170,11 +1171,11 @@ export function createAdminRouter(): Router {
           .select({ count })
           .from(blogPosts)
           .where(eq(blogPosts.isPublished, true)),
-        db.select({ count }).from(portfolioProjects),
+        db.select({ count }).from(projects).where(isNull(projects.archivedAt)),
         db
           .select({ count })
-          .from(portfolioProjects)
-          .where(eq(portfolioProjects.featured, true)),
+          .from(caseStudies)
+          .where(and(eq(caseStudies.featured, true), eq(caseStudies.workflowStatus, "published"), eq(caseStudies.evidenceGateStatus, "approved"))),
         db.select({ count }).from(newsletterSubscribers),
         db
           .select({ count })
