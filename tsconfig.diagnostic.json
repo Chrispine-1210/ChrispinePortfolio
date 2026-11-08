@@ -2,9 +2,7 @@
   "extends": "./tsconfig.json",
   "include": [],
   "files": [
-    "server/portfolio/admin-routes.ts",
-    "server/portfolio/policy.ts",
-    "server/portfolio/public-case-study-service.ts",
-    "shared/schema.ts"
+    "shared/schema.ts",
+    "server/portfolio/policy.ts"
   ]
 }
