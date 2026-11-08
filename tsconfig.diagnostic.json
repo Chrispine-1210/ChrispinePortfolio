@@ -2,6 +2,8 @@
   "extends": "./tsconfig.json",
   "include": [],
   "files": [
-    "server/custom-auth.ts"
+    "server/env.ts",
+    "server/security/session-middleware.ts",
+    "server/security/database-auth-routes.ts"
   ]
 }
