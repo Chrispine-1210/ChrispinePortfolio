@@ -301,6 +301,7 @@ export function createPortfolioGovernanceRouter() {
       if (!["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
       const [created] = await transaction.insert(caseStudyEvidence).values({
         ...input,
+        caseStudyId: caseStudy.id,
         verificationStatus: "unverified",
         disclosureStatus: "private",
         verifiedBy: null,
