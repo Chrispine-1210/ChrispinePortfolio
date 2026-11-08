@@ -2,6 +2,6 @@
   "extends": "./tsconfig.json",
   "include": [],
   "files": [
-    "server/portfolio/admin-routes.diagnostic.ts"
+    "server/custom-auth.ts"
   ]
 }
