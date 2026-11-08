@@ -177,39 +177,5 @@ export function createPortfolioGovernanceRouter() {
     response.json(record.record);
   });
 
-  router.get("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.read"), async (request, response) => {
-    response.setHeader("Cache-Control", "no-store");
-    response.json(await db.select().from(caseStudyEvidence)
-      .where(eq(caseStudyEvidence.caseStudyId, request.params.id))
-      .orderBy(desc(caseStudyEvidence.createdAt)).limit(500));
-  });
-
-  router.post("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.manage"), async (request, response) => {
-    const input = evidenceCreateInput.parse(request.body);
-    const result = await db.transaction(async (transaction) => {
-      const [caseStudy] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
-      if (!caseStudy) return { outcome: "missing" as const };
-      if (!["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
-      const [created] = await transaction.insert(caseStudyEvidence).values({
-        ...input,
-        verificationStatus: "unverified",
-        disclosureStatus: "private",
-        verifiedBy: null,
-        verifiedAt: null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      const gate = await refreshEvidenceGate(transaction, caseStudy.id);
-      await transaction.insert(auditEvents).values({
-        ...auditValues(request), action: "case_study.evidence.create", resourceType: "case_study_evidence",
-        resourceId: created.id, result: "success", newState: created,
-        metadata: { caseStudyId: caseStudy.id, evidenceGateStatus: gate.status },
-      });
-      return { outcome: "ok" as const, record: created, gate };
-    });
-    if (result.outcome === "missing") return response.status(404).json({ message: "Case study not found" });
-    if (result.outcome === "locked") return response.status(409).json({ message: "Evidence can only be changed while the case study is draft or in review" });
-    response.status(201).json({ evidence: result.record, gate: result.gate });
-  });
-
   return router;
 }
