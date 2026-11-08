@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "buildCommand": "npm audit --omit=dev --json > /tmp/audit.json || true; node -e 'const a=require(\"/tmp/audit.json\"); const keys=Object.keys(a.vulnerabilities||{}); const q=[\"express\",\"body-parser\",\"qs\",\"proxy-addr\",\"path-to-regexp\"]; process.exit(keys.some(k=>q.includes(k))?0:1)' && vite build",
+  "buildCommand": "node scripts/audit-probe.mjs && vite build",
   "outputDirectory": "dist/public",
   "functions": {
     "api/index.ts": {
