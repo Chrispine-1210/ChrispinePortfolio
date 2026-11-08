@@ -138,43 +138,31 @@ function auditValues(request: Express.Request) {
 export function createPortfolioGovernanceRouter() {
   const router = Router();
 
-  router.patch("/api/admin/case-studies/:id", requireAdminPermission("portfolio.manage"), async (request, response) => {
-    const input = caseStudyPatchInput.parse(request.body);
-    const record = await db.transaction(async (transaction) => {
-      const [previous] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
-      if (!previous) return { outcome: "missing" as const };
-      if (previous.workflowStatus !== "draft") return { outcome: "locked" as const };
-      if (input.projectId) {
-        const [project] = await transaction.select({ id: projects.id }).from(projects)
-          .where(and(eq(projects.id, input.projectId), isNull(projects.archivedAt))).limit(1);
-        if (!project) return { outcome: "project" as const };
-      }
-      const [updated] = await transaction.update(caseStudies).set({
+  router.post("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.manage"), async (request, response) => {
+    const input = evidenceCreateInput.parse(request.body);
+    const result = await db.transaction(async (transaction) => {
+      const [caseStudy] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
+      if (!caseStudy) return { outcome: "missing" as const };
+      if (!["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
+      const [created] = await transaction.insert(caseStudyEvidence).values({
         ...input,
-        evidenceGateStatus: "blocked",
-        updatedBy: request.securityPrincipal?.userId ?? null,
-        updatedAt: new Date(),
-      }).where(eq(caseStudies.id, previous.id)).returning();
-      // Any editorial change invalidates prior public-disclosure approval until
-      // the supporting evidence is explicitly reviewed again.
-      await transaction.update(caseStudyEvidence).set({
-        disclosureStatus: "review",
-        updatedAt: new Date(),
-      }).where(and(
-        eq(caseStudyEvidence.caseStudyId, previous.id),
-        eq(caseStudyEvidence.disclosureStatus, "approved_public"),
-      ));
-      await refreshEvidenceGate(transaction, previous.id);
+        verificationStatus: "unverified",
+        disclosureStatus: "private",
+        verifiedBy: null,
+        verifiedAt: null,
+        createdBy: request.securityPrincipal?.userId ?? null,
+      }).returning();
+      const gate = await refreshEvidenceGate(transaction, caseStudy.id);
       await transaction.insert(auditEvents).values({
-        ...auditValues(request), action: "case_study.update", resourceType: "case_study",
-        resourceId: previous.id, result: "success", previousState: previous, newState: updated,
+        ...auditValues(request), action: "case_study.evidence.create", resourceType: "case_study_evidence",
+        resourceId: created.id, result: "success", newState: created,
+        metadata: { caseStudyId: caseStudy.id, evidenceGateStatus: gate.status },
       });
-      return { outcome: "ok" as const, record: updated };
+      return { outcome: "ok" as const, record: created, gate };
     });
-    if (record.outcome === "missing") return response.status(404).json({ message: "Case study not found" });
-    if (record.outcome === "locked") return response.status(409).json({ message: "Only draft case studies can be edited" });
-    if (record.outcome === "project") return response.status(400).json({ message: "Linked project does not exist or is archived" });
-    response.json(record.record);
+    if (result.outcome === "missing") return response.status(404).json({ message: "Case study not found" });
+    if (result.outcome === "locked") return response.status(409).json({ message: "Evidence can only be changed while the case study is draft or in review" });
+    response.status(201).json({ evidence: result.record, gate: result.gate });
   });
 
   return router;
