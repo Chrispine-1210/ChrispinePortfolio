@@ -135,6 +135,7 @@ function auditValues(request: Express.Request) {
   };
 }
 
+
 export function createPortfolioGovernanceRouter() {
   const router = Router();
 
@@ -152,17 +153,11 @@ export function createPortfolioGovernanceRouter() {
         verifiedAt: null,
         createdBy: request.securityPrincipal?.userId ?? null,
       }).returning();
-      const gate = await refreshEvidenceGate(transaction, caseStudy.id);
-      await transaction.insert(auditEvents).values({
-        ...auditValues(request), action: "case_study.evidence.create", resourceType: "case_study_evidence",
-        resourceId: created.id, result: "success", newState: created,
-        metadata: { caseStudyId: caseStudy.id, evidenceGateStatus: gate.status },
-      });
-      return { outcome: "ok" as const, record: created, gate };
+      return { outcome: "ok" as const, record: created };
     });
     if (result.outcome === "missing") return response.status(404).json({ message: "Case study not found" });
-    if (result.outcome === "locked") return response.status(409).json({ message: "Evidence can only be changed while the case study is draft or in review" });
-    response.status(201).json({ evidence: result.record, gate: result.gate });
+    if (result.outcome === "locked") return response.status(409).json({ message: "Locked" });
+    response.status(201).json({ evidence: result.record });
   });
 
   return router;
