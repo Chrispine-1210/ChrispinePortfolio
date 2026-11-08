@@ -135,5 +135,117 @@ function auditValues(request: Express.Request) {
   };
 }
 
+export function createPortfolioGovernanceRouter() {
+  const router = Router();
 
-export {};
+  router.get("/api/admin/projects", requireAdminPermission("portfolio.read"), async (_request, response) => {
+    response.setHeader("Cache-Control", "no-store");
+    response.json(await db.select().from(projects).where(isNull(projects.archivedAt)).orderBy(desc(projects.updatedAt)).limit(500));
+  });
+
+  router.post("/api/admin/projects", requireAdminPermission("portfolio.manage"), async (request, response) => {
+    const input = projectCreateInput.parse(request.body);
+    const record = await db.transaction(async (transaction) => {
+      const [created] = await transaction.insert(projects).values({
+        ...input,
+        commercialValue: input.commercialValue == null ? input.commercialValue : String(input.commercialValue),
+        startDate: input.startDate ? new Date(input.startDate) : null,
+        targetDate: input.targetDate ? new Date(input.targetDate) : null,
+        ownerId: request.securityPrincipal?.userId ?? null,
+      }).returning();
+      await transaction.insert(auditEvents).values({
+        ...auditValues(request), action: "project.create", resourceType: "project",
+        resourceId: created.id, result: "success", newState: created,
+      });
+      return created;
+    });
+    response.status(201).json(record);
+  });
+
+  router.patch("/api/admin/projects/:id", requireAdminPermission("portfolio.manage"), async (request, response) => {
+    const input = projectPatchInput.parse(request.body);
+    const record = await db.transaction(async (transaction) => {
+      const [previous] = await transaction.select().from(projects).where(eq(projects.id, request.params.id)).limit(1);
+      if (!previous || previous.archivedAt) return undefined;
+      const changes = {
+        ...input,
+        commercialValue: input.commercialValue === undefined ? undefined : input.commercialValue === null ? null : String(input.commercialValue),
+        startDate: input.startDate === undefined ? undefined : input.startDate === null ? null : new Date(input.startDate),
+        targetDate: input.targetDate === undefined ? undefined : input.targetDate === null ? null : new Date(input.targetDate),
+        updatedAt: new Date(),
+      };
+      const [updated] = await transaction.update(projects).set(changes).where(eq(projects.id, previous.id)).returning();
+      await transaction.insert(auditEvents).values({
+        ...auditValues(request), action: "project.update", resourceType: "project",
+        resourceId: previous.id, result: "success", previousState: previous, newState: updated,
+      });
+      return updated;
+    });
+    if (!record) return response.status(404).json({ message: "Project not found" });
+    response.json(record);
+  });
+
+  router.post("/api/admin/projects/:id/archive", requireAdminPermission("portfolio.manage"), async (request, response) => {
+    const { justification } = z.object({ justification: z.string().trim().min(8).max(1000) }).strict().parse(request.body);
+    const record = await db.transaction(async (transaction) => {
+      const [previous] = await transaction.select().from(projects).where(eq(projects.id, request.params.id)).limit(1);
+      if (!previous || previous.archivedAt) return undefined;
+      const [updated] = await transaction.update(projects).set({ archivedAt: new Date(), updatedAt: new Date() }).where(eq(projects.id, previous.id)).returning();
+      await transaction.insert(auditEvents).values({
+        ...auditValues(request), action: "project.archive", resourceType: "project",
+        resourceId: previous.id, result: "success", justification,
+        previousState: { archivedAt: previous.archivedAt }, newState: { archivedAt: updated.archivedAt },
+      });
+      return updated;
+    });
+    if (!record) return response.status(404).json({ message: "Project not found" });
+    response.json(record);
+  });
+
+  router.get("/api/admin/case-studies", requireAdminPermission("portfolio.read"), async (_request, response) => {
+    const records = await db.select().from(caseStudies).orderBy(desc(caseStudies.updatedAt)).limit(500);
+    const evidence = await db.select({
+      caseStudyId: caseStudyEvidence.caseStudyId,
+      verificationStatus: caseStudyEvidence.verificationStatus,
+      disclosureStatus: caseStudyEvidence.disclosureStatus,
+    }).from(caseStudyEvidence);
+    response.setHeader("Cache-Control", "no-store");
+    response.json(records.map((record) => ({
+      ...record,
+      evidenceCount: evidence.filter((item) => item.caseStudyId === record.id).length,
+      approvedPublicEvidenceCount: evidence.filter((item) =>
+        item.caseStudyId === record.id &&
+        ["internally_verified", "externally_verified"].includes(item.verificationStatus) &&
+        item.disclosureStatus === "approved_public"
+      ).length,
+    })));
+  });
+
+  router.post("/api/admin/case-studies", requireAdminPermission("portfolio.manage"), async (request, response) => {
+    const input = caseStudyCreateInput.parse(request.body);
+    const record = await db.transaction(async (transaction) => {
+      if (input.projectId) {
+        const [project] = await transaction.select({ id: projects.id }).from(projects)
+          .where(and(eq(projects.id, input.projectId), isNull(projects.archivedAt))).limit(1);
+        if (!project) return undefined;
+      }
+      const [created] = await transaction.insert(caseStudies).values({
+        ...input,
+        workflowStatus: "draft",
+        visibility: input.visibility ?? "private",
+        evidenceGateStatus: "blocked",
+        createdBy: request.securityPrincipal?.userId ?? null,
+        updatedBy: request.securityPrincipal?.userId ?? null,
+      }).returning();
+      await transaction.insert(auditEvents).values({
+        ...auditValues(request), action: "case_study.create", resourceType: "case_study",
+        resourceId: created.id, result: "success", newState: created,
+      });
+      return created;
+    });
+    if (!record) return response.status(400).json({ message: "Linked project does not exist or is archived" });
+    response.status(201).json(record);
+  });
+
+  return router;
+}
