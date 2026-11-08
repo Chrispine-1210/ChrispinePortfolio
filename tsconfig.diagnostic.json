@@ -2,6 +2,14 @@
   "extends": "./tsconfig.json",
   "include": [],
   "files": [
-    "server/security/session-middleware.ts"
+    "server/types/express.d.ts",
+    "server/admin/routes.ts",
+    "server/advanced-filtering.ts",
+    "server/app.ts",
+    "server/portfolio/admin-routes.ts",
+    "server/portfolio/policy.ts",
+    "server/portfolio/public-case-study-service.ts",
+    "server/routes.ts",
+    "shared/schema.ts"
   ]
 }
