@@ -138,113 +138,77 @@ function auditValues(request: Express.Request) {
 export function createPortfolioGovernanceRouter() {
   const router = Router();
 
-  router.get("/api/admin/projects", requireAdminPermission("portfolio.read"), async (_request, response) => {
-    response.setHeader("Cache-Control", "no-store");
-    response.json(await db.select().from(projects).where(isNull(projects.archivedAt)).orderBy(desc(projects.updatedAt)).limit(500));
-  });
-
-  router.post("/api/admin/projects", requireAdminPermission("portfolio.manage"), async (request, response) => {
-    const input = projectCreateInput.parse(request.body);
+  router.patch("/api/admin/case-studies/:id", requireAdminPermission("portfolio.manage"), async (request, response) => {
+    const input = caseStudyPatchInput.parse(request.body);
     const record = await db.transaction(async (transaction) => {
-      const [created] = await transaction.insert(projects).values({
-        ...input,
-        commercialValue: input.commercialValue == null ? input.commercialValue : String(input.commercialValue),
-        startDate: input.startDate ? new Date(input.startDate) : null,
-        targetDate: input.targetDate ? new Date(input.targetDate) : null,
-        ownerId: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await transaction.insert(auditEvents).values({
-        ...auditValues(request), action: "project.create", resourceType: "project",
-        resourceId: created.id, result: "success", newState: created,
-      });
-      return created;
-    });
-    response.status(201).json(record);
-  });
-
-  router.patch("/api/admin/projects/:id", requireAdminPermission("portfolio.manage"), async (request, response) => {
-    const input = projectPatchInput.parse(request.body);
-    const record = await db.transaction(async (transaction) => {
-      const [previous] = await transaction.select().from(projects).where(eq(projects.id, request.params.id)).limit(1);
-      if (!previous || previous.archivedAt) return undefined;
-      const changes = {
-        ...input,
-        commercialValue: input.commercialValue === undefined ? undefined : input.commercialValue === null ? null : String(input.commercialValue),
-        startDate: input.startDate === undefined ? undefined : input.startDate === null ? null : new Date(input.startDate),
-        targetDate: input.targetDate === undefined ? undefined : input.targetDate === null ? null : new Date(input.targetDate),
-        updatedAt: new Date(),
-      };
-      const [updated] = await transaction.update(projects).set(changes).where(eq(projects.id, previous.id)).returning();
-      await transaction.insert(auditEvents).values({
-        ...auditValues(request), action: "project.update", resourceType: "project",
-        resourceId: previous.id, result: "success", previousState: previous, newState: updated,
-      });
-      return updated;
-    });
-    if (!record) return response.status(404).json({ message: "Project not found" });
-    response.json(record);
-  });
-
-  router.post("/api/admin/projects/:id/archive", requireAdminPermission("portfolio.manage"), async (request, response) => {
-    const { justification } = z.object({ justification: z.string().trim().min(8).max(1000) }).strict().parse(request.body);
-    const record = await db.transaction(async (transaction) => {
-      const [previous] = await transaction.select().from(projects).where(eq(projects.id, request.params.id)).limit(1);
-      if (!previous || previous.archivedAt) return undefined;
-      const [updated] = await transaction.update(projects).set({ archivedAt: new Date(), updatedAt: new Date() }).where(eq(projects.id, previous.id)).returning();
-      await transaction.insert(auditEvents).values({
-        ...auditValues(request), action: "project.archive", resourceType: "project",
-        resourceId: previous.id, result: "success", justification,
-        previousState: { archivedAt: previous.archivedAt }, newState: { archivedAt: updated.archivedAt },
-      });
-      return updated;
-    });
-    if (!record) return response.status(404).json({ message: "Project not found" });
-    response.json(record);
-  });
-
-  router.get("/api/admin/case-studies", requireAdminPermission("portfolio.read"), async (_request, response) => {
-    const records = await db.select().from(caseStudies).orderBy(desc(caseStudies.updatedAt)).limit(500);
-    const evidence = await db.select({
-      caseStudyId: caseStudyEvidence.caseStudyId,
-      verificationStatus: caseStudyEvidence.verificationStatus,
-      disclosureStatus: caseStudyEvidence.disclosureStatus,
-    }).from(caseStudyEvidence);
-    response.setHeader("Cache-Control", "no-store");
-    response.json(records.map((record) => ({
-      ...record,
-      evidenceCount: evidence.filter((item) => item.caseStudyId === record.id).length,
-      approvedPublicEvidenceCount: evidence.filter((item) =>
-        item.caseStudyId === record.id &&
-        ["internally_verified", "externally_verified"].includes(item.verificationStatus) &&
-        item.disclosureStatus === "approved_public"
-      ).length,
-    })));
-  });
-
-  router.post("/api/admin/case-studies", requireAdminPermission("portfolio.manage"), async (request, response) => {
-    const input = caseStudyCreateInput.parse(request.body);
-    const record = await db.transaction(async (transaction) => {
+      const [previous] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
+      if (!previous) return { outcome: "missing" as const };
+      if (previous.workflowStatus !== "draft") return { outcome: "locked" as const };
       if (input.projectId) {
         const [project] = await transaction.select({ id: projects.id }).from(projects)
           .where(and(eq(projects.id, input.projectId), isNull(projects.archivedAt))).limit(1);
-        if (!project) return undefined;
+        if (!project) return { outcome: "project" as const };
       }
-      const [created] = await transaction.insert(caseStudies).values({
+      const [updated] = await transaction.update(caseStudies).set({
         ...input,
-        workflowStatus: "draft",
-        visibility: input.visibility ?? "private",
         evidenceGateStatus: "blocked",
-        createdBy: request.securityPrincipal?.userId ?? null,
         updatedBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
+        updatedAt: new Date(),
+      }).where(eq(caseStudies.id, previous.id)).returning();
+      // Any editorial change invalidates prior public-disclosure approval until
+      // the supporting evidence is explicitly reviewed again.
+      await transaction.update(caseStudyEvidence).set({
+        disclosureStatus: "review",
+        updatedAt: new Date(),
+      }).where(and(
+        eq(caseStudyEvidence.caseStudyId, previous.id),
+        eq(caseStudyEvidence.disclosureStatus, "approved_public"),
+      ));
+      await refreshEvidenceGate(transaction, previous.id);
       await transaction.insert(auditEvents).values({
-        ...auditValues(request), action: "case_study.create", resourceType: "case_study",
-        resourceId: created.id, result: "success", newState: created,
+        ...auditValues(request), action: "case_study.update", resourceType: "case_study",
+        resourceId: previous.id, result: "success", previousState: previous, newState: updated,
       });
-      return created;
+      return { outcome: "ok" as const, record: updated };
     });
-    if (!record) return response.status(400).json({ message: "Linked project does not exist or is archived" });
-    response.status(201).json(record);
+    if (record.outcome === "missing") return response.status(404).json({ message: "Case study not found" });
+    if (record.outcome === "locked") return response.status(409).json({ message: "Only draft case studies can be edited" });
+    if (record.outcome === "project") return response.status(400).json({ message: "Linked project does not exist or is archived" });
+    response.json(record.record);
+  });
+
+  router.get("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.read"), async (request, response) => {
+    response.setHeader("Cache-Control", "no-store");
+    response.json(await db.select().from(caseStudyEvidence)
+      .where(eq(caseStudyEvidence.caseStudyId, request.params.id))
+      .orderBy(desc(caseStudyEvidence.createdAt)).limit(500));
+  });
+
+  router.post("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.manage"), async (request, response) => {
+    const input = evidenceCreateInput.parse(request.body);
+    const result = await db.transaction(async (transaction) => {
+      const [caseStudy] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
+      if (!caseStudy) return { outcome: "missing" as const };
+      if (!["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
+      const [created] = await transaction.insert(caseStudyEvidence).values({
+        ...input,
+        verificationStatus: "unverified",
+        disclosureStatus: "private",
+        verifiedBy: null,
+        verifiedAt: null,
+        createdBy: request.securityPrincipal?.userId ?? null,
+      }).returning();
+      const gate = await refreshEvidenceGate(transaction, caseStudy.id);
+      await transaction.insert(auditEvents).values({
+        ...auditValues(request), action: "case_study.evidence.create", resourceType: "case_study_evidence",
+        resourceId: created.id, result: "success", newState: created,
+        metadata: { caseStudyId: caseStudy.id, evidenceGateStatus: gate.status },
+      });
+      return { outcome: "ok" as const, record: created, gate };
+    });
+    if (result.outcome === "missing") return response.status(404).json({ message: "Case study not found" });
+    if (result.outcome === "locked") return response.status(409).json({ message: "Evidence can only be changed while the case study is draft or in review" });
+    response.status(201).json({ evidence: result.record, gate: result.gate });
   });
 
   return router;
