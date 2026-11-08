@@ -32,13 +32,4 @@ const projectFields = {
   deploymentUrl: z.string().url().nullable().optional(),
 };
 
-const projectCreateInput = z.object({
-  ...projectFields,
-  status: projectFields.status.default("active"),
-  confidentiality: projectFields.confidentiality.default("internal"),
-  currency: projectFields.currency.default("USD"),
-}).strict();
-
-const projectPatchInput = z.object(projectFields).partial().strict();
-
 export {};
