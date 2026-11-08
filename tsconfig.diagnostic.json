@@ -3,9 +3,6 @@
   "include": [],
   "files": [
     "server/types/express.d.ts",
-    "server/portfolio/admin-routes.ts",
-    "server/portfolio/policy.ts",
-    "server/portfolio/public-case-study-service.ts",
-    "shared/schema.ts"
+    "server/custom-auth.ts"
   ]
 }
