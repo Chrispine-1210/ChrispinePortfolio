@@ -111,29 +111,4 @@ const evidenceApprovalInput = z.object({
   notes: z.string().max(20_000).nullable().optional(),
 }).strict();
 
-async function refreshEvidenceGate(transaction: any, caseStudyId: string) {
-  const records = await transaction
-    .select({
-      verificationStatus: caseStudyEvidence.verificationStatus,
-      disclosureStatus: caseStudyEvidence.disclosureStatus,
-    })
-    .from(caseStudyEvidence)
-    .where(eq(caseStudyEvidence.caseStudyId, caseStudyId));
-  const gate = evaluateEvidenceGate(records);
-  await transaction
-    .update(caseStudies)
-    .set({ evidenceGateStatus: gate.status, updatedAt: new Date() })
-    .where(eq(caseStudies.id, caseStudyId));
-  return gate;
-}
-
-function auditValues(request: Express.Request) {
-  return {
-    actorUserId: request.securityPrincipal?.userId ?? null,
-    actorSessionId: request.securityPrincipal?.sessionId ?? null,
-    requestId: request.requestId,
-  };
-}
-
-
 export {};
