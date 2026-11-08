@@ -2,6 +2,6 @@
   "extends": "./tsconfig.json",
   "include": [],
   "files": [
-    "server/portfolio/public-case-study-service.ts"
+    "server/portfolio/admin-routes.diagnostic.ts"
   ]
 }
