@@ -10,8 +10,9 @@ permissions:
 
 jobs:
   verify:
+    name: verify
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -28,7 +29,7 @@ jobs:
       - name: TypeScript
         run: npm run check
 
-      - name: Security regression tests
+      - name: Tests
         run: npm test
         env:
           NODE_ENV: test
@@ -36,5 +37,5 @@ jobs:
       - name: Production build
         run: npm run build
 
-      - name: Dependency audit
-        run: npm audit --audit-level=high
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high

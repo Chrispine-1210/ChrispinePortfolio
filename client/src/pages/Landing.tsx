@@ -13,6 +13,7 @@ import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import heroImage from "@assets/portfolio_photos/chrispine-hero-tech.png";
 import { TechArchitectureDiagram } from "@/components/TechArchitectureDiagram";
+import type { PortfolioProject } from "@shared/schema";
 
 /* ─── Animation Variants ────────────────────────────────── */
 const fadeUp = {
@@ -71,13 +72,6 @@ const services = [
   },
 ];
 
-const metrics = [
-  { value: 2, suffix: "", label: "Case Studies", sub: "evidence-scoped" },
-  { value: 1, suffix: "", label: "Public CV", sub: "privacy-redacted" },
-  { value: 1, suffix: "", label: "Release Standard", sub: "claims need proof" },
-  { value: 0, suffix: "", label: "Client Metrics", sub: "published without approval" },
-];
-
 const trustSignals = [
   { icon: Shield, text: "Public claims are limited to inspectable evidence" },
   { icon: Activity, text: "Release verification is recorded with the source" },
@@ -86,21 +80,6 @@ const trustSignals = [
 ];
 
 const engagementTypes = ["Project-Based", "Retainer", "Advisory", "Fractional CTO"];
-
-const featuredProject = {
-  title: "Mtendere Education Consult",
-  category: "EdTech Platform",
-  description: "Full-stack education-consultancy platform documented through source, migration, test, and public-endpoint evidence.",
-  outcomes: [
-    "React, TypeScript, Node.js, PostgreSQL, and Drizzle ORM delivery",
-    "Public content and protected administrative workflow scope",
-    "Automated-test suites maintained in the repository",
-    "Client performance metrics excluded pending approved evidence",
-  ],
-  stack: ["React", "TypeScript", "Node.js", "PostgreSQL", "Drizzle ORM"],
-  evidenceUrl: "https://github.com/Chrispine-1210/MEC",
-  slug: "mtendere-education-platform",
-};
 
 const insightTopics = [
   { label: "LoRaWAN", category: "Hardware Engineering", color: "bg-orange-500/10 text-orange-400 border-orange-500/20" },
@@ -114,8 +93,21 @@ export default function Landing() {
     document.title = "Chrispine Mndala | Systems Architect & Digital Transformation Consultant";
   }, []);
 
-  const { data: blogData } = useQuery({ queryKey: ["/api/blog"] });
-  const posts = (blogData as any)?.data?.slice(0, 3) ?? [];
+  const { data: blogData } = useQuery<any[]>({ queryKey: ["/api/blog"] });
+  const { data: caseStudies = [] } = useQuery<PortfolioProject[]>({
+    queryKey: ["/api/portfolio"],
+  });
+  const { data: featuredProjects = [] } = useQuery<PortfolioProject[]>({
+    queryKey: ["/api/portfolio/featured"],
+  });
+  const posts = Array.isArray(blogData) ? blogData.slice(0, 3) : [];
+  const featuredProject = featuredProjects[0] ?? null;
+  const metrics = [
+    { value: caseStudies.length, suffix: "", label: "Case Studies", sub: "evidence-approved" },
+    { value: 1, suffix: "", label: "Public CV", sub: "privacy-redacted" },
+    { value: 1, suffix: "", label: "Release Standard", sub: "claims need proof" },
+    { value: 0, suffix: "", label: "Client Metrics", sub: "published without approval" },
+  ];
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
@@ -168,7 +160,7 @@ export default function Landing() {
               {/* Quick stats */}
               <motion.div variants={fadeUp} className="flex flex-wrap gap-6">
                 {[
-                  { n: "2", label: "Case Studies" },
+                  { n: String(caseStudies.length), label: "Case Studies" },
                   { n: "1", label: "Public CV" },
                   { n: "Proof", label: "First" },
                 ].map(({ n, label }) => (
@@ -246,27 +238,27 @@ export default function Landing() {
                   <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
                 </div>
 
-                {/* Floating card 1 — Live project */}
-                <motion.div
-                  className="absolute -left-12 top-16 glass-card p-4 w-52"
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Live Platform</span>
-                  </div>
-                  <div className="text-sm font-semibold text-white">Mtendere Education</div>
-                  <div className="text-[11px] text-white/40 mt-0.5">Source repository linked</div>
-                  <a
-                    href="https://github.com/Chrispine-1210/MEC"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 mt-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
+                {/* Floating card 1 — governed featured case study */}
+                {featuredProject && (
+                  <motion.div
+                    className="absolute -left-12 top-16 glass-card p-4 w-52"
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    <ExternalLink className="w-3 h-3" /> View Source
-                  </a>
-                </motion.div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Featured Case Study</span>
+                    </div>
+                    <div className="text-sm font-semibold text-white line-clamp-2">{featuredProject.title}</div>
+                    <div className="text-[11px] text-white/40 mt-0.5">Evidence-approved public record</div>
+                    <Link
+                      href={`/portfolio/${featuredProject.slug}`}
+                      className="flex items-center gap-1 mt-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
+                    >
+                      <ChevronRight className="w-3 h-3" /> View Study
+                    </Link>
+                  </motion.div>
+                )}
 
                 {/* Floating card 2 — GitHub */}
                 <motion.div
@@ -409,152 +401,117 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════════════ FEATURED PROJECT ═══════════════ */}
-      <section className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            className="label-tag mb-8"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            02 // FEATURED WORK
-          </motion.div>
+      {/* ═══════════════ FEATURED CASE STUDY ═══════════════ */}
+      {featuredProject && (
+        <section className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              className="label-tag mb-8"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              02 // FEATURED WORK
+            </motion.div>
 
-          <motion.div
-            className="rounded-2xl border border-white/[0.08] overflow-hidden"
-            style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(139,92,246,0.03) 100%)" }}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="grid lg:grid-cols-2 gap-0">
-              {/* Content */}
-              <div className="p-10 lg:p-14 space-y-7">
-                <div className="flex items-center gap-3">
-                  <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 font-mono text-[10px] uppercase">
-                    {featuredProject.category}
-                  </Badge>
-                  <a
-                    href={featuredProject.evidenceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    SOURCE
-                  </a>
-                </div>
-
-                <div>
-                  <h3 className="text-3xl font-black text-white mb-3">{featuredProject.title}</h3>
-                  <p className="text-white/50 leading-relaxed">{featuredProject.description}</p>
-                </div>
-
-                <div className="space-y-3">
-                  {featuredProject.outcomes.map((o, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-[14px] text-white/60">{o}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {featuredProject.stack.map((t) => (
-                    <span key={t} className="text-[10px] font-mono px-2.5 py-1 rounded-md bg-white/[0.05] border border-white/[0.08] text-white/50 uppercase">
-                      {t}
+            <motion.div
+              className="rounded-2xl border border-white/[0.08] overflow-hidden"
+              style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(139,92,246,0.03) 100%)" }}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="grid lg:grid-cols-2 gap-0">
+                <div className="p-10 lg:p-14 space-y-7">
+                  <div className="flex items-center gap-3">
+                    <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 font-mono text-[10px] uppercase">
+                      {featuredProject.category}
+                    </Badge>
+                    <span className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      EVIDENCE APPROVED
                     </span>
-                  ))}
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <Button size="sm" asChild className="rounded-lg h-9 px-4">
-                    <a href={featuredProject.evidenceUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                      View Source
-                    </a>
-                  </Button>
-                  <Button size="sm" variant="outline" asChild className="rounded-lg h-9 px-4 border-white/10 bg-white/[0.03] text-white/60 hover:text-white">
-                    <Link href={`/portfolio/${featuredProject.slug}`}>
-                      Case Study
-                      <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Visual side */}
-              <div className="relative hidden lg:flex items-center justify-center p-10 border-l border-white/[0.06]">
-                <div className="absolute inset-0 opacity-30"
-                  style={{ background: "radial-gradient(circle at 50% 50%, rgba(59,130,246,0.2), transparent 70%)" }}
-                />
-                <div className="relative z-10 space-y-4 w-full max-w-xs">
-                  {/* Mock UI screenshot */}
-                  <div className="rounded-xl border border-white/10 overflow-hidden bg-card/50 backdrop-blur-sm">
-                    <div className="flex items-center gap-1.5 px-4 py-3 border-b border-white/[0.06]">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
-                      <div className="flex-1 mx-3 h-4 rounded bg-white/[0.04] text-[9px] font-mono text-white/20 flex items-center px-2">
-                        github.com/Chrispine-1210/MEC
-                      </div>
-                    </div>
-                    <div className="p-4 space-y-2">
-                      <div className="h-3 rounded bg-blue-500/20 w-3/4" />
-                      <div className="h-2 rounded bg-white/[0.06] w-full" />
-                      <div className="h-2 rounded bg-white/[0.06] w-5/6" />
-                      <div className="grid grid-cols-3 gap-2 mt-3">
-                        {["UI", "API", "DB"].map((n, i) => (
-                          <div key={i} className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-2 text-center">
-                            <div className="text-sm font-black text-white">{n}</div>
-                            <div className="text-[8px] text-white/30 mt-0.5">
-                              {["Interface", "Service", "Data"][i]}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-xl border border-white/[0.06] bg-card/30 p-3">
-                      <div className="text-[10px] text-white/30 font-mono mb-1">STACK</div>
-                      <div className="space-y-1">
-                        {["React", "Node.js", "PostgreSQL"].map(t => (
-                          <div key={t} className="text-[10px] text-white/60 flex items-center gap-1">
-                            <div className="w-1 h-1 rounded-full bg-primary/60" />{t}
-                          </div>
-                        ))}
-                      </div>
+                  <div>
+                    <h3 className="text-3xl font-black text-white mb-3">{featuredProject.title}</h3>
+                    <p className="text-white/50 leading-relaxed">{featuredProject.description}</p>
+                  </div>
+
+                  {featuredProject.outcome && (
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-[14px] text-white/60">{featuredProject.outcome}</span>
                     </div>
-                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-3">
-                      <div className="text-[10px] text-emerald-400/60 font-mono mb-1">STATUS</div>
-                      <div className="text-[11px] font-semibold text-emerald-300">SOURCE</div>
-                      <div className="text-[10px] text-emerald-400/40 mt-0.5">Direct inspection</div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    {(featuredProject.techStack || []).map((technology) => (
+                      <span key={technology} className="text-[10px] font-mono px-2.5 py-1 rounded-md bg-white/[0.05] border border-white/[0.08] text-white/50 uppercase">
+                        {technology}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    {featuredProject.githubUrl && (
+                      <Button size="sm" asChild className="rounded-lg h-9 px-4">
+                        <a href={featuredProject.githubUrl} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                          View Source
+                        </a>
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" asChild className="rounded-lg h-9 px-4 border-white/10 bg-white/[0.03] text-white/60 hover:text-white">
+                      <Link href={`/portfolio/${featuredProject.slug}`}>
+                        Case Study
+                        <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="relative hidden lg:flex items-center justify-center p-10 border-l border-white/[0.06]">
+                  <div
+                    className="absolute inset-0 opacity-30"
+                    style={{ background: "radial-gradient(circle at 50% 50%, rgba(59,130,246,0.2), transparent 70%)" }}
+                  />
+                  <div className="relative z-10 w-full max-w-sm rounded-xl border border-white/10 bg-card/40 p-6">
+                    <div className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">
+                      Published evidence boundary
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-white/55">
+                      This card is rendered only from a published case study whose evidence gate is approved by the server.
+                    </p>
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {(featuredProject.techStack || []).slice(0, 5).map((technology) => (
+                        <span key={technology} className="rounded border border-white/[0.07] px-2 py-1 text-[10px] font-mono text-white/45">
+                          {technology}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          <motion.div
-            className="text-center mt-8"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <Button variant="outline" size="lg" asChild className="rounded-xl border-white/10 bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.07] h-11 px-6">
-              <Link href="/portfolio">
-                View All Case Studies
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
-      </section>
+            <motion.div
+              className="text-center mt-8"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              <Button variant="outline" size="lg" asChild className="rounded-xl border-white/10 bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.07] h-11 px-6">
+                <Link href="/portfolio">
+                  View All Case Studies
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       {/* ═══════════════ ARCHITECTURE DIAGRAM ═══════════════ */}
       <section className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">

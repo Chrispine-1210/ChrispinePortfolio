@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { Request, Response, NextFunction } from "express";
 import { env } from "./env.js";
 import { getDatabaseAuthRuntime } from "./security/database-auth-routes.js";
-import { createSessionAuthentication, requirePermission } from "./security/session-middleware.js";
+import { createSessionAuthentication, readCookie, requirePermission } from "./security/session-middleware.js";
 
 const authConfigured = Boolean(
   env.AUTH_SECRET && env.ADMIN_EMAIL && env.ADMIN_PASSWORD,
@@ -160,7 +160,7 @@ export function setupAuthRoutes(router: any) {
   // Get current user
   router.get("/api/auth/me", (req: Request, res: Response) => {
     try {
-      const token = req.cookies?.authToken || req.headers.authorization?.replace("Bearer ", "");
+      const token = readCookie(req.headers.cookie, "authToken") || req.headers.authorization?.replace("Bearer ", "");
 
       if (!token) {
         return res.json(null);

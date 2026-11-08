@@ -12,10 +12,9 @@ interface PortfolioShowcaseProps {
   projects: PortfolioProject[];
 }
 
-const categories = ["All", "ICT Infrastructure", "MEL Systems", "Hardware Engineering", "Data Analytics"];
-
 export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const categories = ["All", ...Array.from(new Set(projects.map((project) => project.category)))];
 
   const filteredProjects = selectedCategory === "All"
     ? projects
@@ -29,10 +28,10 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
         <div className="text-center space-y-4 mb-12">
           <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight uppercase" data-testid="text-portfolio-title">
             <span className="text-primary font-mono mr-4">{"//"}</span>
-            PROJECT_NODES
+            CASE_STUDIES
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-mono" data-testid="text-portfolio-subtitle">
-            ACCESSING_REPOSITORY: Filterable system architecture showcase
+            EVIDENCE_CONTROLLED: Published studies with explicit release boundaries
           </p>
         </div>
 
@@ -131,7 +130,7 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
                     <div className="mt-auto flex gap-2 pt-4 border-t border-white/5">
                       <Button variant="outline" size="sm" className="flex-1 rounded-none border-primary/30 hover:border-primary text-xs font-mono" asChild>
                         <Link href={`/portfolio/${project.slug}`}>
-                          EXECUTE_DETAILS
+                          VIEW_CASE_STUDY
                         </Link>
                       </Button>
                       {project.liveUrl && (

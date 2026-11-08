@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -34,23 +35,29 @@ import GitHubProfile from "@/pages/GitHubProfile";
 import ContactsManagement from "@/pages/admin/ContactsManagement";
 import AudienceManagement from "@/pages/admin/AudienceManagement";
 import ContentManagement from "@/pages/admin/ContentManagement";
-import PortfolioManagement from "@/pages/admin/PortfolioManagement";
+import ProjectManagement from "@/pages/admin/ProjectManagement";
+import CaseStudyManagement from "@/pages/admin/CaseStudyManagement";
 import LeadPipeline from "@/pages/admin/LeadPipeline";
 import SecurityManagement from "@/pages/admin/SecurityManagement";
 import UserManagement from "@/pages/admin/UserManagement";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated, isLoading } = useCustomAuth();
-  
+function AdminProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { isAdmin, isLoading } = useCustomAuth();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAdmin) navigate("/login");
+  }, [isAdmin, isLoading, navigate]);
+
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (!isAuthenticated) return <Route path="/login" component={Login} />;
+  if (!isAdmin) return null;
   return <Component />;
 }
 
 function Router() {
-  const { isAuthenticated, isLoading, user, isAdmin } = useCustomAuth();
+  const { isAuthenticated, isLoading } = useCustomAuth();
   const [location] = useLocation();
-  const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/newsletter-manage";
+  const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/analytics" || location === "/newsletter-manage" || location === "/external-posts";
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -75,19 +82,21 @@ function Router() {
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/login" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/admin/communications" component={NewsletterManagement} />
-          <Route path="/admin/contacts" component={ContactsManagement} />
-          <Route path="/admin/audience" component={AudienceManagement} />
-          <Route path="/admin/content" component={ContentManagement} />
-          <Route path="/admin/portfolio" component={PortfolioManagement} />
-          <Route path="/admin/pipeline" component={LeadPipeline} />
-          <Route path="/admin/security" component={SecurityManagement} />
-          <Route path="/admin/users" component={UserManagement} />
-          <Route path="/analytics" component={Analytics} />
+          <Route path="/admin" component={() => <AdminProtectedRoute component={AdminDashboard} />} />
+          <Route path="/admin/communications" component={() => <AdminProtectedRoute component={NewsletterManagement} />} />
+          <Route path="/admin/contacts" component={() => <AdminProtectedRoute component={ContactsManagement} />} />
+          <Route path="/admin/audience" component={() => <AdminProtectedRoute component={AudienceManagement} />} />
+          <Route path="/admin/content" component={() => <AdminProtectedRoute component={ContentManagement} />} />
+          <Route path="/admin/portfolio" component={() => <AdminProtectedRoute component={CaseStudyManagement} />} />
+          <Route path="/admin/projects" component={() => <AdminProtectedRoute component={ProjectManagement} />} />
+          <Route path="/admin/case-studies" component={() => <AdminProtectedRoute component={CaseStudyManagement} />} />
+          <Route path="/admin/pipeline" component={() => <AdminProtectedRoute component={LeadPipeline} />} />
+          <Route path="/admin/security" component={() => <AdminProtectedRoute component={SecurityManagement} />} />
+          <Route path="/admin/users" component={() => <AdminProtectedRoute component={UserManagement} />} />
+          <Route path="/analytics" component={() => <AdminProtectedRoute component={Analytics} />} />
           <Route path="/newsletter" component={Landing} />
-          <Route path="/newsletter-manage" component={NewsletterManagement} />
-          <Route path="/external-posts" component={ExternalPostsPage} />
+          <Route path="/newsletter-manage" component={() => <AdminProtectedRoute component={NewsletterManagement} />} />
+          <Route path="/external-posts" component={() => <AdminProtectedRoute component={ExternalPostsPage} />} />
           <Route path="/projects" component={Portfolio} />
           <Route path="/software-consulting-malawi" component={SoftwareConsultingMalawi} />
           <Route path="/digital-transformation-africa" component={DigitalTransformationAfrica} />

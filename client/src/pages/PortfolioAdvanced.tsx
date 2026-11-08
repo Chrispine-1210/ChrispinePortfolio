@@ -24,10 +24,8 @@ export default function PortfolioAdvanced() {
 
   const categories = categoriesData?.categories || [
     "All",
-    "MEL Systems",
-    "ICT Infrastructure",
-    "Hardware Engineering",
-    "Data Analytics",
+    "Full-Stack Delivery",
+    "Enterprise Systems",
   ];
 
   // Fetch filtered projects
@@ -69,7 +67,7 @@ export default function PortfolioAdvanced() {
             Case Studies
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Explore my work across MEL systems, ICT infrastructure, hardware engineering, and data analytics.
+            Evidence-controlled case studies showing inspectable software and systems delivery without unsupported outcome claims.
           </p>
         </div>
       </div>
@@ -87,7 +85,7 @@ export default function PortfolioAdvanced() {
             <Search className="absolute left-4 h-5 w-5 text-primary" />
             <Input
               type="search"
-              placeholder="Search projects by title, description, or tech stack..."
+              placeholder="Search case studies by title, evidence summary, or technology..."
               className="pl-12 h-12 bg-card/50 border-primary/30 focus:ring-primary/50"
               value={searchQuery}
               onChange={(e) => {
@@ -186,7 +184,7 @@ export default function PortfolioAdvanced() {
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              No projects found matching your filters.
+              No published case studies match your filters.
             </p>
           </div>
         )}

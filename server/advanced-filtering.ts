@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { storage } from "./storage.js";
-import { seedPortfolioProjects } from "./seed-data.js";
+import { listPublicCaseStudies } from "./portfolio/public-case-study-service.js";
 
 export function setupFilteringRoutes(router: Router) {
   // Advanced blog search with pagination
@@ -81,24 +81,7 @@ export function setupFilteringRoutes(router: Router) {
         featured = "",
       } = req.query;
 
-      // Keep public search aligned with the evidence-approved collection instead
-      // of allowing legacy database content to republish unsupported claims.
-      let projects = seedPortfolioProjects.map((project, index) => ({
-        ...project,
-        id: `seed-project-${index + 1}`,
-        challenge: project.challenge ?? null,
-        solution: project.solution ?? null,
-        outcome: project.outcome ?? null,
-        techStack: project.techStack ?? [],
-        featuredImage: null,
-        images: project.images ?? [],
-        liveUrl: project.liveUrl ?? null,
-        githubUrl: project.githubUrl ?? null,
-        featured: project.featured ?? false,
-        order: project.order ?? index,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
+      let projects = await listPublicCaseStudies();
 
       // Filter by search query
       if (q && typeof q === "string") {
@@ -165,7 +148,7 @@ export function setupFilteringRoutes(router: Router) {
     "/api/categories/portfolio",
     async (req: Request, res: Response) => {
       try {
-        const projects = seedPortfolioProjects;
+        const projects = await listPublicCaseStudies();
         const categories = Array.from(
           new Set(projects.map((p) => p.category))
         ).sort();
