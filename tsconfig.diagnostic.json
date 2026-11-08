@@ -2,7 +2,6 @@
   "extends": "./tsconfig.json",
   "include": [],
   "files": [
-    "shared/schema.ts",
-    "server/portfolio/policy.ts"
+    "server/portfolio/public-case-study-service.ts"
   ]
 }
