@@ -3,6 +3,6 @@
   "include": [],
   "files": [
     "server/types/express.d.ts",
-    "server/custom-auth.ts"
+    "server/portfolio/admin-routes.diagnostic.ts"
   ]
 }
