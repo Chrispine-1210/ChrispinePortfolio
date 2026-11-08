@@ -1,15 +1,4 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { Router } from "express";
 import { z } from "zod";
-import {
-  auditEvents,
-  caseStudies,
-  caseStudyEvidence,
-  projects,
-} from "../../shared/schema.js";
-import { requireAdminPermission } from "../custom-auth.js";
-import { db } from "../db.js";
-import { evaluateEvidenceGate } from "./policy.js";
 
 const projectFields = {
   projectCode: z.string().trim().min(2).max(80).regex(/^[A-Za-z0-9._-]+$/),
