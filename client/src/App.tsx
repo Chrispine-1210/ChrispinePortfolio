@@ -10,7 +10,6 @@ import { Footer } from "@/components/Footer";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
-import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Portfolio from "@/pages/Portfolio";
 import PortfolioAdvanced from "@/pages/PortfolioAdvanced";
@@ -55,7 +54,6 @@ function AdminProtectedRoute({ component: Component }: { component: React.Compon
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useCustomAuth();
   const [location] = useLocation();
   const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/analytics" || location === "/newsletter-manage" || location === "/external-posts";
 
@@ -64,11 +62,7 @@ function Router() {
       {!adminSurface && <Navigation />}
       <main className="flex-1">
         <Switch>
-          {isLoading || !isAuthenticated ? (
-            <Route path="/" component={Landing} />
-          ) : (
-            <Route path="/" component={Home} />
-          )}
+          <Route path="/" component={Landing} />
           <Route path="/portfolio" component={PortfolioAdvanced} />
           <Route path="/portfolio/:slug" component={PortfolioDetail} />
           <Route path="/blog" component={Blog} />
