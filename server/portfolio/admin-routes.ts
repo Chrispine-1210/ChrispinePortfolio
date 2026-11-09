@@ -1,6 +1,7 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { Router } from "express";
-import { z } from "zod";
+import { randomUUID } from "node:crypto";
+import { and, desc, DrizzleQueryError, eq, isNull } from "drizzle-orm";
+import { Router, type ErrorRequestHandler } from "express";
+import { z, ZodError } from "zod";
 import {
   auditEvents,
   caseStudies,
@@ -9,7 +10,14 @@ import {
 } from "../../shared/schema.js";
 import { requireAdminPermission } from "../custom-auth.js";
 import { db } from "../db.js";
+import { env } from "../env.js";
+import { asyncHandler } from "../middleware.js";
 import { evaluateEvidenceGate } from "./policy.js";
+
+const httpUrl = z.string().url().refine(
+  (value) => /^https?:\/\//i.test(value),
+  "URL must use HTTP or HTTPS",
+);
 
 const projectFields = {
   projectCode: z.string().trim().min(2).max(80).regex(/^[A-Za-z0-9._-]+$/),
@@ -28,8 +36,8 @@ const projectFields = {
   currency: z.string().length(3).transform((value) => value.toUpperCase()),
   startDate: z.string().datetime().nullable().optional(),
   targetDate: z.string().datetime().nullable().optional(),
-  repositoryUrl: z.string().url().nullable().optional(),
-  deploymentUrl: z.string().url().nullable().optional(),
+  repositoryUrl: httpUrl.nullable().optional(),
+  deploymentUrl: httpUrl.nullable().optional(),
 };
 
 const projectCreateInput = z.object({
@@ -61,17 +69,17 @@ const caseStudyFields = {
   lessons: z.string().max(50_000).nullable().optional(),
   nextPhase: z.string().max(50_000).nullable().optional(),
   category: z.string().trim().min(1).max(160),
-  featuredImage: z.string().url().nullable().optional(),
-  images: z.array(z.string().url()).max(30),
-  liveUrl: z.string().url().nullable().optional(),
-  githubUrl: z.string().url().nullable().optional(),
+  featuredImage: httpUrl.nullable().optional(),
+  images: z.array(httpUrl).max(30),
+  liveUrl: httpUrl.nullable().optional(),
+  githubUrl: httpUrl.nullable().optional(),
   visibility: z.enum(["public", "unlisted", "private"]),
   featured: z.boolean(),
   order: z.number().int().min(0).max(10_000),
   seoTitle: z.string().trim().max(70).nullable().optional(),
   seoDescription: z.string().trim().max(170).nullable().optional(),
-  canonicalUrl: z.string().url().nullable().optional(),
-  ogImage: z.string().url().nullable().optional(),
+  canonicalUrl: httpUrl.nullable().optional(),
+  ogImage: httpUrl.nullable().optional(),
 };
 
 const caseStudyCreateInput = z.object({
@@ -111,7 +119,9 @@ const evidenceApprovalInput = z.object({
   notes: z.string().max(20_000).nullable().optional(),
 }).strict();
 
-async function refreshEvidenceGate(transaction: any, caseStudyId: string) {
+type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+async function getEvidenceGate(transaction: Transaction, caseStudyId: string) {
   const records = await transaction
     .select({
       verificationStatus: caseStudyEvidence.verificationStatus,
@@ -119,12 +129,21 @@ async function refreshEvidenceGate(transaction: any, caseStudyId: string) {
     })
     .from(caseStudyEvidence)
     .where(eq(caseStudyEvidence.caseStudyId, caseStudyId));
-  const gate = evaluateEvidenceGate(records);
+  return evaluateEvidenceGate(records);
+}
+
+async function refreshEvidenceGate(transaction: Transaction, caseStudyId: string) {
+  const gate = await getEvidenceGate(transaction, caseStudyId);
   await transaction
     .update(caseStudies)
     .set({ evidenceGateStatus: gate.status, updatedAt: new Date() })
     .where(eq(caseStudies.id, caseStudyId));
   return gate;
+}
+
+// Lock the case study before checking its state or writing child evidence.
+function lockCaseStudy(transaction: Transaction, id: string) {
+  return transaction.select().from(caseStudies).where(eq(caseStudies.id, id)).limit(1).for("update");
 }
 
 function auditValues(request: Express.Request) {
@@ -135,15 +154,47 @@ function auditValues(request: Express.Request) {
   };
 }
 
+const handleGovernanceError: ErrorRequestHandler = (error, request, response, next) => {
+  if (response.headersSent) return next(error);
+  if (error instanceof ZodError) {
+    return response.status(400).json({
+      message: "Invalid portfolio request",
+      fields: error.issues.map((issue) => ({ path: issue.path, message: issue.message })),
+    });
+  }
+  const cause: unknown = error instanceof DrizzleQueryError ? error.cause : error;
+  const code = cause && typeof cause === "object" && "code" in cause ? cause.code : undefined;
+  if (code === "23505") {
+    return response.status(409).json({ message: "A record with this identifier already exists" });
+  }
+  if (code === "22003") {
+    return response.status(400).json({ message: "Numeric value is out of range" });
+  }
+  console.error("Portfolio governance request failed", { requestId: request.requestId, code });
+  response.status(500).json({ message: "Portfolio operation failed" });
+};
+
 export function createPortfolioGovernanceRouter() {
   const router = Router();
 
-  router.get("/api/admin/projects", requireAdminPermission("portfolio.read"), async (_request, response) => {
-    response.setHeader("Cache-Control", "no-store");
-    response.json(await db.select().from(projects).where(isNull(projects.archivedAt)).orderBy(desc(projects.updatedAt)).limit(500));
-  });
+  router.use(
+    ["/api/admin/projects", "/api/admin/case-studies", "/api/admin/case-study-evidence"],
+    (request, response, next) => {
+      request.requestId ??= randomUUID();
+      response.setHeader("X-Request-Id", request.requestId);
+      response.setHeader("Cache-Control", "no-store");
+      if (env.ADMIN_AUTH_MODE !== "database") {
+        return response.status(503).json({ message: "Portfolio governance requires database authentication" });
+      }
+      next();
+    },
+  );
 
-  router.post("/api/admin/projects", requireAdminPermission("portfolio.manage"), async (request, response) => {
+  router.get("/api/admin/projects", requireAdminPermission("portfolio.read"), asyncHandler(async (_request, response) => {
+    response.json(await db.select().from(projects).where(isNull(projects.archivedAt)).orderBy(desc(projects.updatedAt)).limit(500));
+  }));
+
+  router.post("/api/admin/projects", requireAdminPermission("portfolio.manage"), asyncHandler(async (request, response) => {
     const input = projectCreateInput.parse(request.body);
     const record = await db.transaction(async (transaction) => {
       const [created] = await transaction.insert(projects).values({
@@ -160,12 +211,12 @@ export function createPortfolioGovernanceRouter() {
       return created;
     });
     response.status(201).json(record);
-  });
+  }));
 
-  router.patch("/api/admin/projects/:id", requireAdminPermission("portfolio.manage"), async (request, response) => {
+  router.patch("/api/admin/projects/:id", requireAdminPermission("portfolio.manage"), asyncHandler(async (request, response) => {
     const input = projectPatchInput.parse(request.body);
     const record = await db.transaction(async (transaction) => {
-      const [previous] = await transaction.select().from(projects).where(eq(projects.id, request.params.id)).limit(1);
+      const [previous] = await transaction.select().from(projects).where(eq(projects.id, request.params.id)).limit(1).for("update");
       if (!previous || previous.archivedAt) return undefined;
       const changes = {
         ...input,
@@ -183,12 +234,12 @@ export function createPortfolioGovernanceRouter() {
     });
     if (!record) return response.status(404).json({ message: "Project not found" });
     response.json(record);
-  });
+  }));
 
-  router.post("/api/admin/projects/:id/archive", requireAdminPermission("portfolio.manage"), async (request, response) => {
+  router.post("/api/admin/projects/:id/archive", requireAdminPermission("portfolio.manage"), asyncHandler(async (request, response) => {
     const { justification } = z.object({ justification: z.string().trim().min(8).max(1000) }).strict().parse(request.body);
     const record = await db.transaction(async (transaction) => {
-      const [previous] = await transaction.select().from(projects).where(eq(projects.id, request.params.id)).limit(1);
+      const [previous] = await transaction.select().from(projects).where(eq(projects.id, request.params.id)).limit(1).for("update");
       if (!previous || previous.archivedAt) return undefined;
       const [updated] = await transaction.update(projects).set({ archivedAt: new Date(), updatedAt: new Date() }).where(eq(projects.id, previous.id)).returning();
       await transaction.insert(auditEvents).values({
@@ -200,16 +251,15 @@ export function createPortfolioGovernanceRouter() {
     });
     if (!record) return response.status(404).json({ message: "Project not found" });
     response.json(record);
-  });
+  }));
 
-  router.get("/api/admin/case-studies", requireAdminPermission("portfolio.read"), async (_request, response) => {
+  router.get("/api/admin/case-studies", requireAdminPermission("portfolio.read"), asyncHandler(async (_request, response) => {
     const records = await db.select().from(caseStudies).orderBy(desc(caseStudies.updatedAt)).limit(500);
     const evidence = await db.select({
       caseStudyId: caseStudyEvidence.caseStudyId,
       verificationStatus: caseStudyEvidence.verificationStatus,
       disclosureStatus: caseStudyEvidence.disclosureStatus,
     }).from(caseStudyEvidence);
-    response.setHeader("Cache-Control", "no-store");
     response.json(records.map((record) => ({
       ...record,
       evidenceCount: evidence.filter((item) => item.caseStudyId === record.id).length,
@@ -219,9 +269,9 @@ export function createPortfolioGovernanceRouter() {
         item.disclosureStatus === "approved_public"
       ).length,
     })));
-  });
+  }));
 
-  router.post("/api/admin/case-studies", requireAdminPermission("portfolio.manage"), async (request, response) => {
+  router.post("/api/admin/case-studies", requireAdminPermission("portfolio.manage"), asyncHandler(async (request, response) => {
     const input = caseStudyCreateInput.parse(request.body);
     const record = await db.transaction(async (transaction) => {
       if (input.projectId) {
@@ -245,12 +295,12 @@ export function createPortfolioGovernanceRouter() {
     });
     if (!record) return response.status(400).json({ message: "Linked project does not exist or is archived" });
     response.status(201).json(record);
-  });
+  }));
 
-  router.patch("/api/admin/case-studies/:id", requireAdminPermission("portfolio.manage"), async (request, response) => {
+  router.patch("/api/admin/case-studies/:id", requireAdminPermission("portfolio.manage"), asyncHandler(async (request, response) => {
     const input = caseStudyPatchInput.parse(request.body);
     const record = await db.transaction(async (transaction) => {
-      const [previous] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
+      const [previous] = await lockCaseStudy(transaction, request.params.id);
       if (!previous) return { outcome: "missing" as const };
       if (previous.workflowStatus !== "draft") return { outcome: "locked" as const };
       if (input.projectId) {
@@ -273,7 +323,6 @@ export function createPortfolioGovernanceRouter() {
         eq(caseStudyEvidence.caseStudyId, previous.id),
         eq(caseStudyEvidence.disclosureStatus, "approved_public"),
       ));
-      await refreshEvidenceGate(transaction, previous.id);
       await transaction.insert(auditEvents).values({
         ...auditValues(request), action: "case_study.update", resourceType: "case_study",
         resourceId: previous.id, result: "success", previousState: previous, newState: updated,
@@ -284,19 +333,18 @@ export function createPortfolioGovernanceRouter() {
     if (record.outcome === "locked") return response.status(409).json({ message: "Only draft case studies can be edited" });
     if (record.outcome === "project") return response.status(400).json({ message: "Linked project does not exist or is archived" });
     response.json(record.record);
-  });
+  }));
 
-  router.get("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.read"), async (request, response) => {
-    response.setHeader("Cache-Control", "no-store");
+  router.get("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.read"), asyncHandler(async (request, response) => {
     response.json(await db.select().from(caseStudyEvidence)
       .where(eq(caseStudyEvidence.caseStudyId, request.params.id))
       .orderBy(desc(caseStudyEvidence.createdAt)).limit(500));
-  });
+  }));
 
-  router.post("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.manage"), async (request, response) => {
+  router.post("/api/admin/case-studies/:id/evidence", requireAdminPermission("portfolio.manage"), asyncHandler(async (request, response) => {
     const input = evidenceCreateInput.parse(request.body);
     const result = await db.transaction(async (transaction) => {
-      const [caseStudy] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
+      const [caseStudy] = await lockCaseStudy(transaction, request.params.id);
       if (!caseStudy) return { outcome: "missing" as const };
       if (!["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
       const [created] = await transaction.insert(caseStudyEvidence).values({
@@ -319,17 +367,21 @@ export function createPortfolioGovernanceRouter() {
     if (result.outcome === "missing") return response.status(404).json({ message: "Case study not found" });
     if (result.outcome === "locked") return response.status(409).json({ message: "Evidence can only be changed while the case study is draft or in review" });
     response.status(201).json({ evidence: result.record, gate: result.gate });
-  });
+  }));
 
-  router.patch("/api/admin/case-study-evidence/:id", requireAdminPermission("portfolio.approve"), async (request, response) => {
+  router.patch("/api/admin/case-study-evidence/:id", requireAdminPermission("portfolio.approve"), asyncHandler(async (request, response) => {
     const input = evidenceApprovalInput.parse(request.body);
     const result = await db.transaction(async (transaction) => {
-      const [previous] = await transaction.select().from(caseStudyEvidence).where(eq(caseStudyEvidence.id, request.params.id)).limit(1);
+      const [link] = await transaction.select({ caseStudyId: caseStudyEvidence.caseStudyId })
+        .from(caseStudyEvidence).where(eq(caseStudyEvidence.id, request.params.id)).limit(1);
+      if (!link) return { outcome: "missing" as const };
+      const [caseStudy] = await lockCaseStudy(transaction, link.caseStudyId);
+      if (!caseStudy) return { outcome: "missing" as const };
+      if (!["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
+      const [previous] = await transaction.select().from(caseStudyEvidence)
+        .where(eq(caseStudyEvidence.id, request.params.id)).limit(1);
       if (!previous) return { outcome: "missing" as const };
-      const [caseStudy] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, previous.caseStudyId)).limit(1);
-      if (!caseStudy || !["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
-      const nextVerification = input.verificationStatus ?? previous.verificationStatus;
-      const verified = ["internally_verified", "externally_verified"].includes(nextVerification);
+      const verified = ["internally_verified", "externally_verified"].includes(input.verificationStatus);
       const [updated] = await transaction.update(caseStudyEvidence).set({
         ...input,
         verifiedBy: verified ? request.securityPrincipal?.userId ?? previous.verifiedBy : null,
@@ -347,9 +399,9 @@ export function createPortfolioGovernanceRouter() {
     if (result.outcome === "missing") return response.status(404).json({ message: "Evidence record not found" });
     if (result.outcome === "locked") return response.status(409).json({ message: "Evidence can only be changed while the case study is draft or in review" });
     response.json({ evidence: result.record, gate: result.gate });
-  });
+  }));
 
-  router.post("/api/admin/case-studies/:id/transition", requireAdminPermission("portfolio.manage"), async (request, response) => {
+  router.post("/api/admin/case-studies/:id/transition", requireAdminPermission("portfolio.manage"), asyncHandler(async (request, response) => {
     const input = z.object({
       action: z.enum(["submit_review", "return_draft", "approve", "publish", "archive", "restore"]),
       justification: z.string().trim().max(1000).optional(),
@@ -364,8 +416,7 @@ export function createPortfolioGovernanceRouter() {
     }[input.action];
     if (
       ["approve", "publish"].includes(input.action) &&
-      request.securityPrincipal &&
-      !request.securityPrincipal.permissions.includes("portfolio.approve")
+      !request.securityPrincipal?.permissions.includes("portfolio.approve")
     ) {
       return response.status(403).json({ message: "Portfolio approval permission required" });
     }
@@ -373,10 +424,10 @@ export function createPortfolioGovernanceRouter() {
       return response.status(400).json({ message: "Archive justification must contain at least 8 characters" });
     }
     const result = await db.transaction(async (transaction) => {
-      const [previous] = await transaction.select().from(caseStudies).where(eq(caseStudies.id, request.params.id)).limit(1);
+      const [previous] = await lockCaseStudy(transaction, request.params.id);
       if (!previous) return { outcome: "missing" as const };
       if (!policy.from.includes(previous.workflowStatus)) return { outcome: "transition" as const };
-      const gate = await refreshEvidenceGate(transaction, previous.id);
+      const gate = await getEvidenceGate(transaction, previous.id);
       if (["approve", "publish"].includes(input.action) && gate.status !== "approved") {
         return { outcome: "evidence" as const, gate };
       }
@@ -407,7 +458,8 @@ export function createPortfolioGovernanceRouter() {
     if (result.outcome === "evidence") return response.status(409).json({ message: "Evidence gate blocked this transition", gate: result.gate });
     if (result.outcome === "visibility") return response.status(409).json({ message: "Private case studies cannot be published" });
     response.json({ caseStudy: result.record, gate: result.gate });
-  });
+  }));
 
+  router.use(handleGovernanceError);
   return router;
 }

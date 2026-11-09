@@ -111,6 +111,23 @@ describe("project and case-study separation migration", () => {
       expect(evidence.rows[0]?.count).toBe(2);
       expect(approvalPermission.rows[0]?.count).toBe(1);
       expect(approvalRoleMappings.rows[0]?.count).toBe(3);
+
+      await database.exec(`
+        update case_studies set slug = 'retitled-approved-study'
+        where slug = 'mtendere-education-platform';
+        insert into case_studies (title, slug, summary, category)
+        values ('Editorial draft', 'mtendere-education-platform', 'Editorial copy', 'Draft');
+      `);
+      await database.exec(migration);
+      const editorialDraft = await database.query(`
+        select workflow_status, evidence_gate_status, count(case_study_evidence.id)::int as evidence_count
+        from case_studies left join case_study_evidence on case_studies.id = case_study_evidence.case_study_id
+        where slug = 'mtendere-education-platform'
+        group by case_studies.id
+      `);
+      expect(editorialDraft.rows).toEqual([{
+        workflow_status: "draft", evidence_gate_status: "blocked", evidence_count: 0,
+      }]);
     } finally {
       await database.close();
     }

@@ -15,7 +15,7 @@ const enqueueInput = z.object({
   htmlBody: z.string().min(1).max(500_000), textBody: z.string().max(200_000).nullable().optional(),
   replyTo: z.string().email().max(320).nullable().optional(),
   messageType: z.enum(["transactional", "marketing"]).default("transactional"),
-  idempotencyKey: z.string().min(8).max(255).optional(), metadata: z.record(z.unknown()).nullable().optional(),
+  idempotencyKey: z.string().min(8).max(255).optional(), metadata: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export function createEmailRouter(): Router {

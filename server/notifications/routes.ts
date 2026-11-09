@@ -19,7 +19,7 @@ const campaignInput = z.object({
   htmlContent: z.string().max(500_000).optional(),
   textContent: z.string().max(200_000).optional(),
   channels: z.array(z.enum(["email", "sms", "whatsapp", "push", "in_app"])).min(1),
-  audience: z.record(z.unknown()).default({}),
+  audience: z.record(z.string(), z.unknown()).default({}),
   scheduledAt: z.coerce.date().optional(),
 });
 

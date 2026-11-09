@@ -187,8 +187,8 @@ router.delete(
 
 // Public case-study routes. Only published, evidence-approved case studies are returned.
 router.get("/api/portfolio", async (req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
   try {
-    res.setHeader("Cache-Control", "public, max-age=300");
     let projects = await listPublicCaseStudies();
     const { category, search, featured } = req.query;
     if (category && typeof category === "string") {
@@ -212,9 +212,9 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
 });
 
 router.get("/api/portfolio/featured", async (_req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
   try {
     const projects = (await listPublicCaseStudies()).filter((project) => project.featured);
-    res.setHeader("Cache-Control", "public, max-age=300");
     res.json(projects);
   } catch (error) {
     console.error("Error fetching featured case studies:", error);
@@ -223,10 +223,10 @@ router.get("/api/portfolio/featured", async (_req: Request, res: Response) => {
 });
 
 router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
   try {
     const project = await getPublicCaseStudyBySlug(req.params.slug);
     if (!project) return res.status(404).json({ message: "Case study not found" });
-    res.setHeader("Cache-Control", "public, max-age=300");
     res.json(project);
   } catch (error) {
     console.error("Error fetching case study:", error);
@@ -280,7 +280,7 @@ router.post(
       if (error.name === "ZodError") {
         return res
           .status(400)
-          .json({ message: "Invalid data", errors: error.errors });
+          .json({ message: "Invalid data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to subscribe" });
     }
@@ -307,7 +307,7 @@ router.post("/api/contact", async (req: Request, res: Response) => {
     if (error.name === "ZodError") {
       return res
         .status(400)
-        .json({ message: "Invalid data", errors: error.errors });
+        .json({ message: "Invalid data", errors: error.issues });
     }
     res.status(500).json({ message: "Failed to submit contact request" });
   }
@@ -397,7 +397,7 @@ router.post(
       if (error.name === "ZodError") {
         return res
           .status(400)
-          .json({ message: "Invalid data", errors: error.errors });
+          .json({ message: "Invalid data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to create template" });
     }

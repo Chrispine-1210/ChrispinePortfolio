@@ -50,6 +50,13 @@ describe("administrative route boundaries", () => {
 });
 
 describe("temporary signed-token containment", () => {
+  it("does not grant access to case-study governance", async () => {
+    const token = generateToken("admin@test.invalid", true);
+    await request(app).get("/api/admin/case-studies")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(503, { message: "Portfolio governance requires database authentication" });
+  });
+
   it("accepts an intact token inside its maximum age", () => {
     const token = generateToken("admin@test.invalid", true);
 

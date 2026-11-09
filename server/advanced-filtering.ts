@@ -72,6 +72,7 @@ export function setupFilteringRoutes(router: Router) {
 
   // Advanced portfolio search with pagination
   router.get("/api/portfolio/search", async (req: Request, res: Response) => {
+    res.setHeader("Cache-Control", "no-store");
     try {
       const {
         q = "",
@@ -147,6 +148,7 @@ export function setupFilteringRoutes(router: Router) {
   router.get(
     "/api/categories/portfolio",
     async (req: Request, res: Response) => {
+      res.setHeader("Cache-Control", "no-store");
       try {
         const projects = await listPublicCaseStudies();
         const categories = Array.from(

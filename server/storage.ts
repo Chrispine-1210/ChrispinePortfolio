@@ -1,4 +1,3 @@
-import { Pool } from "@neondatabase/serverless";
 import {
   users,
   blogPosts,
@@ -26,11 +25,8 @@ import {
   type InsertEmailTemplate,
   type InsertExternalPost,
 } from "../shared/schema.js";
-import { drizzle } from "drizzle-orm/neon-serverless";
 import { eq, desc, and, or, like } from "drizzle-orm";
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
-const db = drizzle(pool);
+import { db } from "./db.js";
 
 export interface IStorage {
   // Users

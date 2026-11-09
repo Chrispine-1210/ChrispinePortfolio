@@ -188,6 +188,9 @@ INSERT INTO projects (
 )
 ON CONFLICT (project_code) DO NOTHING;
 
+-- Seed evidence only for studies inserted by this migration. An existing slug
+-- may belong to an independently governed record.
+WITH seeded_case_study AS (
 INSERT INTO case_studies (
   project_id, title, slug, summary, challenge, solution, outcome, category,
   technologies, github_url, workflow_status, visibility, evidence_gate_status,
@@ -225,8 +228,26 @@ This case study is based on the project's source repository, migration history, 
   timestamp '2026-08-31 00:00:00'
 FROM projects p
 WHERE p.project_code = 'MEC-PUBLIC-CASE'
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO NOTHING
+RETURNING id
+)
+INSERT INTO case_study_evidence (
+  case_study_id, claim, claim_type, source_type, source_reference,
+  verification_status, disclosure_status, verified_at, notes
+)
+SELECT
+  cs.id,
+  'Source-backed engineering delivery case study; no client adoption, revenue, service-availability, or operational-impact metric is asserted.',
+  'delivery',
+  'repository',
+  'https://github.com/Chrispine-1210/MEC',
+  'internally_verified',
+  'approved_public',
+  timestamp '2026-08-31 00:00:00',
+  'Approved public evidence boundary from the proof-driven portfolio release.'
+FROM seeded_case_study cs;
 
+WITH seeded_case_study AS (
 INSERT INTO case_studies (
   project_id, title, slug, summary, challenge, solution, outcome, category,
   technologies, workflow_status, visibility, evidence_gate_status,
@@ -260,26 +281,9 @@ The pull request remains a draft and its recorded decision is HOLD. GitHub Actio
   timestamp '2026-08-31 00:00:00'
 FROM projects p
 WHERE p.project_code = 'AOTHOTHE-EOS-PUBLIC-CASE'
-ON CONFLICT (slug) DO NOTHING;
-
-INSERT INTO case_study_evidence (
-  case_study_id, claim, claim_type, source_type, source_reference,
-  verification_status, disclosure_status, verified_at, notes
+ON CONFLICT (slug) DO NOTHING
+RETURNING id
 )
-SELECT
-  cs.id,
-  'Source-backed engineering delivery case study; no client adoption, revenue, service-availability, or operational-impact metric is asserted.',
-  'delivery',
-  'repository',
-  'https://github.com/Chrispine-1210/MEC',
-  'internally_verified',
-  'approved_public',
-  timestamp '2026-08-31 00:00:00',
-  'Approved public evidence boundary from the proof-driven portfolio release.'
-FROM case_studies cs
-WHERE cs.slug = 'mtendere-education-platform'
-ON CONFLICT (case_study_id, claim) DO NOTHING;
-
 INSERT INTO case_study_evidence (
   case_study_id, claim, claim_type, source_type, source_reference,
   verification_status, disclosure_status, verified_at, notes
@@ -294,6 +298,4 @@ SELECT
   'approved_public',
   timestamp '2026-08-31 00:00:00',
   'Approved public evidence boundary from the proof-driven portfolio release.'
-FROM case_studies cs
-WHERE cs.slug = 'aothothe-enterprise-os-commercial-foundation'
-ON CONFLICT (case_study_id, claim) DO NOTHING;
+FROM seeded_case_study cs;

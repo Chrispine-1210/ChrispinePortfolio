@@ -40,7 +40,7 @@ export function validateForm<T>(schema: z.ZodSchema, data: unknown): { data?: T;
   } catch (err) {
     if (err instanceof z.ZodError) {
       const errors: Record<string, string> = {};
-      err.errors.forEach((error) => {
+      err.issues.forEach((error) => {
         const path = error.path.join(".");
         errors[path] = error.message;
       });
