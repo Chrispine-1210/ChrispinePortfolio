@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Github, Terminal, Cpu, Zap, Activity } from "lucide-react";
 import { motion } from "framer-motion";
+import { CaseStudyCover } from "@/components/CaseStudyCover";
 import type { PortfolioProject } from "@shared/schema";
 
 export default function PortfolioDetail() {
@@ -62,7 +63,7 @@ export default function PortfolioDetail() {
           <Button variant="ghost" asChild className="text-primary hover:text-white hover:bg-primary/10 rounded-none font-mono text-xs uppercase" data-testid="button-back-to-portfolio">
             <Link href="/portfolio">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              BACK_TO_REPOSITORY
+              Back to Case Studies
             </Link>
           </Button>
         </motion.div>
@@ -76,11 +77,11 @@ export default function PortfolioDetail() {
           >
             <div className="flex flex-wrap items-center gap-3">
               <div className="bg-primary text-white px-3 py-1 text-[10px] font-mono font-black uppercase shadow-[0_0_10px_rgba(59,130,246,0.5)]">
-                MODULE: {project.category}
+                {project.category}
               </div>
               {project.featured && (
                 <div className="border border-primary/50 text-primary px-3 py-1 text-[10px] font-mono uppercase">
-                  ACTIVE_PRIORITY
+                  Featured
                 </div>
               )}
             </div>
@@ -146,28 +147,7 @@ export default function PortfolioDetail() {
           </motion.div>
         </div>
 
-        {/* Featured Image with Scan Animation */}
-        {project.featuredImage && (
-          <motion.div 
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-16 relative group"
-          >
-            <div className="absolute -inset-1 bg-primary/20 blur opacity-30 group-hover:opacity-50 transition duration-1000" />
-            <div className="relative tech-card border-none overflow-hidden rounded-none aspect-video">
-              <img
-                src={project.featuredImage}
-                alt={project.title}
-                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                data-testid="img-featured"
-              />
-              <div className="scanline" />
-              <div className="absolute top-4 left-4 font-mono text-[10px] bg-black/80 px-2 py-1 text-primary border border-primary/30 uppercase">
-                IMG_FEED_01 // SCANNING...
-              </div>
-            </div>
-          </motion.div>
-        )}
+        <CaseStudyCover project={project} className="mb-16 rounded-2xl border border-white/10" />
 
         {/* Executive Case Study Format */}
         <div className="space-y-16 mb-16">

@@ -62,12 +62,12 @@ export default function PortfolioAdvanced() {
     <div className="min-h-screen pt-16">
       <div className="bg-gradient-to-br from-background via-background to-accent/5 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <span className="text-[10px] font-mono text-primary uppercase tracking-widest">SYSTEM_NODE // CASE_STUDIES</span>
+          <span className="text-[10px] font-mono text-primary uppercase tracking-widest">Selected Work</span>
           <h1 className="text-5xl sm:text-6xl font-black text-foreground uppercase tracking-tighter">
             Case Studies
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Evidence-controlled case studies showing inspectable software and systems delivery without unsupported outcome claims.
+            Explore the software delivered, the decisions behind it, and the public evidence for each project.
           </p>
         </div>
       </div>

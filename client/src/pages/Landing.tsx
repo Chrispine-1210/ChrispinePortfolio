@@ -1,17 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import {
-  ArrowRight, Code2, Database, Network, Globe, Github,
-  CheckCircle2, Zap, Calendar, ExternalLink, Users, Cpu,
-  TrendingUp, Star, GitBranch, Mail, Download, ChevronRight,
-  BarChart3, Shield, Layers, Activity,
+  ArrowRight, Code2, CheckCircle2, Calendar, ExternalLink,
+  TrendingUp, Download, ChevronRight, BarChart3,
 } from "lucide-react";
-import { motion, useInView, useMotionValue, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import heroImage from "@assets/portfolio_photos/chrispine-hero-tech.png";
+import heroImage from "@assets/portfolio-editorial/chrispine-portrait.webp";
+import publicCvUrl from "@assets/Chrispine-Mndala-CV-2026.pdf?url";
+import { CaseStudyCover, getCaseStudyCover } from "@/components/CaseStudyCover";
+import { RegionalFocus } from "@/components/RegionalFocus";
 import { TechArchitectureDiagram } from "@/components/TechArchitectureDiagram";
 import type { PortfolioProject } from "@shared/schema";
 
@@ -24,22 +25,6 @@ const stagger = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
 };
-
-/* ─── Animated Counter ──────────────────────────────────── */
-function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-50px" });
-  const motionValue = useMotionValue(0);
-  const springValue = useSpring(motionValue, { stiffness: 60, damping: 15 });
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    if (inView) motionValue.set(value);
-  }, [inView, value, motionValue]);
-  useEffect(() => springValue.on("change", (v) => setDisplay(Math.round(v))), [springValue]);
-
-  return <span ref={ref}>{display}{suffix}</span>;
-}
 
 /* ─── Data ──────────────────────────────────────────────── */
 const services = [
@@ -72,14 +57,14 @@ const services = [
   },
 ];
 
-const trustSignals = [
-  { icon: Shield, text: "Public claims are limited to inspectable evidence" },
-  { icon: Activity, text: "Release verification is recorded with the source" },
-  { icon: Layers, text: "Draft work is labelled as draft, not deployed" },
-  { icon: CheckCircle2, text: "Client outcomes require approved evidence before publication" },
+const deliverySteps = [
+  { title: "Set the direction", text: "Choose the workflow to improve, agree on what success looks like, and name the people who own decisions and accept the work." },
+  { title: "Design for the people who use it", text: "Map the workflow and define access, data responsibilities, connectivity needs, and ongoing support before building." },
+  { title: "Test before release", text: "Verify the main user journeys, access controls, and recovery steps in a separate environment. Record who approves the release." },
+  { title: "Hand over a system the team can run", text: "Document how to operate and support it, train the team, and agree on how to track improvements after launch." },
 ];
 
-const engagementTypes = ["Project-Based", "Retainer", "Advisory", "Fractional CTO"];
+const industries = ["Education & training", "Business operations", "Development programmes"];
 
 const insightTopics = [
   { label: "LoRaWAN", category: "Hardware Engineering", color: "bg-orange-500/10 text-orange-400 border-orange-500/20" },
@@ -90,24 +75,16 @@ const insightTopics = [
 /* ─── Main Component ────────────────────────────────────── */
 export default function Landing() {
   useEffect(() => {
-    document.title = "Chrispine Mndala | Systems Architect & Digital Transformation Consultant";
+    document.title = "Chrispine Mndala | Full-Stack Programmer in Malawi";
   }, []);
 
   const { data: blogData } = useQuery<any[]>({ queryKey: ["/api/blog"] });
-  const { data: caseStudies = [] } = useQuery<PortfolioProject[]>({
-    queryKey: ["/api/portfolio"],
-  });
   const { data: featuredProjects = [] } = useQuery<PortfolioProject[]>({
     queryKey: ["/api/portfolio/featured"],
   });
   const posts = Array.isArray(blogData) ? blogData.slice(0, 3) : [];
   const featuredProject = featuredProjects[0] ?? null;
-  const metrics = [
-    { value: caseStudies.length, suffix: "", label: "Case Studies", sub: "evidence-approved" },
-    { value: 1, suffix: "", label: "Public CV", sub: "privacy-redacted" },
-    { value: 1, suffix: "", label: "Release Standard", sub: "claims need proof" },
-    { value: 0, suffix: "", label: "Client Metrics", sub: "published without approval" },
-  ];
+  const hasFeaturedCover = featuredProject && getCaseStudyCover(featuredProject);
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
@@ -123,7 +100,7 @@ export default function Landing() {
       </div>
 
       {/* ═══════════════ HERO ═══════════════ */}
-      <section className="relative z-10 min-h-screen flex items-center pt-20 pb-16 px-4 sm:px-6 lg:px-8">
+      <section className="relative z-10 flex items-center px-4 pb-16 pt-28 sm:px-6 lg:min-h-[85vh] lg:px-8">
         <div className="max-w-7xl mx-auto w-full">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
@@ -137,38 +114,19 @@ export default function Landing() {
               {/* Status badge */}
               <motion.div variants={fadeUp}>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/[0.04] backdrop-blur-sm text-[11px] font-mono text-white/60">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  ACCEPTING ENGAGEMENTS · 2026
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+                  CHRISPINE MNDALA · LILONGWE, MALAWI
                 </div>
               </motion.div>
 
               {/* Headline */}
               <motion.div variants={fadeUp} className="space-y-3">
-                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.02] text-white">
-                  Systems
-                  <br />
-                  <span className="gradient-text-primary">Architect</span>
-                  <br />
-                  <span className="text-white/90">for Africa</span>
+                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.04] text-white">
+                  Full-stack programming for <span className="gradient-text-primary">digital development</span>
                 </h1>
-                <p className="text-lg text-white/50 leading-relaxed max-w-lg">
-                  Building software, systems, and operational foundations for organisations in emerging markets.
-                  Public claims are deliberately limited to evidence that can be inspected.
+                <p className="max-w-lg text-lg leading-relaxed text-white/75">
+                  I build web platforms, administration portals, and data tools that help teams in Malawi deliver services and manage their work.
                 </p>
-              </motion.div>
-
-              {/* Quick stats */}
-              <motion.div variants={fadeUp} className="flex flex-wrap gap-6">
-                {[
-                  { n: String(caseStudies.length), label: "Case Studies" },
-                  { n: "1", label: "Public CV" },
-                  { n: "Proof", label: "First" },
-                ].map(({ n, label }) => (
-                  <div key={label} className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-black text-white">{n}</span>
-                    <span className="text-sm text-white/40">{label}</span>
-                  </div>
-                ))}
               </motion.div>
 
               {/* CTAs */}
@@ -185,7 +143,7 @@ export default function Landing() {
                 >
                   <Link href="/hire">
                     <Calendar className="w-4 h-4 mr-2" />
-                    Book a Discovery Call
+                    Discuss a Project
                   </Link>
                 </Button>
                 <Button
@@ -202,12 +160,12 @@ export default function Landing() {
                 </Button>
               </motion.div>
 
-              {/* Engagement types */}
+              {/* Industry focus */}
               <motion.div variants={fadeUp} className="flex flex-wrap gap-2 pt-1">
-                {engagementTypes.map((t) => (
+                {industries.map((t) => (
                   <span
                     key={t}
-                    className="text-[10px] font-mono px-2.5 py-1 rounded border border-white/[0.08] text-white/40 uppercase tracking-wider"
+                    className="rounded border border-white/10 px-2.5 py-1 text-xs text-white/70"
                   >
                     {t}
                   </span>
@@ -215,109 +173,25 @@ export default function Landing() {
               </motion.div>
             </motion.div>
 
-            {/* Right: Photo + floating cards */}
-            <motion.div
-              className="relative hidden lg:flex items-center justify-center"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
+            <motion.figure
+              className="relative mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
             >
-              {/* Photo container */}
-              <div className="relative">
-                <div
-                  className="w-[420px] h-[520px] rounded-3xl overflow-hidden"
-                  style={{
-                    boxShadow: "0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06)",
-                  }}
-                >
-                  <img
-                    src={heroImage}
-                    alt="Chrispine Mndala — Systems Architect"
-                    className="w-full h-full object-cover object-center"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
-                </div>
-
-                {/* Floating card 1 — governed featured case study */}
-                {featuredProject && (
-                  <motion.div
-                    className="absolute -left-12 top-16 glass-card p-4 w-52"
-                    animate={{ y: [0, -8, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Featured Case Study</span>
-                    </div>
-                    <div className="text-sm font-semibold text-white line-clamp-2">{featuredProject.title}</div>
-                    <div className="text-[11px] text-white/40 mt-0.5">Evidence-approved public record</div>
-                    <Link
-                      href={`/portfolio/${featuredProject.slug}`}
-                      className="flex items-center gap-1 mt-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
-                    >
-                      <ChevronRight className="w-3 h-3" /> View Study
-                    </Link>
-                  </motion.div>
-                )}
-
-                {/* Floating card 2 — GitHub */}
-                <motion.div
-                  className="absolute -right-10 bottom-24 glass-card p-4 w-48"
-                  animate={{ y: [0, 8, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Github className="w-3.5 h-3.5 text-white/60" />
-                    <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">GitHub</span>
-                  </div>
-                  <div className="text-sm font-semibold text-white">Chrispine-1210</div>
-                  <div className="text-[11px] text-white/40 mt-0.5">Open source contributions</div>
-                  <Link
-                    href="/github"
-                    className="flex items-center gap-1 mt-2 text-[10px] text-primary hover:text-primary/80 transition-colors"
-                  >
-                    <ChevronRight className="w-3 h-3" /> View Repos
-                  </Link>
-                </motion.div>
-
-                {/* Floating card 3 — Deployments */}
-                <motion.div
-                  className="absolute -right-6 top-8 glass-card px-4 py-3"
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                >
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-blue-400" />
-                    <span className="text-[11px] text-white/60">Evidence-led release</span>
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════ IMPACT METRICS ═══════════════ */}
-      <section className="relative z-10 py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {metrics.map((m, idx) => (
-              <motion.div
-                key={m.label}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                custom={idx}
-                className="stat-card"
-              >
-                <div className="text-3xl sm:text-4xl font-black text-white mb-1">
-                  <AnimatedNumber value={m.value} suffix={m.suffix} />
-                </div>
-                <div className="text-sm font-semibold text-white/70 mb-0.5">{m.label}</div>
-                <div className="text-[11px] text-white/30 font-mono">{m.sub}</div>
-              </motion.div>
-            ))}
+              <img
+                src={heroImage}
+                alt="Chrispine Mndala"
+                width={919}
+                height={1711}
+                decoding="async"
+                className="aspect-[5/4] w-full object-cover object-[center_26%] sm:aspect-[4/5] sm:object-[center_32%]"
+              />
+              <figcaption className="border-t border-white/10 bg-[#111724] px-5 py-4">
+                <p className="font-semibold text-white">Chrispine Mndala</p>
+                <p className="text-sm text-white/70">Programmer · Digital development</p>
+              </figcaption>
+            </motion.figure>
           </div>
         </div>
       </section>
@@ -339,7 +213,7 @@ export default function Landing() {
               What I Build
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/40 max-w-xl mx-auto text-lg">
-              Systems and technology work presented with a clear evidence boundary.
+              Web platforms, internal workflows, and reporting tools for education, business, and development teams.
             </motion.p>
           </motion.div>
 
@@ -422,7 +296,7 @@ export default function Landing() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <div className="grid lg:grid-cols-2 gap-0">
+              <div className={hasFeaturedCover ? "grid lg:grid-cols-2" : undefined}>
                 <div className="p-10 lg:p-14 space-y-7">
                   <div className="flex items-center gap-3">
                     <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 font-mono text-[10px] uppercase">
@@ -472,27 +346,7 @@ export default function Landing() {
                   </div>
                 </div>
 
-                <div className="relative hidden lg:flex items-center justify-center p-10 border-l border-white/[0.06]">
-                  <div
-                    className="absolute inset-0 opacity-30"
-                    style={{ background: "radial-gradient(circle at 50% 50%, rgba(59,130,246,0.2), transparent 70%)" }}
-                  />
-                  <div className="relative z-10 w-full max-w-sm rounded-xl border border-white/10 bg-card/40 p-6">
-                    <div className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">
-                      Published evidence boundary
-                    </div>
-                    <p className="mt-3 text-sm leading-6 text-white/55">
-                      This card is rendered only from a published case study whose evidence gate is approved by the server.
-                    </p>
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {(featuredProject.techStack || []).slice(0, 5).map((technology) => (
-                        <span key={technology} className="rounded border border-white/[0.07] px-2 py-1 text-[10px] font-mono text-white/45">
-                          {technology}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <CaseStudyCover project={featuredProject} className="order-first lg:order-none lg:aspect-auto lg:min-h-96" />
               </div>
             </motion.div>
 
@@ -525,97 +379,33 @@ export default function Landing() {
             <div className="label-tag mb-3">03 // TECHNICAL ARCHITECTURE</div>
             <h2 className="display-section text-white mb-4">How I Build Systems</h2>
             <p className="text-white/40 max-w-xl mx-auto">
-              Enterprise-grade layered architectures for web platforms, IoT infrastructure, and data systems.
+              A practical reference architecture for web applications, APIs, and data systems.
             </p>
           </motion.div>
           <TechArchitectureDiagram />
         </div>
       </section>
 
-      {/* ═══════════════ WHY ME ═══════════════ */}
-      <section className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -24 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="label-tag mb-4">04 // TRUST SIGNALS</div>
-              <h2 className="display-section text-white mb-6">
-                Why Organizations<br />Choose Me
-              </h2>
-              <p className="text-white/40 text-lg mb-10">
-                This release separates working software evidence from customer outcomes. Source, test, and deployment
-                evidence may be published; private results are not presented as public fact.
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { title: "Business-First", desc: "Scope tied to a real operating problem" },
-                  { title: "Traceable", desc: "Claims point to a checkable artifact" },
-                  { title: "Release-aware", desc: "Draft and production states stay distinct" },
-                  { title: "Privacy-minded", desc: "Client and personal data stays controlled" },
-                ].map(({ title, desc }) => (
-                  <div key={title} className="space-y-1">
-                    <div className="text-sm font-semibold text-white">{title}</div>
-                    <div className="text-[12px] text-white/40">{desc}</div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="space-y-4"
-              variants={stagger}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-            >
-              {trustSignals.map(({ icon: Icon, text }, idx) => (
-                <motion.div
-                  key={text}
-                  variants={fadeUp}
-                  custom={idx}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-[14px] text-white/70">{text}</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-auto flex-shrink-0" />
-                </motion.div>
-              ))}
-
-              {/* Social links */}
-              <div className="flex gap-3 pt-4">
-                <a
-                  href="https://www.linkedin.com/in/chrispine-mndala-11a951206"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.06] transition-colors text-sm text-white/50 hover:text-white"
-                >
-                  <Globe className="w-4 h-4" /> LinkedIn
-                </a>
-                <a
-                  href="https://github.com/Chrispine-1210"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.06] transition-colors text-sm text-white/50 hover:text-white"
-                >
-                  <Github className="w-4 h-4" /> GitHub
-                </a>
-                <a
-                  href="mailto:peterschrispine@gmail.com"
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.06] transition-colors text-sm text-white/50 hover:text-white"
-                >
-                  <Mail className="w-4 h-4" /> Email
-                </a>
-              </div>
-            </motion.div>
+      <section aria-labelledby="delivery-title" className="relative z-10 px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 max-w-2xl space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">Delivery approach</p>
+            <h2 id="delivery-title" className="display-section text-white">From strategy to handover</h2>
+            <p className="text-lg text-white/75">I align the work with the organisation’s priorities and make clear who decides, who tests, and who operates the system after launch.</p>
           </div>
+          <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {deliverySteps.map(({ title, text }, index) => (
+              <li key={title} className="rounded-xl border border-white/10 bg-white/[0.03] p-6">
+                <p className="mb-3 text-sm font-semibold tabular-nums text-blue-300">0{index + 1}</p>
+                <h3 className="mb-2 text-base font-semibold text-white">{title}</h3>
+                <p className="text-sm leading-relaxed text-white/70">{text}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
+
+      <RegionalFocus />
 
       {/* ═══════════════ LATEST INSIGHTS ═══════════════ */}
       <section className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">
@@ -713,8 +503,7 @@ export default function Landing() {
                 <span className="gradient-text-primary">That Lasts</span>
               </h2>
               <p className="text-lg text-white/40 max-w-xl mx-auto">
-                Book a free 30-minute discovery call. No sales pitch — an honest conversation
-                about your problem and whether I can solve it.
+                Tell me which workflow you want to improve. We can discuss the scope, the people it serves, and what a first release needs to achieve.
               </p>
               <div className="flex flex-wrap justify-center gap-4 pt-4">
                 <Button
@@ -729,7 +518,7 @@ export default function Landing() {
                 >
                   <Link href="/hire">
                     <Calendar className="w-5 h-5 mr-2" />
-                    Book a Discovery Call
+                    Discuss a Project
                   </Link>
                 </Button>
                 <Button
@@ -739,7 +528,7 @@ export default function Landing() {
                   className="h-14 px-8 text-[16px] font-semibold rounded-xl border-white/10 bg-white/[0.03] text-white hover:bg-white/[0.07]"
                   data-testid="button-cta-cv"
                 >
-                  <a href="/attached_assets/Chrispine-Mndala-CV-2026.pdf" download>
+                  <a href={publicCvUrl} download="Chrispine-Mndala-CV-2026.pdf">
                     <Download className="w-5 h-5 mr-2" />
                     Download CV
                   </a>
