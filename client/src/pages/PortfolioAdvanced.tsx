@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PortfolioShowcase } from "@/components/PortfolioShowcase";
@@ -69,6 +70,7 @@ export default function PortfolioAdvanced() {
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Explore the software delivered, the decisions behind it, and the public evidence for each project.
           </p>
+          <EditorialPhoto photo="workspace" className="mx-auto max-w-2xl text-left" eager />
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PortfolioShowcase } from "@/components/PortfolioShowcase";
@@ -31,6 +32,7 @@ export default function Portfolio() {
             Explore my work across MEL systems, ICT infrastructure, web development, and data analytics.
             Each project demonstrates practical solutions to real-world challenges.
           </p>
+          <EditorialPhoto photo="workspace" className="mx-auto mt-8 max-w-2xl text-left" eager />
         </div>
       </div>
 

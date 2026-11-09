@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -184,8 +185,10 @@ export default function Resources() {
       <HeroSection
         subtitle="THOUGHT LEADERSHIP"
         title="INSIGHTS"
-        description="Strategic articles on digital transformation, technology infrastructure, and building scalable systems for emerging markets."
-      />
+        description="Articles and resources on digital delivery, infrastructure, and practical systems design."
+      >
+        <EditorialPhoto photo="library" className="mx-auto max-w-3xl" eager />
+      </HeroSection>
 
       {/* All Insights — 10 Articles */}
       <section className="py-16 sm:py-24 relative z-10">

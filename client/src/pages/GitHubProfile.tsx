@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
@@ -277,6 +278,8 @@ export default function GitHubProfile() {
             </div>
           </motion.div>
         </motion.div>
+
+        <EditorialPhoto photo="collaboration" className="mb-12 max-w-3xl" />
 
         {/* ── Contribution stats ── */}
         <motion.div

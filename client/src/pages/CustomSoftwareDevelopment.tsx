@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,8 +74,7 @@ export default function CustomSoftwareDevelopment() {
             <span className="text-primary">Development</span>
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Enterprise-grade custom software for African businesses, NGOs, and international organizations.
-            7+ years building production systems that solve real business problems — not just features on a screen.
+            Web applications, APIs, and workflow tools for businesses and organisations that need software designed around how their teams work.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
             <Button size="lg" asChild>
@@ -87,6 +87,7 @@ export default function CustomSoftwareDevelopment() {
               <Link href="/portfolio">View Case Studies</Link>
             </Button>
           </div>
+          <EditorialPhoto photo="code" eager />
         </motion.div>
 
         <motion.section

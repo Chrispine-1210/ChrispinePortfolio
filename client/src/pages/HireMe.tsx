@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -88,7 +89,7 @@ const engagementTypes = [
 
 export default function HireMe() {
   useEffect(() => {
-    document.title = "ENGAGE_SPECIALIST | Chrispine Mndala";
+    document.title = "Discuss a Project | Chrispine Mndala";
   }, []);
 
   return (
@@ -100,24 +101,21 @@ export default function HireMe() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-6 mb-16"
+          className="mb-16 grid items-center gap-8 lg:grid-cols-2"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/30 text-primary text-sm font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            ACCEPTING NEW ENGAGEMENTS — 2025
+          <div className="space-y-5">
+            <p className="text-sm font-semibold uppercase tracking-wider text-blue-300">Software and digital development</p>
+            <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl">Discuss a project</h1>
+            <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
+              Tell me which workflow you want to improve. We can discuss scope, delivery, and support.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {["Project delivery", "Ongoing support", "Advisory"].map((engagement) => (
+                <span key={engagement} className="rounded border border-white/10 px-3 py-1 text-xs text-white/75">{engagement}</span>
+              ))}
+            </div>
           </div>
-          <h1 className="text-5xl sm:text-7xl font-black text-white uppercase tracking-tighter">
-            Engage a <span className="text-primary">Systems</span><br />Architect
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Enterprise technology consulting for organizations that need digital systems built right the first time.
-            Project-based, retainer, or advisory engagements.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 pt-2">
-            {["Project-Based", "Retainer", "Advisory", "Fractional CTO"].map((t) => (
-              <span key={t} className="text-[10px] font-mono px-3 py-1.5 border border-primary/30 text-primary uppercase">{t}</span>
-            ))}
-          </div>
+          <EditorialPhoto photo="planning" eager />
         </motion.div>
 
         {/* CTA Cards */}

@@ -6,12 +6,15 @@ import { Link } from "wouter";
 import { motion } from "framer-motion";
 import type { BlogPost } from "@shared/schema";
 import { format } from "date-fns";
+import { articlePhoto, editorialPhotoSource, PhotoCredit } from "@/components/EditorialPhoto";
 
 interface BlogCardProps {
   post: BlogPost;
 }
 
 export function BlogCard({ post }: BlogCardProps) {
+  const fallback = articlePhoto(post.category);
+
   return (
     <motion.div
       whileHover={{ y: -8 }}
@@ -21,17 +24,13 @@ export function BlogCard({ post }: BlogCardProps) {
       <Card className="flex flex-col h-full tech-card group hover:border-primary/70 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all duration-300">
         <Link href={`/blog/${post.slug}`}>
           <div className="relative aspect-video overflow-hidden cursor-pointer group">
-            {post.featuredImage ? (
-              <img
-                src={post.featuredImage}
-                alt={post.title}
-                className="object-cover w-full h-full grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105 brightness-85 group-hover:brightness-100"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-blue-600/20 flex items-center justify-center font-mono text-primary/60 text-center px-4">
-                <span>VISUAL_ASSET_PENDING</span>
-              </div>
-            )}
+            <img
+              src={post.featuredImage || editorialPhotoSource(fallback)}
+              alt={post.title}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
             <div className="absolute inset-0 bg-primary/10 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity" />
             {post.isPremium && (
               <div className="absolute top-2 right-2 bg-primary text-white px-2 py-1 rounded-none flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase shadow-[0_0_10px_rgba(59,130,246,0.5)]">
@@ -67,6 +66,7 @@ export function BlogCard({ post }: BlogCardProps) {
           <p className="text-muted-foreground line-clamp-3 text-sm font-mono leading-relaxed opacity-70">
             {post.excerpt}
           </p>
+          {!post.featuredImage && <p className="mt-3 text-xs text-muted-foreground"><PhotoCredit photo={fallback} /></p>}
         </CardContent>
         <CardFooter className="flex-none p-6 pt-0 flex flex-wrap gap-1.5 border-t border-white/5 mt-4">
           {(post.tags || []).slice(0, 3).map((tag) => (

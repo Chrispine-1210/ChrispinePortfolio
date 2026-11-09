@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useSearch } from "wouter";
@@ -21,8 +22,8 @@ export default function Blog() {
 
   useEffect(() => {
     setSEO(
-      "TECH_LOGS | Professional Blog | Chrispine Mndala",
-      "Explore insights on MEL systems, programming, leadership, and technical expertise across 7+ years of ICT and data analytics.",
+      "Writing & Technical Notes | Chrispine Mndala",
+      "Articles and practical notes on programming, networks, and data systems.",
       "/blog"
     );
   }, []);
@@ -60,14 +61,14 @@ export default function Blog() {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8 mb-16"
         >
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl sm:text-7xl font-black text-white tracking-tighter uppercase">
-              <span className="text-primary mr-4">{"//"}</span>
-              TECH_LOGS
-            </h1>
-            <p className="text-xl text-muted-foreground font-mono">
-              SYSTEM_INTEL: Accessing educational data nodes and ICT insights
-            </p>
+          <div className="grid items-center gap-8 lg:grid-cols-2">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl">Writing &amp; technical notes</h1>
+              <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
+                Articles and practical notes on programming, networks, and data systems.
+              </p>
+            </div>
+            <EditorialPhoto photo="writing" eager />
           </div>
 
           <div className="max-w-2xl mx-auto relative group">
