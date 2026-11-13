@@ -491,6 +491,18 @@ describe("public form and CRM compatibility", () => {
     ]));
 
     await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "managed-infrastructure",
+        currency: "MWK",
+        amount: "0",
+        occurredAt: new Date().toISOString(),
+      })
+      .expect(400);
+
+    await api.post("/api/admin/acquisition/spend")
       .set("Cookie", viewer.cookie)
       .send({
         channel: "social",
