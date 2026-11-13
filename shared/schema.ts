@@ -633,6 +633,7 @@ export const directCostEntries = pgTable("direct_cost_entries", {
   leadId: varchar("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
   serviceInterest: varchar("service_interest", { length: 180 }).notNull(),
   category: varchar("category", { length: 48 }).notNull(),
+  costScope: varchar("cost_scope", { length: 24 }).notNull(),
   currency: varchar("currency", { length: 3 }).notNull(),
   amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
   occurredAt: timestamp("occurred_at").notNull(),
@@ -649,11 +650,34 @@ export const directCostEntries = pgTable("direct_cost_entries", {
   activeTimeIdx: index("direct_cost_entries_active_time_idx").on(table.voidedAt, table.occurredAt),
 }));
 
+export const costEvidenceAttestations = pgTable("cost_evidence_attestations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  leadId: varchar("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+  serviceInterest: varchar("service_interest", { length: 180 }).notNull(),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  throughAt: timestamp("through_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  leadCurrencyIdx: index("cost_evidence_attestations_lead_currency_idx").on(
+    table.leadId,
+    table.currency,
+    table.throughAt,
+  ),
+  activeIdx: index("cost_evidence_attestations_active_idx").on(table.voidedAt, table.throughAt),
+}));
+
 export type LeadAttributionTouch = typeof leadAttributionTouches.$inferSelect;
 export type AcquisitionSpendEntry = typeof acquisitionSpendEntries.$inferSelect;
 export type RecurringRevenueAgreement = typeof recurringRevenueAgreements.$inferSelect;
 export type RevenueEvent = typeof revenueEvents.$inferSelect;
 export type DirectCostEntry = typeof directCostEntries.$inferSelect;
+export type CostEvidenceAttestation = typeof costEvidenceAttestations.$inferSelect;
 
 // Blog Likes
 export const blogLikes = pgTable("blog_likes", {
