@@ -132,6 +132,8 @@ interface EvidenceRecord {
   status?: string;
   revenueKind?: string;
   category?: string;
+  costScope?: string;
+  throughAt?: string;
   sourceReference: string;
   voidedAt: string | null;
 }
