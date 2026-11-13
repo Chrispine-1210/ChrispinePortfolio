@@ -734,7 +734,14 @@ export function createAdminRouter(): Router {
     "/api/admin/acquisition/spend",
     requireAdminPermission("acquisition.spend.manage"),
     async (request, response) => {
-      const input = acquisitionSpendInputSchema.parse(request.body);
+      const parsed = acquisitionSpendInputSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return response.status(400).json({
+          message: "Invalid acquisition spend data",
+          errors: parsed.error.issues,
+        });
+      }
+      const input = parsed.data;
       const [record] = await db.transaction(async (transaction) => {
         const [created] = await transaction
           .insert(acquisitionSpendEntries)
@@ -769,9 +776,16 @@ export function createAdminRouter(): Router {
     "/api/admin/acquisition/spend/:id/void",
     requireAdminPermission("acquisition.spend.manage"),
     async (request, response) => {
-      const input = z.object({
+      const parsed = z.object({
         reason: z.string().trim().min(5).max(1000),
-      }).strict().parse(request.body);
+      }).strict().safeParse(request.body);
+      if (!parsed.success) {
+        return response.status(400).json({
+          message: "Invalid spend void request",
+          errors: parsed.error.issues,
+        });
+      }
+      const input = parsed.data;
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction
           .select()
