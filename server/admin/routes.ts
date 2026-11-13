@@ -19,6 +19,7 @@ import {
   contactRequests,
   emailOutbox,
   leadActivities,
+  leadAttributionTouches,
   leads,
   newsletterSubscribers,
   notificationCampaigns,
@@ -878,6 +879,242 @@ export function createAdminRouter(): Router {
         financialByCurrency: canViewFinancial
           ? [...financial.values()].sort((a, b) => a.currency.localeCompare(b.currency))
           : [],
+      });
+    },
+  );
+
+  router.get(
+    "/api/admin/acquisition/intelligence",
+    requireAdminPermission("leads.read"),
+    async (request, response) => {
+      const requestedWindow =
+        typeof request.query.window === "string" ? request.query.window : "90d";
+      const windowValue = ["30d", "90d", "365d", "all"].includes(requestedWindow)
+        ? requestedWindow
+        : "90d";
+      const windowDays =
+        windowValue === "all" ? null : windowValue === "30d" ? 30 : windowValue === "365d" ? 365 : 90;
+      const since = windowDays
+        ? new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000)
+        : null;
+
+      const leadRows = await db
+        .select({
+          id: leads.id,
+          serviceInterest: leads.serviceInterest,
+          stage: leads.stage,
+          currency: leads.currency,
+          estimatedValue: leads.estimatedValue,
+          lostReason: leads.lostReason,
+          createdAt: leads.createdAt,
+        })
+        .from(leads)
+        .where(and(isNull(leads.archivedAt), ...(since ? [gt(leads.createdAt, since)] : [])))
+        .orderBy(desc(leads.createdAt))
+        .limit(5000);
+
+      const leadIds = leadRows.map((lead) => lead.id);
+      const [touches, stageEvents] = leadIds.length
+        ? await Promise.all([
+            db
+              .select()
+              .from(leadAttributionTouches)
+              .where(inArray(leadAttributionTouches.leadId, leadIds))
+              .orderBy(leadAttributionTouches.capturedAt),
+            db
+              .select({
+                leadId: leadActivities.leadId,
+                metadata: leadActivities.metadata,
+                createdAt: leadActivities.createdAt,
+              })
+              .from(leadActivities)
+              .where(
+                and(
+                  inArray(leadActivities.leadId, leadIds),
+                  eq(leadActivities.type, "stage_changed"),
+                ),
+              )
+              .orderBy(leadActivities.createdAt),
+          ])
+        : [[], []];
+
+      const firstTouch = new Map<string, (typeof touches)[number]>();
+      const lastTouch = new Map<string, (typeof touches)[number]>();
+      for (const touch of touches) {
+        if (touch.touchType === "first") firstTouch.set(touch.leadId, touch);
+        if (touch.touchType === "last") lastTouch.set(touch.leadId, touch);
+      }
+
+      type Milestones = { qualified?: Date; proposal?: Date; won?: Date };
+      const milestones = new Map<string, Milestones>();
+      const stageRank = (stage: string) =>
+        ["new", "reviewing", "qualified", "discovery", "proposal", "negotiation", "won"].indexOf(stage);
+      const reached = (leadStage: string, milestone: string) => {
+        if (milestone === "lost") return leadStage === "lost";
+        if (leadStage === "lost") return false;
+        return stageRank(leadStage) >= stageRank(milestone);
+      };
+
+      for (const event of stageEvents) {
+        const metadata =
+          event.metadata && typeof event.metadata === "object"
+            ? (event.metadata as Record<string, unknown>)
+            : {};
+        const stage = typeof metadata.stage === "string" ? metadata.stage : "";
+        const current = milestones.get(event.leadId) ?? {};
+        if (!current.qualified && ["qualified", "discovery", "proposal", "negotiation", "won"].includes(stage))
+          current.qualified = event.createdAt;
+        if (!current.proposal && ["proposal", "negotiation", "won"].includes(stage))
+          current.proposal = event.createdAt;
+        if (!current.won && stage === "won") current.won = event.createdAt;
+        milestones.set(event.leadId, current);
+      }
+
+      type AttributionRow = {
+        key: string;
+        enquiries: number;
+        qualified: number;
+        proposals: number;
+        won: number;
+        lost: number;
+        wonValues: Map<string, { total: number; count: number }>;
+      };
+      const makeRow = (key: string): AttributionRow => ({
+        key,
+        enquiries: 0,
+        qualified: 0,
+        proposals: 0,
+        won: 0,
+        lost: 0,
+        wonValues: new Map(),
+      });
+      const channelRows = new Map<string, AttributionRow>();
+      const serviceRows = new Map<string, AttributionRow>();
+      const lossRows = new Map<string, { reason: string; count: number; values: Map<string, number> }>();
+      const velocity = { qualified: [] as number[], proposal: [] as number[], won: [] as number[] };
+
+      const addLead = (row: AttributionRow, lead: (typeof leadRows)[number]) => {
+        row.enquiries += 1;
+        if (reached(lead.stage, "qualified")) row.qualified += 1;
+        if (reached(lead.stage, "proposal")) row.proposals += 1;
+        if (lead.stage === "won") row.won += 1;
+        if (lead.stage === "lost") row.lost += 1;
+        if (lead.stage === "won" && lead.estimatedValue) {
+          const currency = lead.currency || "USD";
+          const value = Number(lead.estimatedValue);
+          if (Number.isFinite(value) && value > 0) {
+            const current = row.wonValues.get(currency) ?? { total: 0, count: 0 };
+            current.total += value;
+            current.count += 1;
+            row.wonValues.set(currency, current);
+          }
+        }
+      };
+
+      for (const lead of leadRows) {
+        const last = lastTouch.get(lead.id);
+        const channel = last?.channel ?? "unattributed";
+        const channelRow = channelRows.get(channel) ?? makeRow(channel);
+        addLead(channelRow, lead);
+        channelRows.set(channel, channelRow);
+
+        const service = lead.serviceInterest || "unclassified";
+        const serviceRow = serviceRows.get(service) ?? makeRow(service);
+        addLead(serviceRow, lead);
+        serviceRows.set(service, serviceRow);
+
+        const times = milestones.get(lead.id);
+        const created = lead.createdAt.getTime();
+        if (times?.qualified) velocity.qualified.push((times.qualified.getTime() - created) / 86_400_000);
+        if (times?.proposal) velocity.proposal.push((times.proposal.getTime() - created) / 86_400_000);
+        if (times?.won) velocity.won.push((times.won.getTime() - created) / 86_400_000);
+
+        if (lead.stage === "lost") {
+          const reason = lead.lostReason?.trim() || "Unspecified";
+          const row = lossRows.get(reason) ?? { reason, count: 0, values: new Map<string, number>() };
+          row.count += 1;
+          if (lead.estimatedValue) {
+            const value = Number(lead.estimatedValue);
+            if (Number.isFinite(value) && value > 0) {
+              row.values.set(lead.currency, (row.values.get(lead.currency) ?? 0) + value);
+            }
+          }
+          lossRows.set(reason, row);
+        }
+      }
+
+      const round = (value: number) => Math.round(value * 10) / 10;
+      const average = (values: number[]) =>
+        values.length ? round(values.reduce((sum, value) => sum + value, 0) / values.length) : null;
+      const serializeRow = (row: AttributionRow) => ({
+        key: row.key,
+        enquiries: row.enquiries,
+        qualified: row.qualified,
+        proposals: row.proposals,
+        won: row.won,
+        lost: row.lost,
+        qualificationRate: row.enquiries ? round((row.qualified / row.enquiries) * 100) : 0,
+        proposalRate: row.qualified ? round((row.proposals / row.qualified) * 100) : 0,
+        proposalWinRate: row.proposals ? round((row.won / row.proposals) * 100) : 0,
+        wonRevenueByCurrency: [...row.wonValues.entries()].map(([currency, value]) => ({
+          currency,
+          revenue: value.total,
+          averageWonValue: value.count ? Math.round(value.total / value.count) : 0,
+        })),
+      });
+
+      const canViewFinancial =
+        !request.securityPrincipal ||
+        request.securityPrincipal.permissions.includes("pipeline.financial.read");
+
+      response.setHeader("Cache-Control", "no-store");
+      response.json({
+        window: windowValue,
+        cohortStart: since?.toISOString() ?? null,
+        attributionCoverage: {
+          leads: leadRows.length,
+          firstTouchCaptured: firstTouch.size,
+          lastTouchCaptured: lastTouch.size,
+          firstTouchRate: leadRows.length ? round((firstTouch.size / leadRows.length) * 100) : 0,
+          lastTouchRate: leadRows.length ? round((lastTouch.size / leadRows.length) * 100) : 0,
+        },
+        byLastTouchChannel: [...channelRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row);
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byService: [...serviceRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row);
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        velocityDays: {
+          enquiryToQualified: average(velocity.qualified),
+          enquiryToProposal: average(velocity.proposal),
+          enquiryToWon: average(velocity.won),
+          samples: {
+            qualified: velocity.qualified.length,
+            proposal: velocity.proposal.length,
+            won: velocity.won.length,
+          },
+        },
+        lossReasons: [...lossRows.values()]
+          .map((row) => ({
+            reason: row.reason,
+            count: row.count,
+            valueByCurrency: canViewFinancial
+              ? [...row.values.entries()].map(([currency, value]) => ({ currency, value }))
+              : [],
+          }))
+          .sort((a, b) => b.count - a.count || a.reason.localeCompare(b.reason)),
+        spendEconomics: {
+          status: "not_configured",
+          cac: null,
+          paybackDays: null,
+          note: "Campaign spend is not yet ingested; CAC and payback are intentionally unavailable.",
+        },
       });
     },
   );
