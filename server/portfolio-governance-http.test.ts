@@ -490,6 +490,54 @@ describe("public form and CRM compatibility", () => {
       }),
     ]));
 
+    await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", viewer.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "managed-infrastructure",
+        currency: "MWK",
+        amount: 500000,
+        occurredAt: new Date().toISOString(),
+      })
+      .expect(403);
+
+    const spend = await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "managed-infrastructure",
+        currency: "MWK",
+        amount: 500000,
+        occurredAt: new Date().toISOString(),
+        notes: "LinkedIn campaign spend fixture",
+      })
+      .expect(201);
+    const voidedSpend = await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "managed-infrastructure",
+        currency: "MWK",
+        amount: 100000,
+        occurredAt: new Date().toISOString(),
+        notes: "Incorrect duplicate spend fixture",
+      })
+      .expect(201);
+    await api.post(`/api/admin/acquisition/spend/${voidedSpend.body.id}/void`)
+      .set("Cookie", administrator.cookie)
+      .send({ reason: "Duplicate spend record entered during verification" })
+      .expect(200);
+    expect(spend.body).toMatchObject({
+      channel: "social",
+      source: "linkedin",
+      campaign: "managed-infrastructure",
+      currency: "MWK",
+      amount: "500000.00",
+    });
+
     const intelligence = await api.get("/api/admin/acquisition/intelligence")
       .set("Cookie", administrator.cookie)
       .query({ window: "all" })
@@ -502,6 +550,16 @@ describe("public form and CRM compatibility", () => {
         wonRevenueByCurrency: expect.arrayContaining([
           expect.objectContaining({ currency: "MWK", revenue: 3500000, averageWonValue: 3500000 }),
         ]),
+        economicsByCurrency: expect.arrayContaining([
+          expect.objectContaining({
+            currency: "MWK",
+            spend: 500000,
+            wonRevenue: 3500000,
+            wins: 1,
+            cac: 500000,
+            roas: 7,
+          }),
+        ]),
       }),
       expect.objectContaining({
         key: "unattributed",
@@ -509,16 +567,48 @@ describe("public form and CRM compatibility", () => {
         lost: 1,
       }),
     ]));
+    expect(intelligence.body.byLastTouchSource).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "linkedin",
+        enquiries: 2,
+        won: 1,
+        economicsByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", spend: 500000, roas: 7 }),
+        ]),
+      }),
+    ]));
+    expect(intelligence.body.byCampaign).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "managed-infrastructure",
+        won: 1,
+        economicsByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", cac: 500000, roas: 7 }),
+        ]),
+      }),
+    ]));
+    expect(intelligence.body.byChannelService).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        channel: "social",
+        service: "network-infrastructure",
+        won: 1,
+        wonRevenueByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", revenue: 3500000 }),
+        ]),
+      }),
+    ]));
+    expect(intelligence.body.spendEconomics).toMatchObject({
+      status: "available",
+      spendByCurrency: expect.arrayContaining([
+        expect.objectContaining({ currency: "MWK", spend: 500000 }),
+      ]),
+      paybackDays: null,
+    });
     expect(intelligence.body.velocityDays.samples).toMatchObject({
       qualified: expect.any(Number),
       proposal: expect.any(Number),
       won: expect.any(Number),
     });
-    expect(intelligence.body.spendEconomics).toMatchObject({
-      status: "not_configured",
-      cac: null,
-      paybackDays: null,
-    });
+
   });
 
   it("preserves newsletter subscription validation and duplicate detection", async () => {
