@@ -323,6 +323,37 @@ describe("public form and CRM compatibility", () => {
     ]);
   });
 
+  it("rejects attribution timestamps outside the accepted acquisition lookback", async () => {
+    const api = request(app);
+    const tooOld = new Date(Date.now() - 181 * 24 * 60 * 60 * 1000).toISOString();
+    const invalid = await api.post("/api/consultation").send({
+      name: "Attribution boundary fixture",
+      email: "attribution-boundary@test.invalid",
+      organization: "Example Institution",
+      industry: "Education",
+      serviceInterest: "enterprise-software",
+      challenge: "We need acquisition attribution without allowing stale client timestamps to distort reporting.",
+      budgetRange: "MWK 1,000,000 – 5,000,000",
+      expectedTimeline: "1–3 months",
+      consent: true,
+      attribution: {
+        firstTouch: {
+          source: "linkedin",
+          medium: "social",
+          campaign: "stale-campaign",
+          term: "",
+          content: "",
+          referrer: "https://www.linkedin.com/",
+          landingPage: "/hire",
+          capturedAt: tooOld,
+        },
+      },
+    }).expect(400);
+    expect(invalid.body.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ["attribution", "firstTouch", "capturedAt"] }),
+    ]));
+  });
+
   it("rejects consultation values outside the controlled commercial taxonomy", async () => {
     const api = request(app);
     const invalid = await api.post("/api/consultation").send({
@@ -469,6 +500,11 @@ describe("public form and CRM compatibility", () => {
         wonRevenueByCurrency: expect.arrayContaining([
           expect.objectContaining({ currency: "MWK", revenue: 3500000, averageWonValue: 3500000 }),
         ]),
+      }),
+      expect.objectContaining({
+        key: "unattributed",
+        proposals: 1,
+        lost: 1,
       }),
     ]));
     expect(intelligence.body.velocityDays.samples).toMatchObject({
