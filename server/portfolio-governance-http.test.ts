@@ -264,6 +264,7 @@ describe("public form and CRM compatibility", () => {
 
   it("captures a structured consultation as a qualified CRM intake without inventing qualification", async () => {
     const api = request(app);
+    const attributionNow = new Date().toISOString();
     await api.post("/api/consultation").send({
       name: "Commercial lead fixture",
       email: "buyer@test.invalid",
@@ -284,7 +285,7 @@ describe("public form and CRM compatibility", () => {
           content: "",
           referrer: "",
           landingPage: "/",
-          capturedAt: "2026-11-13T09:00:00.000Z",
+          capturedAt: attributionNow,
         },
         lastTouch: {
           source: "linkedin",
@@ -294,7 +295,7 @@ describe("public form and CRM compatibility", () => {
           content: "case-study-cta",
           referrer: "https://www.linkedin.com/",
           landingPage: "/hire?utm_source=linkedin&utm_medium=social&utm_campaign=enterprise-proof",
-          capturedAt: "2026-11-13T09:05:00.000Z",
+          capturedAt: attributionNow,
         },
       },
     }).expect(201);
@@ -420,6 +421,7 @@ describe("public form and CRM compatibility", () => {
       .send({ stage: "lost", lostReason: "Budget deferred", probability: 90 }).expect(200);
     expect(relost.body).toMatchObject({ stage: "lost", probability: 0, lostReason: "Budget deferred" });
 
+    const funnelAttributionNow = new Date().toISOString();
     await createConsultation("funnel-won@test.invalid", "network-infrastructure", {
       firstTouch: {
         source: "google",
@@ -429,7 +431,7 @@ describe("public form and CRM compatibility", () => {
         content: "",
         referrer: "https://www.google.com/",
         landingPage: "/software-consulting-malawi",
-        capturedAt: "2026-11-13T09:10:00.000Z",
+        capturedAt: funnelAttributionNow,
       },
       lastTouch: {
         source: "linkedin",
@@ -439,7 +441,7 @@ describe("public form and CRM compatibility", () => {
         content: "network-case-study",
         referrer: "https://www.linkedin.com/",
         landingPage: "/hire?utm_source=linkedin&utm_medium=social&utm_campaign=managed-infrastructure",
-        capturedAt: "2026-11-13T09:15:00.000Z",
+        capturedAt: funnelAttributionNow,
       },
     });
     const wonLeadSearch = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
