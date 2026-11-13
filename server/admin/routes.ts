@@ -949,8 +949,7 @@ export function createAdminRouter(): Router {
       const milestones = new Map<string, Milestones>();
       const stageRank = (stage: string) =>
         ["new", "reviewing", "qualified", "discovery", "proposal", "negotiation", "won"].indexOf(stage);
-      const reached = (leadStage: string, milestone: string) => {
-        if (milestone === "lost") return leadStage === "lost";
+      const reachedCurrentStage = (leadStage: string, milestone: "qualified" | "proposal") => {
         if (leadStage === "lost") return false;
         return stageRank(leadStage) >= stageRank(milestone);
       };
@@ -994,9 +993,10 @@ export function createAdminRouter(): Router {
       const velocity = { qualified: [] as number[], proposal: [] as number[], won: [] as number[] };
 
       const addLead = (row: AttributionRow, lead: (typeof leadRows)[number]) => {
+        const history = milestones.get(lead.id);
         row.enquiries += 1;
-        if (reached(lead.stage, "qualified")) row.qualified += 1;
-        if (reached(lead.stage, "proposal")) row.proposals += 1;
+        if (history?.qualified || reachedCurrentStage(lead.stage, "qualified")) row.qualified += 1;
+        if (history?.proposal || reachedCurrentStage(lead.stage, "proposal")) row.proposals += 1;
         if (lead.stage === "won") row.won += 1;
         if (lead.stage === "lost") row.lost += 1;
         if (lead.stage === "won" && lead.estimatedValue) {
