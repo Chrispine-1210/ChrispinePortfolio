@@ -545,7 +545,7 @@ describe("secure-foundation migration", () => {
         `select count(*)::int as count
          from information_schema.tables
          where table_schema = 'public'
-           and table_name in ('recurring_revenue_agreements', 'revenue_events', 'direct_cost_entries')`,
+           and table_name in ('recurring_revenue_agreements', 'revenue_events', 'direct_cost_entries', 'cost_evidence_attestations')`,
       );
       const serviceColumn = await database.query<{ count: number }>(
         `select count(*)::int as count
@@ -563,7 +563,7 @@ describe("secure-foundation migration", () => {
            and r.key in ('super_administrator', 'administrator', 'business_development_manager')`,
       );
 
-      expect(tables.rows[0]?.count).toBe(3);
+      expect(tables.rows[0]?.count).toBe(4);
       expect(serviceColumn.rows[0]?.count).toBe(1);
       expect(permission.rows[0]?.count).toBe(3);
     } finally {
