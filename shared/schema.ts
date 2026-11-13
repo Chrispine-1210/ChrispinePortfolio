@@ -551,7 +551,29 @@ export const leadAttributionTouches = pgTable("lead_attribution_touches", {
 
 export type Lead = typeof leads.$inferSelect;
 export type LeadActivity = typeof leadActivities.$inferSelect;
+export const acquisitionSpendEntries = pgTable("acquisition_spend_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  channel: varchar("channel", { length: 48 }).notNull(),
+  source: varchar("source", { length: 160 }).notNull(),
+  campaign: varchar("campaign", { length: 180 }),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  occurredAt: timestamp("occurred_at").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  channelTimeIdx: index("acquisition_spend_channel_time_idx").on(table.channel, table.occurredAt),
+  sourceTimeIdx: index("acquisition_spend_source_time_idx").on(table.source, table.occurredAt),
+  campaignTimeIdx: index("acquisition_spend_campaign_time_idx").on(table.campaign, table.occurredAt),
+  activeTimeIdx: index("acquisition_spend_active_time_idx").on(table.voidedAt, table.occurredAt),
+}));
+
 export type LeadAttributionTouch = typeof leadAttributionTouches.$inferSelect;
+export type AcquisitionSpendEntry = typeof acquisitionSpendEntries.$inferSelect;
 
 // Blog Likes
 export const blogLikes = pgTable("blog_likes", {
