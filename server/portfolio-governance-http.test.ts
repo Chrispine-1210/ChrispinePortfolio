@@ -344,6 +344,12 @@ describe("public form and CRM compatibility", () => {
     const lost = await api.patch(lostLeadPath).set("Cookie", administrator.cookie)
       .send({ stage: "lost", lostReason: "Budget deferred", probability: 70 }).expect(200);
     expect(lost.body).toMatchObject({ stage: "lost", probability: 0, lostReason: "Budget deferred" });
+    const reopened = await api.patch(lostLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "qualified", lostReason: "Budget deferred", probability: 50 }).expect(200);
+    expect(reopened.body).toMatchObject({ stage: "qualified", lostReason: null, probability: 50 });
+    const relost = await api.patch(lostLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "lost", lostReason: "Budget deferred", probability: 90 }).expect(200);
+    expect(relost.body).toMatchObject({ stage: "lost", probability: 0, lostReason: "Budget deferred" });
 
     await createConsultation("funnel-won@test.invalid", "network-infrastructure");
     const wonLeadSearch = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
