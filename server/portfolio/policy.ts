@@ -13,25 +13,28 @@ export function evaluateEvidenceGate(
   evidence: Array<Pick<CaseStudyEvidence, "verificationStatus" | "disclosureStatus">>,
 ): EvidenceGateResult {
   const reasons: string[] = [];
-  if (!evidence.length) {
-    reasons.push("At least one evidence record is required.");
+  const activeEvidence = evidence.filter(
+    (record) => record.disclosureStatus !== "withdrawn",
+  );
+  if (!activeEvidence.length) {
+    reasons.push("At least one active evidence record is required.");
   }
 
-  const unresolvedVerification = evidence.filter(
+  const unresolvedVerification = activeEvidence.filter(
     (record) => !verifiedStatuses.has(record.verificationStatus),
   ).length;
   if (unresolvedVerification) {
     reasons.push(`${unresolvedVerification} evidence record(s) are not verified.`);
   }
 
-  const unresolvedDisclosure = evidence.filter(
+  const unresolvedDisclosure = activeEvidence.filter(
     (record) => !resolvedDisclosureStatuses.has(record.disclosureStatus),
   ).length;
   if (unresolvedDisclosure) {
     reasons.push(`${unresolvedDisclosure} evidence record(s) have unresolved disclosure status.`);
   }
 
-  const approvedPublicClaims = evidence.filter(
+  const approvedPublicClaims = activeEvidence.filter(
     (record) =>
       verifiedStatuses.has(record.verificationStatus) &&
       record.disclosureStatus === "approved_public",
