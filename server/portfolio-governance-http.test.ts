@@ -311,6 +311,84 @@ describe("public form and CRM compatibility", () => {
     ]));
   });
 
+  it("measures service funnel history and enforces late-stage commercial economics", async () => {
+    const api = request(app);
+
+    const createConsultation = (email: string, serviceInterest: string) =>
+      api.post("/api/consultation").send({
+        name: `Funnel fixture ${serviceInterest}`,
+        email,
+        organization: "Funnel Verification Ltd",
+        industry: "Professional Services",
+        serviceInterest,
+        challenge: "We need a measurable commercial funnel from enquiry through proposal and final outcome.",
+        currentTech: "Manual follow-up and spreadsheets",
+        budgetRange: "MWK 1,000,000 – 5,000,000",
+        expectedTimeline: "1–3 months",
+        consent: true,
+      }).expect(201);
+
+    await createConsultation("funnel-lost@test.invalid", "managed-it");
+    const lostLeadSearch = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
+      .query({ search: "funnel-lost@test.invalid" }).expect(200);
+    const lostLeadPath = `/api/admin/leads/${lostLeadSearch.body[0].id}`;
+    expect(lostLeadSearch.body[0]).toMatchObject({ currency: "MWK", stage: "new" });
+
+    await api.patch(lostLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "proposal" })
+      .expect(409, { message: "Estimated commercial value is required before proposal, negotiation, or won stages" });
+    await api.patch(lostLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "qualified", qualificationScore: 80 }).expect(200);
+    await api.patch(lostLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "proposal", estimatedValue: 2500000, currency: "MWK", probability: 60 }).expect(200);
+    const lost = await api.patch(lostLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "lost", lostReason: "Budget deferred", probability: 70 }).expect(200);
+    expect(lost.body).toMatchObject({ stage: "lost", probability: 0, lostReason: "Budget deferred" });
+
+    await createConsultation("funnel-won@test.invalid", "network-infrastructure");
+    const wonLeadSearch = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
+      .query({ search: "funnel-won@test.invalid" }).expect(200);
+    const wonLeadPath = `/api/admin/leads/${wonLeadSearch.body[0].id}`;
+    await api.patch(wonLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "qualified", qualificationScore: 90 }).expect(200);
+    await api.patch(wonLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "proposal", estimatedValue: 3500000, currency: "MWK", probability: 70 }).expect(200);
+    const won = await api.patch(wonLeadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "won", probability: 40 }).expect(200);
+    expect(won.body).toMatchObject({ stage: "won", probability: 100 });
+
+    const funnel = await api.get("/api/admin/pipeline/funnel").set("Cookie", administrator.cookie)
+      .query({ window: "all" }).expect(200);
+    expect(funnel.body.byService).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "managed-it",
+        enquiries: 1,
+        qualified: 1,
+        proposals: 1,
+        won: 0,
+        lost: 1,
+        qualificationRate: 100,
+        proposalRate: 100,
+      }),
+      expect.objectContaining({
+        key: "network-infrastructure",
+        enquiries: 1,
+        qualified: 1,
+        proposals: 1,
+        won: 1,
+        lost: 0,
+        proposalWinRate: 100,
+      }),
+    ]));
+    expect(funnel.body.financialByCurrency).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        currency: "MWK",
+        wonValue: 3500000,
+        lostValue: 2500000,
+      }),
+    ]));
+  });
+
   it("preserves newsletter subscription validation and duplicate detection", async () => {
     const api = request(app);
     const url = "/api/newsletter/subscribe";
