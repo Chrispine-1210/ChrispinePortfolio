@@ -293,6 +293,24 @@ describe("public form and CRM compatibility", () => {
     })]);
   });
 
+  it("rejects consultation values outside the controlled commercial taxonomy", async () => {
+    const api = request(app);
+    const invalid = await api.post("/api/consultation").send({
+      name: "Taxonomy fixture",
+      email: "taxonomy@test.invalid",
+      organization: "Example Institution",
+      industry: "Education",
+      serviceInterest: "anything-a-client-types",
+      challenge: "We need a controlled service taxonomy for reliable funnel reporting.",
+      budgetRange: "MWK 5,000,000 – 15,000,000",
+      expectedTimeline: "3–6 months",
+      consent: true,
+    }).expect(400);
+    expect(invalid.body.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ["serviceInterest"] }),
+    ]));
+  });
+
   it("preserves newsletter subscription validation and duplicate detection", async () => {
     const api = request(app);
     const url = "/api/newsletter/subscribe";
