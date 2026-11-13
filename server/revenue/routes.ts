@@ -745,6 +745,7 @@ export function createRevenueIntelligenceRouter() {
       }
 
       const spendByGroupCurrency = new Map<string, Map<string, number>>();
+      const earliestSpendByGroup = new Map<string, Date>();
       let unallocatedSpendRecords = 0;
       for (const spend of spendRows) {
         const amount = Number(spend.amount);
@@ -757,6 +758,14 @@ export function createRevenueIntelligenceRouter() {
         const currencies = spendByGroupCurrency.get(key) ?? new Map<string, number>();
         currencies.set(spend.currency, (currencies.get(spend.currency) ?? 0) + amount);
         spendByGroupCurrency.set(key, currencies);
+        const previousSpendAt = earliestSpendByGroup.get(key);
+        if (!previousSpendAt || spend.occurredAt.getTime() < previousSpendAt.getTime()) {
+          earliestSpendByGroup.set(key, spend.occurredAt);
+        }
+        if (!groups.has(key)) {
+          const [channel, service] = key.split("::");
+          groups.set(key, { key, channel, service, leads: [] });
+        }
       }
 
       const proposalToWonDays: number[] = [];
@@ -836,6 +845,7 @@ export function createRevenueIntelligenceRouter() {
         cutGrossMarginPct: 20,
         cutGrossProfitRoas: 1,
         cutMaximumPaybackDays: 365,
+        minimumSpendMaturityDaysForZeroEnquiryCut: 14,
       };
 
       const recommendations: Array<Record<string, unknown>> = [];
