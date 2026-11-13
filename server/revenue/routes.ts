@@ -1091,7 +1091,7 @@ export function createRevenueIntelligenceRouter() {
         if (revenue) {
           for (const [currency, value] of revenue) {
             row.revenueByCurrency.set(currency, (row.revenueByCurrency.get(currency) ?? 0) + value);
-            if (!leadsWithCostEvidence.has(lead.id)) {
+            if (!costEvidenceComplete(lead.id, currency)) {
               row.costComplete = false;
             } else {
               const cost = costByLeadCurrency.get(lead.id)?.get(currency) ?? 0;
@@ -1126,8 +1126,12 @@ export function createRevenueIntelligenceRouter() {
           leads: leadRows.length,
           wonLeads: leadRows.filter((lead) => lead.stage === "won").length,
           winsWithRevenueEvidence: leadRows.filter((lead) => lead.stage === "won" && leadsWithRevenue.has(lead.id)).length,
-          winsWithDirectCostEvidence: leadRows.filter((lead) =>
-            lead.stage === "won" && leadsWithRevenue.has(lead.id) && leadsWithCostEvidence.has(lead.id)).length,
+          winsWithDirectCostEvidence: leadRows.filter((lead) => {
+            if (lead.stage !== "won") return false;
+            const currencies = [...(revenueByLeadCurrency.get(lead.id)?.keys() ?? [])];
+            return currencies.length > 0 && currencies.every((currency) =>
+              costEvidenceComplete(lead.id, currency));
+          }).length,
           unallocatedSpendRecords,
         },
         recurringRevenue: {
