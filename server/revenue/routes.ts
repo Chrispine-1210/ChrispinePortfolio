@@ -13,6 +13,7 @@ import { z } from "zod";
 import {
   acquisitionSpendEntries,
   auditEvents,
+  costEvidenceAttestations,
   directCostEntries,
   leadActivities,
   leadAttributionTouches,
@@ -75,6 +76,7 @@ const costInputSchema = z.object({
   leadId: z.string().uuid(),
   serviceInterest: z.string().trim().min(1).max(180),
   category: z.enum(["delivery_labour", "infrastructure", "subcontractor", "transaction", "support", "other"]),
+  costScope: z.enum(["one_time", "recurring"]),
   currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
   amount: z.union([
     z.number().nonnegative(),
@@ -418,6 +420,7 @@ export function createRevenueIntelligenceRouter() {
         leadId: input.leadId,
         serviceInterest: input.serviceInterest,
         category: input.category,
+        costScope: input.costScope,
         currency: input.currency,
         amount: String(input.amount),
         occurredAt: new Date(input.occurredAt),
@@ -462,6 +465,93 @@ export function createRevenueIntelligenceRouter() {
       });
       if (result.outcome === "missing") return response.status(404).json({ message: "Direct-cost entry not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Direct-cost entry is already voided" });
+      response.json(result.record);
+    },
+  );
+
+  router.get(
+    "/api/admin/revenue/cost-attestations",
+    requireAdminPermission("pipeline.financial.read"),
+    async (_request, response) => {
+      const rows = await db.select().from(costEvidenceAttestations)
+        .orderBy(desc(costEvidenceAttestations.throughAt)).limit(1500);
+      response.setHeader("Cache-Control", "no-store");
+      response.json(rows);
+    },
+  );
+
+  router.post(
+    "/api/admin/revenue/cost-attestations",
+    requireAdminPermission("revenue.economics.manage"),
+    async (request, response) => {
+      const parsed = z.object({
+        leadId: z.string().uuid(),
+        serviceInterest: z.string().trim().min(1).max(180),
+        currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
+        throughAt: z.string().datetime(),
+        sourceReference: z.string().trim().min(3).max(2000),
+        notes: z.string().trim().max(4000).nullable().optional(),
+      }).strict().safeParse(request.body);
+      if (!parsed.success) return response.status(400).json({
+        message: "Invalid cost completeness attestation",
+        errors: parsed.error.issues,
+      });
+      const input = parsed.data;
+      if (new Date(input.throughAt).getTime() > Date.now() + 10 * 60 * 1000) {
+        return response.status(400).json({ message: "Attestation timestamp cannot be in the future" });
+      }
+      const validation = await validateWonLead(input.leadId, input.serviceInterest);
+      if (validation.outcome === "missing") return response.status(404).json({ message: "Lead not found" });
+      if (validation.outcome === "not_won") return response.status(409).json({ message: "Cost completeness can only be attested for a won opportunity" });
+      if (validation.outcome === "service_mismatch") return response.status(409).json({
+        message: `Service must match the won opportunity: ${validation.expected}`,
+      });
+      const [record] = await db.insert(costEvidenceAttestations).values({
+        leadId: input.leadId,
+        serviceInterest: input.serviceInterest,
+        currency: input.currency,
+        throughAt: new Date(input.throughAt),
+        sourceReference: input.sourceReference,
+        notes: input.notes || null,
+        createdBy: request.securityPrincipal?.userId ?? null,
+      }).returning();
+      await audit(request, "revenue.cost_attestation.create", "cost_evidence_attestation", record.id, null, record);
+      response.status(201).json(record);
+    },
+  );
+
+  router.post(
+    "/api/admin/revenue/cost-attestations/:id/void",
+    requireAdminPermission("revenue.economics.manage"),
+    async (request, response) => {
+      const parsed = voidSchema.safeParse(request.body);
+      if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
+      const result = await db.transaction(async (transaction) => {
+        const [previous] = await transaction.select().from(costEvidenceAttestations)
+          .where(eq(costEvidenceAttestations.id, request.params.id)).limit(1);
+        if (!previous) return { outcome: "missing" as const };
+        if (previous.voidedAt) return { outcome: "voided" as const };
+        const [record] = await transaction.update(costEvidenceAttestations).set({
+          voidedAt: new Date(),
+          voidedBy: request.securityPrincipal?.userId ?? null,
+          voidReason: parsed.data.reason,
+        }).where(eq(costEvidenceAttestations.id, previous.id)).returning();
+        await transaction.insert(auditEvents).values({
+          actorUserId: request.securityPrincipal?.userId ?? null,
+          actorSessionId: request.securityPrincipal?.sessionId ?? null,
+          action: "revenue.cost_attestation.void",
+          resourceType: "cost_evidence_attestation",
+          resourceId: previous.id,
+          result: "success",
+          requestId: request.requestId,
+          previousState: previous,
+          newState: record,
+          justification: parsed.data.reason,
+        });
+        return { outcome: "ok" as const, record };
+      });
+      if (result.outcome === "missing") return response.status(404).json({ message: "Cost attestation not found" });
+      if (result.outcome === "voided") return response.status(409).json({ message: "Cost attestation is already voided" });
       response.json(result.record);
     },
   );
