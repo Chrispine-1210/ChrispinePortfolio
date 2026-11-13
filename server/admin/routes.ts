@@ -698,8 +698,11 @@ export function createAdminRouter(): Router {
     "/api/admin/pipeline/funnel",
     requireAdminPermission("leads.read"),
     async (request, response) => {
-      const windowValue =
+      const requestedWindow =
         typeof request.query.window === "string" ? request.query.window : "90d";
+      const windowValue = ["30d", "90d", "365d", "all"].includes(requestedWindow)
+        ? requestedWindow
+        : "90d";
       const windowDays =
         windowValue === "all"
           ? null
