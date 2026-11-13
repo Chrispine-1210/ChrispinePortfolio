@@ -357,6 +357,10 @@ describe("public form and CRM compatibility", () => {
       .send({ stage: "won", probability: 40 }).expect(200);
     expect(won.body).toMatchObject({ stage: "won", probability: 100 });
 
+    const invalidWindow = await api.get("/api/admin/pipeline/funnel").set("Cookie", administrator.cookie)
+      .query({ window: "unsupported" }).expect(200);
+    expect(invalidWindow.body.window).toBe("90d");
+
     const funnel = await api.get("/api/admin/pipeline/funnel").set("Cookie", administrator.cookie)
       .query({ window: "all" }).expect(200);
     expect(funnel.body.byService).toEqual(expect.arrayContaining([
