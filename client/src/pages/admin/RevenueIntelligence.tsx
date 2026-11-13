@@ -175,7 +175,7 @@ function decisionClass(decision: Decision) {
 
 export default function RevenueIntelligence() {
   const [windowValue, setWindowValue] = useState<WindowValue>("90d");
-  const [mode, setMode] = useState<"agreement" | "revenue" | "cost">("revenue");
+  const [mode, setMode] = useState<"agreement" | "revenue" | "cost" | "attestation">("revenue");
   const [leadId, setLeadId] = useState("");
   const [currency, setCurrency] = useState("MWK");
   const [amount, setAmount] = useState("");
@@ -185,6 +185,7 @@ export default function RevenueIntelligence() {
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
   const [category, setCategory] = useState("delivery_labour");
+  const [costScope, setCostScope] = useState<"one_time" | "recurring">("one_time");
   const [notes, setNotes] = useState("");
 
   const intelligenceEndpoint = `/api/admin/revenue/intelligence?window=${windowValue}`;
@@ -193,6 +194,7 @@ export default function RevenueIntelligence() {
   const agreements = useQuery<EvidenceRecord[]>({ queryKey: ["/api/admin/revenue/agreements"] });
   const revenueEvents = useQuery<EvidenceRecord[]>({ queryKey: ["/api/admin/revenue/events"] });
   const costs = useQuery<EvidenceRecord[]>({ queryKey: ["/api/admin/revenue/costs"] });
+  const costAttestations = useQuery<EvidenceRecord[]>({ queryKey: ["/api/admin/revenue/cost-attestations"] });
 
   const wonLeads = useMemo(
     () => (leads.data ?? []).filter((lead) => lead.stage === "won"),
@@ -206,6 +208,7 @@ export default function RevenueIntelligence() {
     queryClient.invalidateQueries({ queryKey: ["/api/admin/revenue/agreements"] });
     queryClient.invalidateQueries({ queryKey: ["/api/admin/revenue/events"] });
     queryClient.invalidateQueries({ queryKey: ["/api/admin/revenue/costs"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/admin/revenue/cost-attestations"] });
   };
 
   const submitEvidence = useMutation({
@@ -218,6 +221,16 @@ export default function RevenueIntelligence() {
         sourceReference,
         notes: notes || null,
       };
+      if (mode === "attestation") {
+        return apiRequest("POST", "/api/admin/revenue/cost-attestations", {
+          leadId: selectedLead.id,
+          serviceInterest,
+          currency,
+          throughAt: new Date(occurredAt).toISOString(),
+          sourceReference,
+          notes: notes || null,
+        });
+      }
       if (mode === "agreement") {
         return apiRequest("POST", "/api/admin/revenue/agreements", {
           ...base,
@@ -229,6 +242,7 @@ export default function RevenueIntelligence() {
         return apiRequest("POST", "/api/admin/revenue/costs", {
           ...base,
           category,
+          costScope,
           amount: Number(amount),
           occurredAt: new Date(occurredAt).toISOString(),
         });
@@ -520,7 +534,7 @@ export default function RevenueIntelligence() {
                   <p className="mt-1 text-xs text-white/30">Only won opportunities can receive revenue or direct-cost evidence.</p>
                 </div>
                 <div className="flex gap-2">
-                  {(["revenue", "cost", "agreement"] as const).map((item) => (
+                  {(["revenue", "cost", "agreement", "attestation"] as const).map((item) => (
                     <Button key={item} size="sm" variant={mode === item ? "default" : "outline"} onClick={() => setMode(item)}>
                       {item}
                     </Button>
@@ -560,11 +574,13 @@ export default function RevenueIntelligence() {
                   <Input className="mt-1" maxLength={3} value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} />
                 </label>
                 <label className="text-xs text-white/40">
-                  {mode === "agreement" ? "Monthly recurring revenue" : mode === "cost" ? "Direct cost amount" : "Recognized revenue"}
-                  <Input className="mt-1" type="number" min={mode === "cost" ? "0" : "0.01"} step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} />
+                  {mode === "agreement" ? "Monthly recurring revenue" : mode === "cost" ? "Direct cost amount" : mode === "attestation" ? "Cost completeness" : "Recognized revenue"}
+                  {mode === "attestation"
+                    ? <div className="mt-1 flex h-10 items-center rounded-md border border-emerald-500/20 bg-emerald-500/5 px-3 text-xs text-emerald-300">Complete through selected date</div>
+                    : <Input className="mt-1" type="number" min={mode === "cost" ? "0" : "0.01"} step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} />}
                 </label>
                 <label className="text-xs text-white/40">
-                  {mode === "agreement" ? "Agreement start" : "Evidence date"}
+                  {mode === "agreement" ? "Agreement start" : mode === "attestation" ? "Costs complete through" : "Evidence date"}
                   <Input className="mt-1" type="datetime-local" value={occurredAt} onChange={(event) => setOccurredAt(event.target.value)} />
                 </label>
                 {mode === "revenue" && (
@@ -584,6 +600,15 @@ export default function RevenueIntelligence() {
                     </select>
                   </label>
                 )}
+                {mode === "cost" && (
+                  <label className="text-xs text-white/40">
+                    Cost scope
+                    <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={costScope} onChange={(event) => setCostScope(event.target.value as "one_time" | "recurring")}>
+                      <option value="one_time">one-time delivery</option>
+                      <option value="recurring">recurring service</option>
+                    </select>
+                  </label>
+                )}
                 {mode === "revenue" && revenueKind === "recurring" && (
                   <>
                     <label className="text-xs text-white/40">Period start<Input className="mt-1" type="datetime-local" value={periodStart} onChange={(event) => setPeriodStart(event.target.value)} /></label>
@@ -598,22 +623,23 @@ export default function RevenueIntelligence() {
               <Textarea className="mt-3" rows={2} placeholder="Evidence notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
               <Button
                 className="mt-3"
-                disabled={!leadId || !serviceInterest || !amount || !sourceReference || submitEvidence.isPending ||
+                disabled={!leadId || !serviceInterest || (mode !== "attestation" && !amount) || !sourceReference || submitEvidence.isPending ||
                   (mode === "revenue" && revenueKind === "recurring" && (!periodStart || !periodEnd))}
                 onClick={() => submitEvidence.mutate()}
               >
-                Record {mode}
+                Record {mode === "attestation" ? "cost completeness" : mode}
               </Button>
               {submitEvidence.error && <p className="mt-2 text-xs text-destructive">{submitEvidence.error.message}</p>}
             </CardContent>
           </Card>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-3">
+        <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {[
             { title: "Recurring agreements", icon: TrendingUp, rows: agreements.data ?? [], value: (row: EvidenceRecord) => row.monthlyRecurringRevenue ? `${money(Number(row.monthlyRecurringRevenue), row.currency)} MRR` : row.status || "agreement" },
             { title: "Revenue events", icon: CircleDollarSign, rows: revenueEvents.data ?? [], value: (row: EvidenceRecord) => money(Number(row.amount ?? 0), row.currency) },
-            { title: "Direct cost evidence", icon: TrendingDown, rows: costs.data ?? [], value: (row: EvidenceRecord) => money(Number(row.amount ?? 0), row.currency) },
+            { title: "Direct cost evidence", icon: TrendingDown, rows: costs.data ?? [], value: (row: EvidenceRecord) => `${money(Number(row.amount ?? 0), row.currency)} · ${row.costScope ?? "scope unknown"}` },
+            { title: "Cost completeness", icon: Scale, rows: costAttestations.data ?? [], value: (row: EvidenceRecord) => row.throughAt ? `through ${new Date(row.throughAt).toLocaleDateString()}` : "attested" },
           ].map((group) => {
             const Icon = group.icon;
             return (
