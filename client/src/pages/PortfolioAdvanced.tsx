@@ -23,11 +23,7 @@ export default function PortfolioAdvanced() {
     queryKey: ["/api/categories/portfolio"],
   });
 
-  const categories = categoriesData?.categories || [
-    "All",
-    "Full-Stack Delivery",
-    "Enterprise Systems",
-  ];
+  const categories = ["All", ...(categoriesData?.categories ?? [])];
 
   // Fetch filtered projects
   const { data: searchResults, isLoading } = useQuery<{
