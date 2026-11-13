@@ -316,12 +316,43 @@ const consultationInputSchema = z.object({
   email: z.string().trim().email().max(320),
   phone: z.string().trim().max(80).optional().or(z.literal("")),
   organization: z.string().trim().min(2).max(220),
-  industry: z.string().trim().min(2).max(160),
-  serviceInterest: z.string().trim().min(2).max(180),
+  industry: z.enum([
+    "Education",
+    "NGO / Development",
+    "Healthcare",
+    "Agriculture",
+    "Financial Services",
+    "Government",
+    "Retail / Distribution",
+    "Professional Services",
+    "Other",
+  ]),
+  serviceInterest: z.enum([
+    "network-infrastructure",
+    "managed-it",
+    "enterprise-software",
+    "business-systems",
+    "data-analytics",
+    "technology-advisory",
+  ]),
   challenge: z.string().trim().min(20).max(5000),
   currentTech: z.string().trim().max(3000).optional().or(z.literal("")),
-  budgetRange: z.string().trim().max(120).optional().or(z.literal("")),
-  expectedTimeline: z.string().trim().max(120).optional().or(z.literal("")),
+  budgetRange: z.enum([
+    "Below MWK 1,000,000",
+    "MWK 1,000,000 – 5,000,000",
+    "MWK 5,000,000 – 15,000,000",
+    "MWK 15,000,000+",
+    "Discuss first",
+    "",
+  ]).optional(),
+  expectedTimeline: z.enum([
+    "Urgent / under 1 month",
+    "1–3 months",
+    "3–6 months",
+    "6–12 months",
+    "Flexible",
+    "",
+  ]).optional(),
   consent: z.literal(true),
 }).strict();
 
@@ -363,8 +394,6 @@ router.post("/api/consultation", async (req: Request, res: Response) => {
     );
     res.status(201).json({
       message: "Consultation request received",
-      leadId: result.lead.id,
-      contactRequestId: result.contact.id,
     });
   } catch (error: any) {
     console.error("Error creating consultation request:", error);
