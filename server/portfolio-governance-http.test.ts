@@ -145,6 +145,69 @@ describe("portfolio governance HTTP routes", () => {
     await api.get(publicPath).expect(404);
   });
 
+  it("withdraws unsupported evidence with an audit trail and preserves valid publication", async () => {
+    const api = request(app);
+    const input = {
+      ...studyInput,
+      title: "Evidence withdrawal fixture",
+      slug: "evidence-withdrawal-fixture",
+      featured: false,
+    };
+    const study = await api.post(studies).set("Cookie", manager.cookie).send(input).expect(201);
+    const studyPath = `${studies}/${study.body.id}`;
+
+    const approved = await api.post(`${studyPath}/evidence`).set("Cookie", manager.cookie).send({
+      claim: "Supported implementation claim",
+      sourceType: "repository",
+      sourceReference: "repo://supported-evidence",
+    }).expect(201);
+    const unsupported = await api.post(`${studyPath}/evidence`).set("Cookie", manager.cookie).send({
+      claim: "Unsupported historical claim",
+      sourceType: "internal_record",
+      sourceReference: "record://unsupported-evidence",
+    }).expect(201);
+
+    await api.patch(`/api/admin/case-study-evidence/${approved.body.evidence.id}`)
+      .set("Cookie", administrator.cookie)
+      .send({ verificationStatus: "internally_verified", disclosureStatus: "approved_public" })
+      .expect(200);
+    await api.patch(`/api/admin/case-study-evidence/${unsupported.body.evidence.id}`)
+      .set("Cookie", administrator.cookie)
+      .send({ verificationStatus: "rejected", disclosureStatus: "rejected" })
+      .expect(200);
+
+    await api.post(`${studyPath}/transition`).set("Cookie", manager.cookie)
+      .send({ action: "submit_review" }).expect(200);
+    await api.post(`${studyPath}/transition`).set("Cookie", administrator.cookie)
+      .send({ action: "approve" }).expect(409);
+
+    const withdrawn = await api.post(`/api/admin/case-study-evidence/${unsupported.body.evidence.id}/withdraw`)
+      .set("Cookie", manager.cookie)
+      .send({ justification: "Unsupported claim removed from publication scope" })
+      .expect(200);
+    expect(withdrawn.body.evidence).toMatchObject({
+      id: unsupported.body.evidence.id,
+      verificationStatus: "rejected",
+      disclosureStatus: "withdrawn",
+    });
+    expect(withdrawn.body.gate.status).toBe("approved");
+
+    await api.post(`${studyPath}/transition`).set("Cookie", administrator.cookie)
+      .send({ action: "approve" }).expect(200);
+    await api.post(`${studyPath}/transition`).set("Cookie", administrator.cookie)
+      .send({ action: "publish" }).expect(200);
+    await api.get(`/api/portfolio/${input.slug}`).expect(200);
+
+    const { rows } = await database.query(
+      "select action, justification from audit_events where resource_id = $1 and action = 'case_study.evidence.withdraw'",
+      [unsupported.body.evidence.id],
+    );
+    expect(rows).toEqual([{
+      action: "case_study.evidence.withdraw",
+      justification: "Unsupported claim removed from publication scope",
+    }]);
+  });
+
   it("keeps private studies inaccessible and unlisted studies out of discovery", async () => {
     await database.exec(`
       insert into case_studies (title, slug, summary, category, workflow_status, visibility, evidence_gate_status)
