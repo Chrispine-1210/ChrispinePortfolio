@@ -94,7 +94,7 @@ const caseStudyCreateInput = z.object({
 const caseStudyPatchInput = z.object(caseStudyFields).partial().strict();
 
 const evidenceContentFields = {
-  claim: z.string().trim().min(1).max(20_000),
+  claim: z.string().trim().min(1).max(512),
   claimType: z.string().trim().min(1).max(80),
   sourceType: z.string().trim().min(1).max(80),
   sourceReference: z.string().trim().min(1).max(4000),
@@ -117,6 +117,10 @@ const evidenceApprovalInput = z.object({
   ]),
   disclosureStatus: z.enum(["private", "review", "approved_public", "rejected"]),
   notes: z.string().max(20_000).nullable().optional(),
+}).strict();
+
+const evidenceWithdrawInput = z.object({
+  justification: z.string().trim().min(8).max(1000),
 }).strict();
 
 type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -398,6 +402,38 @@ export function createPortfolioGovernanceRouter() {
     });
     if (result.outcome === "missing") return response.status(404).json({ message: "Evidence record not found" });
     if (result.outcome === "locked") return response.status(409).json({ message: "Evidence can only be changed while the case study is draft or in review" });
+    response.json({ evidence: result.record, gate: result.gate });
+  }));
+
+  router.post("/api/admin/case-study-evidence/:id/withdraw", requireAdminPermission("portfolio.manage"), asyncHandler(async (request, response) => {
+    const input = evidenceWithdrawInput.parse(request.body);
+    const result = await db.transaction(async (transaction) => {
+      const [link] = await transaction.select({ caseStudyId: caseStudyEvidence.caseStudyId })
+        .from(caseStudyEvidence).where(eq(caseStudyEvidence.id, request.params.id)).limit(1);
+      if (!link) return { outcome: "missing" as const };
+      const [caseStudy] = await lockCaseStudy(transaction, link.caseStudyId);
+      if (!caseStudy) return { outcome: "missing" as const };
+      if (!["draft", "in_review"].includes(caseStudy.workflowStatus)) return { outcome: "locked" as const };
+      const [previous] = await transaction.select().from(caseStudyEvidence)
+        .where(eq(caseStudyEvidence.id, request.params.id)).limit(1);
+      if (!previous) return { outcome: "missing" as const };
+      if (previous.disclosureStatus === "withdrawn") return { outcome: "withdrawn" as const, record: previous };
+      const [updated] = await transaction.update(caseStudyEvidence).set({
+        disclosureStatus: "withdrawn",
+        updatedAt: new Date(),
+      }).where(eq(caseStudyEvidence.id, previous.id)).returning();
+      const gate = await refreshEvidenceGate(transaction, previous.caseStudyId);
+      await transaction.insert(auditEvents).values({
+        ...auditValues(request), action: "case_study.evidence.withdraw", resourceType: "case_study_evidence",
+        resourceId: previous.id, result: "success", justification: input.justification,
+        previousState: previous, newState: updated,
+        metadata: { caseStudyId: previous.caseStudyId, evidenceGateStatus: gate.status },
+      });
+      return { outcome: "ok" as const, record: updated, gate };
+    });
+    if (result.outcome === "missing") return response.status(404).json({ message: "Evidence record not found" });
+    if (result.outcome === "locked") return response.status(409).json({ message: "Evidence can only be withdrawn while the case study is draft or in review" });
+    if (result.outcome === "withdrawn") return response.status(409).json({ message: "Evidence record is already withdrawn" });
     response.json({ evidence: result.record, gate: result.gate });
   }));
 
