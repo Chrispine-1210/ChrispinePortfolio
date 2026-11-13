@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import {
   ArrowRight, Code2, CheckCircle2, Calendar, ExternalLink,
-  TrendingUp, Download, ChevronRight, BarChart3,
+  Download, ChevronRight, BarChart3, Network, Workflow,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
@@ -29,28 +29,41 @@ const stagger = {
 /* ─── Data ──────────────────────────────────────────────── */
 const services = [
   {
+    icon: Network,
+    slug: "network-infrastructure",
+    title: "Networks & IT Infrastructure",
+    description: "Network design, TCP/IP and DNS troubleshooting, monitoring, device and access baselines, and practical support structures for day-to-day operations.",
+    tags: ["TCP/IP", "DNS", "LAN/WAN", "Monitoring"],
+    color: "from-cyan-500/10 to-blue-500/5",
+    iconColor: "text-cyan-400",
+    borderHover: "hover:border-cyan-500/30",
+  },
+  {
     icon: Code2,
-    title: "Full-Stack Engineering",
-    description: "End-to-end web platform development with an evidence-led approach to build, test, and release decisions.",
+    slug: "enterprise-software",
+    title: "Enterprise Software Systems",
+    description: "Internal platforms, portals, APIs, administration systems, and governed workflows built around real operational rules rather than generic feature lists.",
     tags: ["React", "TypeScript", "Node.js", "PostgreSQL"],
-    color: "from-blue-500/10 to-cyan-500/5",
+    color: "from-blue-500/10 to-indigo-500/5",
     iconColor: "text-blue-400",
     borderHover: "hover:border-blue-500/30",
   },
   {
-    icon: TrendingUp,
-    title: "Digital Transformation",
-    description: "Strategy and execution for organizations moving from manual to digital. From assessment through production deployment.",
-    tags: ["Strategy", "Architecture", "Migration", "Training"],
+    icon: Workflow,
+    slug: "business-systems",
+    title: "Business Systems & Automation",
+    description: "Workflow mapping, approvals, records, tasking, operational controls, and automation that reduce fragmentation between people, processes, and software.",
+    tags: ["Workflow", "RBAC", "Automation", "Operations"],
     color: "from-emerald-500/10 to-teal-500/5",
     iconColor: "text-emerald-400",
     borderHover: "hover:border-emerald-500/30",
   },
   {
     icon: BarChart3,
-    title: "MEL & Data Systems",
-    description: "Monitoring, Evaluation & Learning platforms. Data collection, validation, dashboards, and impact measurement for NGOs and development programs.",
-    tags: ["MEL", "Analytics", "IoT", "Dashboards"],
+    slug: "data-analytics",
+    title: "Data & Operational Visibility",
+    description: "Structured data capture, reporting, dashboards, and management views for teams that need clearer evidence, follow-up, and decision visibility.",
+    tags: ["Analytics", "MEL", "Dashboards", "Reporting"],
     color: "from-purple-500/10 to-violet-500/5",
     iconColor: "text-purple-400",
     borderHover: "hover:border-purple-500/30",
@@ -64,7 +77,7 @@ const deliverySteps = [
   { title: "Hand over a system the team can run", text: "Document how to operate and support it, train the team, and agree on how to track improvements after launch." },
 ];
 
-const industries = ["Education & training", "Business operations", "Development programmes"];
+const industries = ["SMEs & institutions", "Education & development", "Operations-intensive teams"];
 
 const insightTopics = [
   { label: "LoRaWAN", category: "Hardware Engineering", color: "bg-orange-500/10 text-orange-400 border-orange-500/20" },
@@ -75,7 +88,7 @@ const insightTopics = [
 /* ─── Main Component ────────────────────────────────────── */
 export default function Landing() {
   useEffect(() => {
-    document.title = "Chrispine Mndala | Full-Stack Programmer in Malawi";
+    document.title = "Chrispine Mndala | Computer Engineering, Networks & Enterprise Systems";
   }, []);
 
   const { data: blogData } = useQuery<any[]>({ queryKey: ["/api/blog"] });
@@ -122,10 +135,10 @@ export default function Landing() {
               {/* Headline */}
               <motion.div variants={fadeUp} className="space-y-3">
                 <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.04] text-white">
-                  Full-stack programming for <span className="gradient-text-primary">digital development</span>
+                  Computer engineering for <span className="gradient-text-primary">networks, software & business systems</span>
                 </h1>
                 <p className="max-w-lg text-lg leading-relaxed text-white/75">
-                  I build web platforms, administration portals, and data tools that help teams in Malawi deliver services and manage their work.
+                  I design and build dependable networked systems, enterprise software, operational workflows, and data tools for organisations that need stronger technical control and clearer execution.
                 </p>
               </motion.div>
 
@@ -141,9 +154,9 @@ export default function Landing() {
                   }}
                   data-testid="button-hero-primary"
                 >
-                  <Link href="/hire">
+                  <Link href="/hire?service=technology-advisory">
                     <Calendar className="w-4 h-4 mr-2" />
-                    Discuss a Project
+                    Request Technical Assessment
                   </Link>
                 </Button>
                 <Button
@@ -189,7 +202,7 @@ export default function Landing() {
               />
               <figcaption className="border-t border-white/10 bg-[#111724] px-5 py-4">
                 <p className="font-semibold text-white">Chrispine Mndala</p>
-                <p className="text-sm text-white/70">Programmer · Digital development</p>
+                <p className="text-sm text-white/70">Computer engineering · Networks · Enterprise systems</p>
               </figcaption>
             </motion.figure>
           </div>
@@ -213,11 +226,11 @@ export default function Landing() {
               What I Build
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/40 max-w-xl mx-auto text-lg">
-              Web platforms, internal workflows, and reporting tools for education, business, and development teams.
+              Four connected capability areas: infrastructure, enterprise software, business workflows, and operational data.
             </motion.p>
           </motion.div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
             {services.map((svc, idx) => {
               const Icon = svc.icon;
               return (
@@ -246,6 +259,13 @@ export default function Landing() {
                           </span>
                         ))}
                       </div>
+                      <Link
+                        href={`/hire?service=${svc.slug}`}
+                        className="inline-flex items-center text-xs font-semibold text-blue-300 hover:text-white"
+                      >
+                        Discuss this capability
+                        <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                      </Link>
                     </CardContent>
                   </Card>
                 </motion.div>
