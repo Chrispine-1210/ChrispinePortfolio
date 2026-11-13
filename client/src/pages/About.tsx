@@ -306,7 +306,7 @@ export default function About() {
               {[
                 {
                   name: "Aothothe LLC",
-                  role: "Founder & Systems Architect",
+                  role: "Founder & CEO",
                   desc: "Technology innovation company focused on building scalable digital platforms for African enterprises. Driving digital transformation through custom software solutions.",
                   focus: "Digital Platforms"
                 },
@@ -467,16 +467,16 @@ export default function About() {
                 <div className="tech-card p-6 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-bold text-white uppercase">Technology Expertise</h4>
-                    <Badge variant="outline" className="text-[10px] font-mono">Production</Badge>
+                    <Badge variant="outline" className="text-[10px] font-mono">Evidence-led</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      ["React + TypeScript", "Working"],
-                      ["Node.js / Express", "93%"],
-                      ["PostgreSQL", "90%"],
-                      ["REST API Design", "92%"],
-                      ["IoT / LoRaWAN", "85%"],
-                      ["Cloud Deploy", "87%"],
+                      ["React + TypeScript", "Applied"],
+                      ["Node.js / Express", "Applied"],
+                      ["PostgreSQL", "Applied"],
+                      ["REST API Design", "Applied"],
+                      ["Computer Networks", "Certified"],
+                      ["Project Management", "Certified"],
                     ].map(([tech, level]) => (
                       <div key={tech} className="p-2 bg-white/5">
                         <div className="text-[10px] text-white font-mono uppercase">{tech}</div>
