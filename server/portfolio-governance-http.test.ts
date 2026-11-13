@@ -905,6 +905,13 @@ describe("public form and CRM compatibility", () => {
       );
     }
 
+    await database.query(
+      `insert into acquisition_spend_entries
+        (channel, source, campaign, service_interest, currency, amount, occurred_at)
+       values ('direct', 'field-sales', 'zero-enquiry-cut', 'enterprise-software', 'MWK', 300000,
+               now() - interval '20 days')`,
+    );
+
     const intelligence = await api.get("/api/admin/revenue/intelligence")
       .set("Cookie", administrator.cookie)
       .query({ window: "all" })
@@ -955,6 +962,16 @@ describe("public form and CRM compatibility", () => {
     expect(findDecision("organic_search", "managed-it")).toMatchObject({
       decision: "insufficient_data",
       confidence: "low",
+    });
+    expect(findDecision("direct", "enterprise-software")).toMatchObject({
+      decision: "cut",
+      metrics: {
+        enquiries: 0,
+        proposals: 0,
+        wins: 0,
+        spend: 300000,
+        spendAgeDays: expect.any(Number),
+      },
     });
 
     expect(intelligence.body.proposalVelocityDays.proposalToWon).toEqual(expect.any(Number));
