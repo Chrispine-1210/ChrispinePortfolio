@@ -528,8 +528,30 @@ export const leadActivities = pgTable("lead_activities", {
   leadTimeIdx: index("lead_activities_lead_time_idx").on(table.leadId, table.createdAt),
 }));
 
+export const leadAttributionTouches = pgTable("lead_attribution_touches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  leadId: varchar("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+  touchType: varchar("touch_type", { length: 16 }).notNull(),
+  channel: varchar("channel", { length: 48 }).notNull(),
+  source: varchar("source", { length: 160 }).notNull(),
+  medium: varchar("medium", { length: 120 }),
+  campaign: varchar("campaign", { length: 180 }),
+  term: varchar("term", { length: 240 }),
+  content: varchar("content", { length: 240 }),
+  referrer: text("referrer"),
+  landingPage: text("landing_page").notNull(),
+  capturedAt: timestamp("captured_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  leadTouchIdx: uniqueIndex("lead_attribution_touches_lead_touch_idx").on(table.leadId, table.touchType),
+  channelTimeIdx: index("lead_attribution_touches_channel_time_idx").on(table.channel, table.capturedAt),
+  sourceTimeIdx: index("lead_attribution_touches_source_time_idx").on(table.source, table.capturedAt),
+  campaignTimeIdx: index("lead_attribution_touches_campaign_time_idx").on(table.campaign, table.capturedAt),
+}));
+
 export type Lead = typeof leads.$inferSelect;
 export type LeadActivity = typeof leadActivities.$inferSelect;
+export type LeadAttributionTouch = typeof leadAttributionTouches.$inferSelect;
 
 // Blog Likes
 export const blogLikes = pgTable("blog_likes", {
