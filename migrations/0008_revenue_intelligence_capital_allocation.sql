@@ -70,6 +70,7 @@ create table if not exists direct_cost_entries (
   lead_id varchar not null references leads(id) on delete cascade,
   service_interest varchar(180) not null,
   category varchar(48) not null,
+  cost_scope varchar(24) not null,
   currency varchar(3) not null,
   amount numeric(14,2) not null,
   occurred_at timestamp not null,
@@ -83,7 +84,8 @@ create table if not exists direct_cost_entries (
   constraint direct_cost_entries_amount_nonnegative check (amount >= 0),
   constraint direct_cost_entries_category_valid check (
     category in ('delivery_labour', 'infrastructure', 'subcontractor', 'transaction', 'support', 'other')
-  )
+  ),
+  constraint direct_cost_entries_scope_valid check (cost_scope in ('one_time', 'recurring'))
 );
 
 create index if not exists direct_cost_entries_lead_time_idx
@@ -94,6 +96,27 @@ create index if not exists direct_cost_entries_service_time_idx
 
 create index if not exists direct_cost_entries_active_time_idx
   on direct_cost_entries (voided_at, occurred_at);
+
+create table if not exists cost_evidence_attestations (
+  id varchar primary key default gen_random_uuid(),
+  lead_id varchar not null references leads(id) on delete cascade,
+  service_interest varchar(180) not null,
+  currency varchar(3) not null,
+  through_at timestamp not null,
+  source_reference text not null,
+  notes text,
+  created_by varchar references users(id) on delete set null,
+  voided_at timestamp,
+  voided_by varchar references users(id) on delete set null,
+  void_reason text,
+  created_at timestamp not null default now()
+);
+
+create index if not exists cost_evidence_attestations_lead_currency_idx
+  on cost_evidence_attestations (lead_id, currency, through_at);
+
+create index if not exists cost_evidence_attestations_active_idx
+  on cost_evidence_attestations (voided_at, through_at);
 
 insert into permissions (key, description) values
   ('revenue.economics.manage', 'Create, close, and void revenue-economics evidence records')
