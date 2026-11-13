@@ -642,13 +642,14 @@ export function createAdminRouter(): Router {
       const byStage = await db
         .select({
           stage: leads.stage,
+          currency: leads.currency,
           count,
           value: sql<string>`coalesce(sum(${leads.estimatedValue}), 0)::text`,
           weightedValue: sql<string>`coalesce(sum(${leads.estimatedValue} * ${leads.probability} / 100.0), 0)::text`,
         })
         .from(leads)
         .where(isNull(leads.archivedAt))
-        .groupBy(leads.stage);
+        .groupBy(leads.stage, leads.currency);
       response.setHeader("Cache-Control", "no-store");
       response.json(
         byStage.map((row) =>
