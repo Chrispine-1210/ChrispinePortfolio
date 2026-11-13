@@ -742,10 +742,12 @@ describe("public form and CRM compatibility", () => {
         .send({
           leadId: lead.id,
           serviceInterest: "business-systems",
-          revenueKind: "one_time",
+          revenueKind: "recurring",
           currency: "MWK",
           amount: 2000000,
           occurredAt: new Date().toISOString(),
+          periodStart: new Date(Date.now() - 30 * 86_400_000).toISOString(),
+          periodEnd: new Date().toISOString(),
           sourceReference: `invoice-${lead.id}`,
         }).expect(201);
       await api.post("/api/admin/revenue/costs")
@@ -754,10 +756,21 @@ describe("public form and CRM compatibility", () => {
           leadId: lead.id,
           serviceInterest: "business-systems",
           category: "delivery_labour",
+          costScope: "recurring",
           currency: "MWK",
           amount: 1000000,
           occurredAt: new Date().toISOString(),
           sourceReference: `cost-ledger-${lead.id}`,
+        }).expect(201);
+      await api.post("/api/admin/revenue/cost-attestations")
+        .set("Cookie", administrator.cookie)
+        .send({
+          leadId: lead.id,
+          serviceInterest: "business-systems",
+          currency: "MWK",
+          throughAt: new Date().toISOString(),
+          sourceReference: `cost-complete-${lead.id}`,
+          notes: "All recurring direct costs through this revenue date are captured.",
         }).expect(201);
       await api.post("/api/admin/revenue/agreements")
         .set("Cookie", administrator.cookie)
@@ -870,8 +883,14 @@ describe("public form and CRM compatibility", () => {
       );
       await database.query(
         `insert into direct_cost_entries
-          (lead_id, service_interest, category, currency, amount, occurred_at, source_reference)
-         values ($1, 'data-analytics', 'delivery_labour', 'MWK', 250000, now(), 'maintain-cost')`,
+          (lead_id, service_interest, category, cost_scope, currency, amount, occurred_at, source_reference)
+         values ($1, 'data-analytics', 'delivery_labour', 'one_time', 'MWK', 250000, now(), 'maintain-cost')`,
+        [id],
+      );
+      await database.query(
+        `insert into cost_evidence_attestations
+          (lead_id, service_interest, currency, through_at, source_reference)
+         values ($1, 'data-analytics', 'MWK', now() + interval '1 second', 'maintain-cost-complete')`,
         [id],
       );
     }
