@@ -97,7 +97,9 @@ const acquisitionSpendInputSchema = z.object({
   currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
   amount: z.union([
     z.number().positive(),
-    z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number),
+    z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number).refine((value) => value > 0, {
+      message: "Spend amount must be greater than zero",
+    }),
   ]),
   occurredAt: z.string().datetime().superRefine((value, context) => {
     const occurred = new Date(value).getTime();
