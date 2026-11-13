@@ -76,21 +76,21 @@ function Router() {
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/login" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/admin" component={() => <AdminProtectedRoute component={AdminDashboard} />} />
-          <Route path="/admin/communications" component={() => <AdminProtectedRoute component={NewsletterManagement} />} />
-          <Route path="/admin/contacts" component={() => <AdminProtectedRoute component={ContactsManagement} />} />
-          <Route path="/admin/audience" component={() => <AdminProtectedRoute component={AudienceManagement} />} />
-          <Route path="/admin/content" component={() => <AdminProtectedRoute component={ContentManagement} />} />
-          <Route path="/admin/portfolio" component={() => <AdminProtectedRoute component={CaseStudyManagement} />} />
-          <Route path="/admin/projects" component={() => <AdminProtectedRoute component={ProjectManagement} />} />
-          <Route path="/admin/case-studies" component={() => <AdminProtectedRoute component={CaseStudyManagement} />} />
-          <Route path="/admin/pipeline" component={() => <AdminProtectedRoute component={LeadPipeline} />} />
-          <Route path="/admin/security" component={() => <AdminProtectedRoute component={SecurityManagement} />} />
-          <Route path="/admin/users" component={() => <AdminProtectedRoute component={UserManagement} />} />
-          <Route path="/analytics" component={() => <AdminProtectedRoute component={Analytics} />} />
+          <Route path="/admin"><AdminProtectedRoute component={AdminDashboard} /></Route>
+          <Route path="/admin/communications"><AdminProtectedRoute component={NewsletterManagement} /></Route>
+          <Route path="/admin/contacts"><AdminProtectedRoute component={ContactsManagement} /></Route>
+          <Route path="/admin/audience"><AdminProtectedRoute component={AudienceManagement} /></Route>
+          <Route path="/admin/content"><AdminProtectedRoute component={ContentManagement} /></Route>
+          <Route path="/admin/portfolio"><AdminProtectedRoute component={CaseStudyManagement} /></Route>
+          <Route path="/admin/projects"><AdminProtectedRoute component={ProjectManagement} /></Route>
+          <Route path="/admin/case-studies"><AdminProtectedRoute component={CaseStudyManagement} /></Route>
+          <Route path="/admin/pipeline"><AdminProtectedRoute component={LeadPipeline} /></Route>
+          <Route path="/admin/security"><AdminProtectedRoute component={SecurityManagement} /></Route>
+          <Route path="/admin/users"><AdminProtectedRoute component={UserManagement} /></Route>
+          <Route path="/analytics"><AdminProtectedRoute component={Analytics} /></Route>
           <Route path="/newsletter" component={Landing} />
-          <Route path="/newsletter-manage" component={() => <AdminProtectedRoute component={NewsletterManagement} />} />
-          <Route path="/external-posts" component={() => <AdminProtectedRoute component={ExternalPostsPage} />} />
+          <Route path="/newsletter-manage"><AdminProtectedRoute component={NewsletterManagement} /></Route>
+          <Route path="/external-posts"><AdminProtectedRoute component={ExternalPostsPage} /></Route>
           <Route path="/projects" component={Portfolio} />
           <Route path="/software-consulting-malawi" component={SoftwareConsultingMalawi} />
           <Route path="/digital-transformation-africa" component={DigitalTransformationAfrica} />
