@@ -8,8 +8,6 @@ import { motion } from "framer-motion";
 import { Terminal, Calendar, Tag, Clock, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export default function BlogPost() {
   const [, params] = useRoute("/blog/:slug");
@@ -118,20 +116,18 @@ export default function BlogPost() {
               components={{
                 code({ node, inline, className, children, ...props }: any) {
                   const match = /language-(\w+)/.exec(className || "");
-                  return !inline && match ? (
+                  return !inline ? (
                     <div className="my-6 tech-card rounded-none overflow-hidden border-primary/20">
                       <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 flex justify-between items-center">
-                        <span className="text-[10px] font-black text-primary uppercase">CODE_SNIPPET // {match[1]}</span>
+                        <span className="text-[10px] font-black text-primary uppercase">
+                          CODE_SNIPPET // {match?.[1] || "plain"}
+                        </span>
                       </div>
-                      <SyntaxHighlighter
-                        style={vscDarkPlus}
-                        language={match[1]}
-                        PreTag="div"
-                        className="!m-0 !bg-black/50 !p-4"
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, "")}
-                      </SyntaxHighlighter>
+                      <pre className="m-0 overflow-x-auto bg-black/50 p-4 text-xs leading-6 text-slate-200">
+                        <code className={className} {...props}>
+                          {String(children).replace(/\n$/, "")}
+                        </code>
+                      </pre>
                     </div>
                   ) : (
                     <code className="bg-primary/10 text-primary px-1 py-0.5 rounded" {...props}>

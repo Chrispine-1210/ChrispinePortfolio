@@ -543,29 +543,55 @@ export function createAdminRouter(): Router {
     requireAdminPermission("leads.manage"),
     async (request, response) => {
       const input = updateLeadSchema.parse(request.body);
-      const changes = {
-        ...input,
-        estimatedValue:
-          input.estimatedValue === undefined
-            ? undefined
-            : input.estimatedValue === null
-              ? null
-              : String(input.estimatedValue),
-        followUpAt:
-          input.followUpAt === undefined
-            ? undefined
-            : input.followUpAt === null
-              ? null
-              : new Date(input.followUpAt),
-        updatedAt: new Date(),
-      };
-      const updated = await db.transaction(async (transaction) => {
+      const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction
           .select()
           .from(leads)
           .where(eq(leads.id, request.params.id))
           .limit(1);
-        if (!previous) return undefined;
+        if (!previous) return { outcome: "missing" as const };
+
+        const targetStage = input.stage ?? previous.stage;
+        const effectiveEstimatedValue =
+          input.estimatedValue === undefined
+            ? previous.estimatedValue
+            : input.estimatedValue;
+        if (
+          ["proposal", "negotiation", "won"].includes(targetStage) &&
+          (!effectiveEstimatedValue || Number(effectiveEstimatedValue) <= 0)
+        ) {
+          return { outcome: "value_required" as const };
+        }
+
+        const changes = {
+          ...input,
+          estimatedValue:
+            input.estimatedValue === undefined
+              ? undefined
+              : input.estimatedValue === null
+                ? null
+                : String(input.estimatedValue),
+          probability:
+            targetStage === "won"
+              ? 100
+              : targetStage === "lost"
+                ? 0
+                : input.probability,
+          lostReason:
+            targetStage === "lost"
+              ? input.lostReason
+              : input.stage && previous.stage === "lost"
+                ? null
+                : input.lostReason,
+          followUpAt:
+            input.followUpAt === undefined
+              ? undefined
+              : input.followUpAt === null
+                ? null
+                : new Date(input.followUpAt),
+          updatedAt: new Date(),
+        };
+
         const [record] = await transaction
           .update(leads)
           .set(changes)
@@ -579,7 +605,12 @@ export function createAdminRouter(): Router {
           body: stageChanged
             ? `Pipeline stage changed from ${previous.stage} to ${input.stage}.`
             : "Lead details updated.",
-          metadata: input,
+          metadata: {
+            ...input,
+            probability: record.probability,
+            estimatedValue: record.estimatedValue,
+            currency: record.currency,
+          },
         });
         await transaction.insert(auditEvents).values({
           actorUserId: request.securityPrincipal?.userId ?? null,
@@ -592,11 +623,15 @@ export function createAdminRouter(): Router {
           previousState: previous,
           newState: record,
         });
-        return record;
+        return { outcome: "ok" as const, record };
       });
-      if (!updated)
+      if (result.outcome === "missing")
         return response.status(404).json({ message: "Lead not found" });
-      response.json(updated);
+      if (result.outcome === "value_required")
+        return response.status(409).json({
+          message: "Estimated commercial value is required before proposal, negotiation, or won stages",
+        });
+      response.json(result.record);
     },
   );
 
@@ -642,19 +677,208 @@ export function createAdminRouter(): Router {
       const byStage = await db
         .select({
           stage: leads.stage,
+          currency: leads.currency,
           count,
           value: sql<string>`coalesce(sum(${leads.estimatedValue}), 0)::text`,
           weightedValue: sql<string>`coalesce(sum(${leads.estimatedValue} * ${leads.probability} / 100.0), 0)::text`,
         })
         .from(leads)
         .where(isNull(leads.archivedAt))
-        .groupBy(leads.stage);
+        .groupBy(leads.stage, leads.currency);
       response.setHeader("Cache-Control", "no-store");
       response.json(
         byStage.map((row) =>
           canViewFinancial ? row : { ...row, value: null, weightedValue: null },
         ),
       );
+    },
+  );
+
+  router.get(
+    "/api/admin/pipeline/funnel",
+    requireAdminPermission("leads.read"),
+    async (request, response) => {
+      const requestedWindow =
+        typeof request.query.window === "string" ? request.query.window : "90d";
+      const windowValue = ["30d", "90d", "365d", "all"].includes(requestedWindow)
+        ? requestedWindow
+        : "90d";
+      const windowDays =
+        windowValue === "all"
+          ? null
+          : windowValue === "30d"
+            ? 30
+            : windowValue === "365d"
+              ? 365
+              : 90;
+      const since = windowDays
+        ? new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000)
+        : null;
+
+      const leadRows = await db
+        .select({
+          id: leads.id,
+          serviceInterest: leads.serviceInterest,
+          source: leads.source,
+          stage: leads.stage,
+          currency: leads.currency,
+          estimatedValue: leads.estimatedValue,
+          probability: leads.probability,
+          createdAt: leads.createdAt,
+        })
+        .from(leads)
+        .where(
+          and(
+            isNull(leads.archivedAt),
+            ...(since ? [gt(leads.createdAt, since)] : []),
+          ),
+        )
+        .orderBy(desc(leads.createdAt))
+        .limit(5000);
+
+      const leadIds = leadRows.map((lead) => lead.id);
+      const stageEvents = leadIds.length
+        ? await db
+            .select({
+              leadId: leadActivities.leadId,
+              metadata: leadActivities.metadata,
+              createdAt: leadActivities.createdAt,
+            })
+            .from(leadActivities)
+            .where(
+              and(
+                inArray(leadActivities.leadId, leadIds),
+                eq(leadActivities.type, "stage_changed"),
+              ),
+            )
+            .orderBy(leadActivities.createdAt)
+        : [];
+
+      const reachedByLead = new Map<string, Set<string>>();
+      const markStage = (set: Set<string>, stage: string | null | undefined) => {
+        if (!stage) return;
+        if (["qualified", "discovery", "proposal", "negotiation", "won"].includes(stage))
+          set.add("qualified");
+        if (["proposal", "negotiation", "won"].includes(stage))
+          set.add("proposal");
+        if (stage === "won") set.add("won");
+        if (stage === "lost") set.add("lost");
+      };
+
+      for (const lead of leadRows) {
+        const reached = new Set<string>(["enquiry"]);
+        markStage(reached, lead.stage);
+        reachedByLead.set(lead.id, reached);
+      }
+      for (const event of stageEvents) {
+        const metadata =
+          event.metadata && typeof event.metadata === "object"
+            ? (event.metadata as Record<string, unknown>)
+            : {};
+        const stage = typeof metadata.stage === "string" ? metadata.stage : undefined;
+        markStage(reachedByLead.get(event.leadId) ?? new Set<string>(), stage);
+      }
+
+      type FunnelRow = {
+        key: string;
+        enquiries: number;
+        qualified: number;
+        proposals: number;
+        won: number;
+        lost: number;
+      };
+      const createRow = (key: string): FunnelRow => ({
+        key,
+        enquiries: 0,
+        qualified: 0,
+        proposals: 0,
+        won: 0,
+        lost: 0,
+      });
+      const overall = createRow("all");
+      const serviceRows = new Map<string, FunnelRow>();
+      const sourceRows = new Map<string, FunnelRow>();
+
+      const apply = (row: FunnelRow, reached: Set<string>) => {
+        row.enquiries += 1;
+        if (reached.has("qualified")) row.qualified += 1;
+        if (reached.has("proposal")) row.proposals += 1;
+        if (reached.has("won")) row.won += 1;
+        if (reached.has("lost")) row.lost += 1;
+      };
+
+      const financial = new Map<string, {
+        currency: string;
+        openValue: number;
+        weightedOpenValue: number;
+        wonValue: number;
+        lostValue: number;
+      }>();
+
+      for (const lead of leadRows) {
+        const reached = reachedByLead.get(lead.id) ?? new Set<string>(["enquiry"]);
+        apply(overall, reached);
+
+        const service = lead.serviceInterest || "unclassified";
+        const serviceRow = serviceRows.get(service) ?? createRow(service);
+        apply(serviceRow, reached);
+        serviceRows.set(service, serviceRow);
+
+        const source = lead.source || "unknown";
+        const sourceRow = sourceRows.get(source) ?? createRow(source);
+        apply(sourceRow, reached);
+        sourceRows.set(source, sourceRow);
+
+        const value = Number(lead.estimatedValue ?? 0);
+        if (Number.isFinite(value) && value > 0) {
+          const currency = lead.currency || "USD";
+          const totals = financial.get(currency) ?? {
+            currency,
+            openValue: 0,
+            weightedOpenValue: 0,
+            wonValue: 0,
+            lostValue: 0,
+          };
+          if (lead.stage === "won") totals.wonValue += value;
+          else if (lead.stage === "lost") totals.lostValue += value;
+          else {
+            totals.openValue += value;
+            totals.weightedOpenValue += value * (lead.probability / 100);
+          }
+          financial.set(currency, totals);
+        }
+      }
+
+      const withRates = (row: FunnelRow) => ({
+        ...row,
+        qualificationRate: row.enquiries ? Math.round((row.qualified / row.enquiries) * 1000) / 10 : 0,
+        proposalRate: row.qualified ? Math.round((row.proposals / row.qualified) * 1000) / 10 : 0,
+        proposalWinRate: row.proposals ? Math.round((row.won / row.proposals) * 1000) / 10 : 0,
+        closeRate:
+          row.won + row.lost
+            ? Math.round((row.won / (row.won + row.lost)) * 1000) / 10
+            : 0,
+      });
+
+      const canViewFinancial =
+        !request.securityPrincipal ||
+        request.securityPrincipal.permissions.includes("pipeline.financial.read");
+
+      response.setHeader("Cache-Control", "no-store");
+      response.json({
+        window: windowValue,
+        cohortStart: since?.toISOString() ?? null,
+        overall: withRates(overall),
+        byService: [...serviceRows.values()]
+          .map(withRates)
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        bySource: [...sourceRows.values()]
+          .map(withRates)
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        financialByCurrency: canViewFinancial
+          ? [...financial.values()].sort((a, b) => a.currency.localeCompare(b.currency))
+          : [],
+      });
     },
   );
 
