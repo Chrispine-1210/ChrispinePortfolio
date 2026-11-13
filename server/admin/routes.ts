@@ -580,7 +580,7 @@ export function createAdminRouter(): Router {
           lostReason:
             targetStage === "lost"
               ? input.lostReason
-              : input.stage && previous.stage === "lost" && input.lostReason === undefined
+              : input.stage && previous.stage === "lost"
                 ? null
                 : input.lostReason,
           followUpAt:
