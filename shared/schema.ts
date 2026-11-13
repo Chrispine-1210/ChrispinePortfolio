@@ -431,6 +431,14 @@ export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
 export type InsertCaseStudyEvidence = z.infer<typeof insertCaseStudyEvidenceSchema>;
 
+export type PublicCaseStudyEvidence = Pick<
+  CaseStudyEvidence,
+  "id" | "claim" | "claimType" | "sourceType" | "verificationStatus" | "verifiedAt"
+>;
+export type PublicPortfolioProject = PortfolioProject & {
+  evidence: PublicCaseStudyEvidence[];
+};
+
 // Newsletter subscribers
 export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

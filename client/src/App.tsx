@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -8,37 +8,46 @@ import { ErrorBoundary } from "@/lib/errorBoundary";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
-import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
-import Login from "@/pages/Login";
-import Portfolio from "@/pages/Portfolio";
-import PortfolioAdvanced from "@/pages/PortfolioAdvanced";
-import PortfolioDetail from "@/pages/PortfolioDetail";
-import Blog from "@/pages/Blog";
-import BlogPost from "@/pages/BlogPost";
-import About from "@/pages/About";
-import HireMe from "@/pages/HireMe";
-import Resources from "@/pages/Resources";
-import Contact from "@/pages/Contact";
-import Subscribe from "@/pages/Subscribe";
-import Dashboard from "@/pages/Dashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
-import Analytics from "@/pages/Analytics";
-import NewsletterManagement from "@/pages/NewsletterManagement";
-import ExternalPostsPage from "@/pages/ExternalPosts";
-import SoftwareConsultingMalawi from "@/pages/SoftwareConsultingMalawi";
-import DigitalTransformationAfrica from "@/pages/DigitalTransformationAfrica";
-import EducationTechnologySolutions from "@/pages/EducationTechnologySolutions";
-import CustomSoftwareDevelopment from "@/pages/CustomSoftwareDevelopment";
-import GitHubProfile from "@/pages/GitHubProfile";
-import ContactsManagement from "@/pages/admin/ContactsManagement";
-import AudienceManagement from "@/pages/admin/AudienceManagement";
-import ContentManagement from "@/pages/admin/ContentManagement";
-import ProjectManagement from "@/pages/admin/ProjectManagement";
-import CaseStudyManagement from "@/pages/admin/CaseStudyManagement";
-import LeadPipeline from "@/pages/admin/LeadPipeline";
-import SecurityManagement from "@/pages/admin/SecurityManagement";
-import UserManagement from "@/pages/admin/UserManagement";
+
+const NotFound = lazy(() => import("@/pages/not-found"));
+const Login = lazy(() => import("@/pages/Login"));
+const Portfolio = lazy(() => import("@/pages/Portfolio"));
+const PortfolioAdvanced = lazy(() => import("@/pages/PortfolioAdvanced"));
+const PortfolioDetail = lazy(() => import("@/pages/PortfolioDetail"));
+const Blog = lazy(() => import("@/pages/Blog"));
+const BlogPost = lazy(() => import("@/pages/BlogPost"));
+const About = lazy(() => import("@/pages/About"));
+const HireMe = lazy(() => import("@/pages/HireMe"));
+const Resources = lazy(() => import("@/pages/Resources"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const Subscribe = lazy(() => import("@/pages/Subscribe"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const Analytics = lazy(() => import("@/pages/Analytics"));
+const NewsletterManagement = lazy(() => import("@/pages/NewsletterManagement"));
+const ExternalPostsPage = lazy(() => import("@/pages/ExternalPosts"));
+const SoftwareConsultingMalawi = lazy(() => import("@/pages/SoftwareConsultingMalawi"));
+const DigitalTransformationAfrica = lazy(() => import("@/pages/DigitalTransformationAfrica"));
+const EducationTechnologySolutions = lazy(() => import("@/pages/EducationTechnologySolutions"));
+const CustomSoftwareDevelopment = lazy(() => import("@/pages/CustomSoftwareDevelopment"));
+const GitHubProfile = lazy(() => import("@/pages/GitHubProfile"));
+const ContactsManagement = lazy(() => import("@/pages/admin/ContactsManagement"));
+const AudienceManagement = lazy(() => import("@/pages/admin/AudienceManagement"));
+const ContentManagement = lazy(() => import("@/pages/admin/ContentManagement"));
+const ProjectManagement = lazy(() => import("@/pages/admin/ProjectManagement"));
+const CaseStudyManagement = lazy(() => import("@/pages/admin/CaseStudyManagement"));
+const LeadPipeline = lazy(() => import("@/pages/admin/LeadPipeline"));
+const SecurityManagement = lazy(() => import("@/pages/admin/SecurityManagement"));
+const UserManagement = lazy(() => import("@/pages/admin/UserManagement"));
+
+function RouteFallback() {
+  return (
+    <div className="min-h-[50vh] flex items-center justify-center">
+      <div className="text-sm font-mono text-muted-foreground">Loading workspace…</div>
+    </div>
+  );
+}
 
 function AdminProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAdmin, isLoading } = useCustomAuth();
@@ -61,6 +70,7 @@ function Router() {
     <div className="flex flex-col min-h-screen">
       {!adminSurface && <Navigation />}
       <main className="flex-1">
+        <Suspense fallback={<RouteFallback />}>
         <Switch>
           <Route path="/" component={Landing} />
           <Route path="/portfolio" component={PortfolioAdvanced} />
@@ -99,6 +109,7 @@ function Router() {
           <Route path="/github" component={GitHubProfile} />
           <Route component={NotFound} />
         </Switch>
+        </Suspense>
       </main>
       {!adminSurface && <Footer />}
       </div>

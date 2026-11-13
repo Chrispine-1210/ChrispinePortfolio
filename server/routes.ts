@@ -21,7 +21,7 @@ import {
   enqueueContactAutomation,
   enqueueNewsletterWelcome,
 } from "./email/automations.js";
-import { createLeadFromContact } from "./crm/lead-service.js";
+import { createLeadFromContact, createLeadFromConsultation } from "./crm/lead-service.js";
 import { getPublicCaseStudyBySlug, listPublicCaseStudies } from "./portfolio/public-case-study-service.js";
 
 const fallbackBlogPosts: BlogPost[] = seedBlogPosts.map((post, index) => ({
@@ -311,6 +311,51 @@ router.post(
   },
 );
 
+const consultationInputSchema = z.object({
+  name: z.string().trim().min(2).max(180),
+  email: z.string().trim().email().max(320),
+  phone: z.string().trim().max(80).optional().or(z.literal("")),
+  organization: z.string().trim().min(2).max(220),
+  industry: z.enum([
+    "Education",
+    "NGO / Development",
+    "Healthcare",
+    "Agriculture",
+    "Financial Services",
+    "Government",
+    "Retail / Distribution",
+    "Professional Services",
+    "Other",
+  ]),
+  serviceInterest: z.enum([
+    "network-infrastructure",
+    "managed-it",
+    "enterprise-software",
+    "business-systems",
+    "data-analytics",
+    "technology-advisory",
+  ]),
+  challenge: z.string().trim().min(20).max(5000),
+  currentTech: z.string().trim().max(3000).optional().or(z.literal("")),
+  budgetRange: z.enum([
+    "Below MWK 1,000,000",
+    "MWK 1,000,000 – 5,000,000",
+    "MWK 5,000,000 – 15,000,000",
+    "MWK 15,000,000+",
+    "Discuss first",
+    "",
+  ]).optional(),
+  expectedTimeline: z.enum([
+    "Urgent / under 1 month",
+    "1–3 months",
+    "3–6 months",
+    "6–12 months",
+    "Flexible",
+    "",
+  ]).optional(),
+  consent: z.literal(true),
+}).strict();
+
 // Contact routes
 router.post("/api/contact", async (req: Request, res: Response) => {
   try {
@@ -334,6 +379,28 @@ router.post("/api/contact", async (req: Request, res: Response) => {
         .json({ message: "Invalid data", errors: error.issues });
     }
     res.status(500).json({ message: "Failed to submit contact request" });
+  }
+});
+
+router.post("/api/consultation", async (req: Request, res: Response) => {
+  try {
+    const { consent: _consent, ...input } = consultationInputSchema.parse(req.body);
+    const result = await createLeadFromConsultation(
+      input,
+      req.get("referer") || "/hire",
+    );
+    await enqueueContactAutomation(result.contact).catch((error) =>
+      console.error("Failed to enqueue consultation contact automation", error),
+    );
+    res.status(201).json({
+      message: "Consultation request received",
+    });
+  } catch (error: any) {
+    console.error("Error creating consultation request:", error);
+    if (error.name === "ZodError") {
+      return res.status(400).json({ message: "Invalid data", errors: error.issues });
+    }
+    res.status(500).json({ message: "Failed to submit consultation request" });
   }
 });
 

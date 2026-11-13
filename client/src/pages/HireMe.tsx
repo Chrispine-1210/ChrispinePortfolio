@@ -12,73 +12,73 @@ import { ConsultationForm } from "@/components/ConsultationForm";
 
 const engagementPaths = [
   {
-    icon: TrendingUp,
-    title: "Digital Transformation Consulting",
-    subtitle: "For organizations ready to modernize",
-    idealClient: "NGOs, enterprises, and government agencies seeking to digitize operations and improve efficiency through technology.",
+    icon: Network,
+    title: "Networks & Managed IT",
+    subtitle: "For teams that need dependable day-to-day infrastructure",
+    idealClient: "SMEs and institutions that need network design, troubleshooting, monitoring, user support, and a clearer operating baseline.",
     problemsSolved: [
-      "Manual processes consuming staff time",
-      "Data silos preventing informed decisions",
-      "Legacy systems limiting growth",
-      "Lack of real-time operational visibility"
+      "Unreliable connectivity and recurring network faults",
+      "No structured monitoring or support process",
+      "Unclear device, access, or backup responsibilities",
+      "Technology issues handled only after disruption",
     ],
     outcomes: [
-      "40-80% reduction in processing time",
-      "Unified data platform for decision-making",
-      "Scalable systems that grow with the organization",
-      "Measurable ROI within 6 months"
+      "Documented network and support baseline",
+      "Prioritized remediation and monitoring plan",
+      "Clear ownership for recurring IT operations",
+      "Support scope matched to the organisation's actual environment",
     ],
-    price: "Custom Quote",
-    highlight: true
+    price: "Scoped after technical assessment",
+    highlight: true,
   },
   {
     icon: Code,
-    title: "Custom Software Development",
-    subtitle: "For businesses needing tailored solutions",
-    idealClient: "Companies and organizations requiring bespoke software platforms, dashboards, or automation systems built to their exact specifications.",
+    title: "Enterprise Software & Internal Platforms",
+    subtitle: "For organisations replacing disconnected workflows",
+    idealClient: "Businesses and institutions that need portals, operational systems, internal tools, or governed workflows tailored to how they work.",
     problemsSolved: [
-      "Off-the-shelf software not fitting workflows",
-      "Multiple disconnected tools creating friction",
-      "No central system for operations",
-      "Technical debt from poor past decisions"
+      "Manual workflows and duplicate data entry",
+      "Disconnected tools with no reliable source of truth",
+      "Limited operational visibility and accountability",
+      "Business rules that off-the-shelf software cannot represent cleanly",
     ],
     outcomes: [
-      "Purpose-built platform aligned to business logic",
-      "API-first architecture for future integrations",
-      "Modern tech stack with 5+ year lifespan",
-      "Full documentation and knowledge transfer"
+      "System scope tied to real operational workflows",
+      "Governed access, data and release controls",
+      "Integration-ready software architecture",
+      "Documented handover and support requirements",
     ],
-    price: "$60-120/hr",
-    highlight: true
+    price: "Project scope and commercial terms confirmed after discovery",
+    highlight: true,
   },
   {
-    icon: Lightbulb,
-    title: "Technology Strategy Advisory",
-    subtitle: "For leaders making big technology decisions",
-    idealClient: "Executives, founders, and boards evaluating technology investments, vendor selection, or digital transformation roadmaps.",
+    icon: Database,
+    title: "Business Systems, Data & Advisory",
+    subtitle: "For leaders improving control and decision visibility",
+    idealClient: "Founders, managers and programme teams that need reporting, workflow automation, data systems, or evidence-led technology decisions.",
     problemsSolved: [
-      "Uncertainty about which technology to adopt",
-      "Vendors overselling capabilities",
-      "No clear technology roadmap",
-      "Risk of expensive misinvestment"
+      "Decisions made from fragmented spreadsheets or incomplete records",
+      "No clear workflow for approvals, follow-up or reporting",
+      "Technology investment without a defined operating model",
+      "Data collected without a usable management view",
     ],
     outcomes: [
-      "Evidence-based technology recommendations",
-      "3-5 year technology roadmap with milestones",
-      "Vendor evaluation framework",
-      "Risk mitigation strategy"
+      "Defined operating and information requirements",
+      "Practical dashboards and reporting workflows",
+      "Technology options with explicit trade-offs and risks",
+      "An implementation path that can be costed and governed",
     ],
-    price: "$80-150/hr"
-  }
+    price: "Assessment-led scope",
+  },
 ];
 
 const benefits = [
-  "Software, systems, and operations experience across delivery and commercial work",
-  "Public claims are limited to traceable engineering evidence",
-  "Full-stack capabilities from discovery through release support",
-  "Emerging markets expertise: Africa-focused solutions",
-  "Entrepreneur who understands business, not just code",
-  "Measurable outcomes, not just deliverables"
+  "Computer engineering, networks, software and business-systems perspective in one delivery path",
+  "Public portfolio claims are limited to traceable engineering evidence",
+  "Full-stack capability from discovery through controlled release and handover",
+  "Malawi-first operating context with regional scalability in mind",
+  "Commercial and operational thinking alongside technical delivery",
+  "Clear separation between verified results, planned work and assumptions",
 ];
 
 const engagementTypes = [
@@ -88,6 +88,10 @@ const engagementTypes = [
 ];
 
 export default function HireMe() {
+  const requestedService = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("service") || ""
+    : "";
+
   useEffect(() => {
     document.title = "Discuss a Project | Chrispine Mndala";
   }, []);
@@ -104,10 +108,10 @@ export default function HireMe() {
           className="mb-16 grid items-center gap-8 lg:grid-cols-2"
         >
           <div className="space-y-5">
-            <p className="text-sm font-semibold uppercase tracking-wider text-blue-300">Software and digital development</p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-blue-300">Computer engineering · networks · enterprise systems</p>
             <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl">Discuss a project</h1>
             <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
-              Tell me which workflow you want to improve. We can discuss scope, delivery, and support.
+              Tell me which network, workflow, software system, or operational problem needs attention. The first step is to define the technical and business boundary before committing to a build.
             </p>
             <div className="flex flex-wrap gap-3">
               {["Project delivery", "Ongoing support", "Advisory"].map((engagement) => (
@@ -171,7 +175,7 @@ export default function HireMe() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground text-sm break-all">peterschrispine@gmail.com</p>
-                <p className="text-xs text-muted-foreground">Response within 24 hours</p>
+                <p className="text-xs text-muted-foreground">Use email for a written project brief</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -254,7 +258,7 @@ export default function HireMe() {
             <div>
               <h2 className="text-4xl font-bold text-white uppercase mb-4">Why Partner With Me</h2>
               <p className="text-muted-foreground text-lg">
-                Combining technical expertise with strategic thinking to deliver solutions that drive real impact.
+                Combining networks, software delivery, data systems, and business operations so recommendations are grounded in how the organisation actually runs.
               </p>
             </div>
             <div className="space-y-3">
@@ -332,7 +336,7 @@ export default function HireMe() {
             <span className="text-[10px] font-mono text-primary uppercase tracking-widest">03 // PRIMARY CTA</span>
             <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Book a Technology Consultation</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Free 30-minute discovery call. Walk away with a clear picture of your digital roadmap and next steps — no obligation.
+              Submit a structured technical enquiry so the problem, environment, budget range, and expected timeline can be qualified before scope or commercial commitments are made.
             </p>
           </div>
 
@@ -363,7 +367,7 @@ export default function HireMe() {
               <h3 className="font-mono text-primary text-xs font-bold mb-6 uppercase tracking-widest border-b border-primary/20 pb-3">
                 CONSULTATION REQUEST FORM
               </h3>
-              <ConsultationForm />
+              <ConsultationForm initialService={requestedService} />
             </div>
           </div>
         </motion.div>
@@ -377,7 +381,7 @@ export default function HireMe() {
         >
           <h2 className="text-3xl font-bold text-white mb-4">Prefer to Talk First?</h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Call directly or send an email. Response within 24 hours.
+            Call directly or send an email if you need to establish fit before submitting a structured enquiry.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild data-testid="button-start-project">

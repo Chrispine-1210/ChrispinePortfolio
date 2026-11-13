@@ -5,15 +5,15 @@ import { setSEO } from "@/lib/seoHelper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Github, Terminal, Cpu, Zap, Activity } from "lucide-react";
+import { ArrowLeft, ExternalLink, Github, Terminal, Cpu, Zap, Activity, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
 import { CaseStudyCover } from "@/components/CaseStudyCover";
-import type { PortfolioProject } from "@shared/schema";
+import type { PublicPortfolioProject } from "@shared/schema";
 
 export default function PortfolioDetail() {
   const { slug } = useParams();
 
-  const { data: project, isLoading } = useQuery<PortfolioProject>({
+  const { data: project, isLoading } = useQuery<PublicPortfolioProject>({
     queryKey: ["/api/portfolio", slug],
   });
 
@@ -226,7 +226,53 @@ export default function PortfolioDetail() {
             </div>
           </motion.section>
 
-          {/* 4. Business Impact */}
+          {/* 4. Approved Evidence */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="tech-card p-8 lg:p-12 bg-emerald-500/[0.04] border-emerald-500/20"
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-emerald-500/10 flex items-center justify-center">
+                <ShieldCheck className="text-emerald-400 w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">04 // Verification Record</span>
+                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Approved Public Evidence</h3>
+              </div>
+            </div>
+            {project.evidence.length > 0 ? (
+              <div className="space-y-4">
+                {project.evidence.map((item) => (
+                  <div key={item.id} className="rounded-xl border border-white/10 bg-black/20 p-5">
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <Badge variant="outline" className="border-emerald-500/30 text-emerald-300">
+                        {item.verificationStatus === "externally_verified" ? "Externally verified" : "Internally verified"}
+                      </Badge>
+                      <span className="text-[10px] font-mono uppercase text-white/40">{item.sourceType.replace(/_/g, " ")}</span>
+                      <span className="text-[10px] font-mono uppercase text-white/40">{item.claimType.replace(/_/g, " ")}</span>
+                    </div>
+                    <p className="text-sm leading-relaxed text-white/75">{item.claim}</p>
+                    {item.verifiedAt && (
+                      <p className="mt-3 text-[10px] font-mono uppercase text-white/35">
+                        Verified {new Date(item.verifiedAt).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "2-digit" })}
+                      </p>
+                    )}
+                  </div>
+                ))}
+                <p className="text-xs leading-relaxed text-white/40">
+                  Only evidence explicitly approved for public disclosure is shown. Private references, internal notes, rejected evidence, and withdrawn evidence remain excluded.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                This published case study has passed its evidence gate, but no individual evidence item is exposed in the public projection.
+              </p>
+            )}
+          </motion.section>
+
+          {/* 5. Business Impact */}
           {project.outcome && (
             <motion.section
               initial={{ opacity: 0, y: 20 }}
@@ -239,7 +285,7 @@ export default function PortfolioDetail() {
                   <Activity className="text-primary w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono text-primary uppercase tracking-widest">04 // Evidence Status</span>
+                  <span className="text-[10px] font-mono text-primary uppercase tracking-widest">05 // Evidence Status</span>
                   <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Release and Evidence Boundary</h3>
                 </div>
               </div>
