@@ -311,6 +311,17 @@ router.post(
   },
 );
 
+const acquisitionTouchSchema = z.object({
+  source: z.string().trim().max(160),
+  medium: z.string().trim().max(120),
+  campaign: z.string().trim().max(180),
+  term: z.string().trim().max(240),
+  content: z.string().trim().max(240),
+  referrer: z.string().trim().max(2048),
+  landingPage: z.string().trim().min(1).max(2048),
+  capturedAt: z.string().datetime(),
+}).strict();
+
 const consultationInputSchema = z.object({
   name: z.string().trim().min(2).max(180),
   email: z.string().trim().email().max(320),
@@ -354,6 +365,10 @@ const consultationInputSchema = z.object({
     "",
   ]).optional(),
   consent: z.literal(true),
+  attribution: z.object({
+    firstTouch: acquisitionTouchSchema.optional(),
+    lastTouch: acquisitionTouchSchema.optional(),
+  }).strict().optional(),
 }).strict();
 
 // Contact routes
