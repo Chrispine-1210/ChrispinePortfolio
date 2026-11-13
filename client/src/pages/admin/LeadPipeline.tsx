@@ -5,6 +5,8 @@ import {
   CalendarClock,
   CircleDollarSign,
   Mail,
+  PlusCircle,
+  Ban,
   Search,
   Target,
   TrendingUp,
@@ -68,6 +70,71 @@ interface FunnelResponse {
   bySource: FunnelRow[];
   financialByCurrency: CurrencyTotals[];
 }
+interface IntelligenceRow extends FunnelRow {
+  wonRevenueByCurrency: Array<{
+    currency: string;
+    revenue: number;
+    averageWonValue: number;
+  }>;
+  economicsByCurrency: Array<{
+    currency: string;
+    spend: number;
+    wonRevenue: number;
+    wins: number;
+    cac: number | null;
+    roas: number | null;
+  }>;
+}
+interface ChannelServiceRow extends IntelligenceRow {
+  channel: string;
+  service: string;
+}
+interface SpendEntry {
+  id: string;
+  channel: string;
+  source: string;
+  campaign: string | null;
+  currency: string;
+  amount: string;
+  occurredAt: string;
+  notes: string | null;
+  voidedAt: string | null;
+  voidReason: string | null;
+}
+interface AcquisitionIntelligence {
+  window: CohortWindow;
+  attributionCoverage: {
+    leads: number;
+    firstTouchCaptured: number;
+    lastTouchCaptured: number;
+    firstTouchRate: number;
+    lastTouchRate: number;
+  };
+  byFirstTouchChannel: IntelligenceRow[];
+  byLastTouchChannel: IntelligenceRow[];
+  byLastTouchSource: IntelligenceRow[];
+  byCampaign: IntelligenceRow[];
+  byLandingPage: IntelligenceRow[];
+  byChannelService: ChannelServiceRow[];
+  byService: IntelligenceRow[];
+  velocityDays: {
+    enquiryToQualified: number | null;
+    enquiryToProposal: number | null;
+    enquiryToWon: number | null;
+    samples: { qualified: number; proposal: number; won: number };
+  };
+  lossReasons: Array<{
+    reason: string;
+    count: number;
+    valueByCurrency: Array<{ currency: string; value: number }>;
+  }>;
+  spendEconomics: {
+    status: "available" | "not_configured";
+    spendByCurrency: Array<{ currency: string; spend: number }>;
+    paybackDays: null;
+    note: string;
+  };
+}
 
 function money(value: number, currency: string) {
   try {
@@ -101,11 +168,24 @@ export default function LeadPipeline() {
     lostReason: "",
   });
   const [note, setNote] = useState("");
+  const [spendDraft, setSpendDraft] = useState({
+    channel: "social",
+    source: "linkedin",
+    campaign: "",
+    currency: "MWK",
+    amount: "",
+    occurredAt: new Date().toISOString().slice(0, 16),
+    notes: "",
+  });
 
   const leadsEndpoint = `/api/admin/leads?search=${encodeURIComponent(search)}`;
   const funnelEndpoint = `/api/admin/pipeline/funnel?window=${cohortWindow}`;
+  const intelligenceEndpoint = `/api/admin/acquisition/intelligence?window=${cohortWindow}`;
+  const spendEndpoint = "/api/admin/acquisition/spend";
   const leads = useQuery<LeadRecord[]>({ queryKey: [leadsEndpoint] });
   const funnel = useQuery<FunnelResponse>({ queryKey: [funnelEndpoint] });
+  const intelligence = useQuery<AcquisitionIntelligence>({ queryKey: [intelligenceEndpoint] });
+  const spendEntries = useQuery<SpendEntry[]>({ queryKey: [spendEndpoint] });
   const activities = useQuery<ActivityRecord[]>({
     queryKey: [`/api/admin/leads/${selected?.id ?? "none"}/activities`],
     enabled: Boolean(selected),
@@ -129,6 +209,8 @@ export default function LeadPipeline() {
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: [leadsEndpoint] });
     queryClient.invalidateQueries({ queryKey: [funnelEndpoint] });
+    queryClient.invalidateQueries({ queryKey: [intelligenceEndpoint] });
+    queryClient.invalidateQueries({ queryKey: [spendEndpoint] });
     queryClient.invalidateQueries({ queryKey: ["/api/admin/pipeline/summary"] });
     queryClient.invalidateQueries({ queryKey: ["/api/admin/overview"] });
   };
@@ -141,6 +223,31 @@ export default function LeadPipeline() {
       setSelected(record);
       refresh();
       queryClient.invalidateQueries({ queryKey: [`/api/admin/leads/${record.id}/activities`] });
+    },
+  });
+
+  const addSpend = useMutation({
+    mutationFn: () =>
+      apiRequest("POST", spendEndpoint, {
+        ...spendDraft,
+        amount: Number(spendDraft.amount),
+        occurredAt: new Date(spendDraft.occurredAt).toISOString(),
+        campaign: spendDraft.campaign || null,
+        notes: spendDraft.notes || null,
+      }),
+    onSuccess: () => {
+      setSpendDraft((previous) => ({ ...previous, amount: "", notes: "" }));
+      queryClient.invalidateQueries({ queryKey: [spendEndpoint] });
+      queryClient.invalidateQueries({ queryKey: [intelligenceEndpoint] });
+    },
+  });
+
+  const voidSpend = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      apiRequest("POST", `/api/admin/acquisition/spend/${id}/void`, { reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [spendEndpoint] });
+      queryClient.invalidateQueries({ queryKey: [intelligenceEndpoint] });
     },
   });
 
@@ -248,6 +355,259 @@ export default function LeadPipeline() {
             </div>
           </section>
         )}
+
+        <section className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+          <Card className="border-white/[0.07] bg-white/[0.018]">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider">Marketing spend ledger</h2>
+                  <p className="mt-1 text-xs text-white/30">Append-only spend evidence used for CAC and ROAS.</p>
+                </div>
+                <PlusCircle className="h-5 w-5 text-primary" />
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <select className="h-10 rounded-md border border-input bg-background px-3 text-sm text-white"
+                  value={spendDraft.channel}
+                  onChange={(event) => setSpendDraft({ ...spendDraft, channel: event.target.value })}>
+                  {["email","paid","social","organic_search","referral","direct","other"].map((item) => <option key={item}>{item}</option>)}
+                </select>
+                <Input placeholder="Source, e.g. linkedin" value={spendDraft.source}
+                  onChange={(event) => setSpendDraft({ ...spendDraft, source: event.target.value })} />
+                <Input placeholder="Campaign" value={spendDraft.campaign}
+                  onChange={(event) => setSpendDraft({ ...spendDraft, campaign: event.target.value })} />
+                <Input maxLength={3} placeholder="Currency" value={spendDraft.currency}
+                  onChange={(event) => setSpendDraft({ ...spendDraft, currency: event.target.value.toUpperCase() })} />
+                <Input type="number" min="0" step="0.01" placeholder="Spend amount" value={spendDraft.amount}
+                  onChange={(event) => setSpendDraft({ ...spendDraft, amount: event.target.value })} />
+                <Input type="datetime-local" value={spendDraft.occurredAt}
+                  onChange={(event) => setSpendDraft({ ...spendDraft, occurredAt: event.target.value })} />
+              </div>
+              <Textarea className="mt-3" rows={2} placeholder="Spend evidence / invoice / campaign note"
+                value={spendDraft.notes}
+                onChange={(event) => setSpendDraft({ ...spendDraft, notes: event.target.value })} />
+              <Button className="mt-3" disabled={!spendDraft.amount || !spendDraft.source || addSpend.isPending}
+                onClick={() => addSpend.mutate()}>
+                Record spend
+              </Button>
+              {addSpend.error && <p className="mt-2 text-xs text-destructive">{addSpend.error.message}</p>}
+            </CardContent>
+          </Card>
+
+          <Card className="border-white/[0.07] bg-white/[0.018]">
+            <CardContent className="p-5">
+              <h2 className="text-sm font-bold uppercase tracking-wider">Recent spend evidence</h2>
+              <div className="mt-4 max-h-72 space-y-2 overflow-y-auto">
+                {spendEntries.data?.slice(0, 12).map((entry) => (
+                  <div key={entry.id} className={`rounded-lg border p-3 ${entry.voidedAt ? "border-red-500/20 opacity-50" : "border-white/[0.06]"}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold">{entry.source} · {entry.campaign || entry.channel}</p>
+                        <p className="mt-1 text-[10px] text-white/35">
+                          {money(Number(entry.amount), entry.currency)} · {new Date(entry.occurredAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      {!entry.voidedAt && (
+                        <Button size="sm" variant="ghost" onClick={() => {
+                          const reason = window.prompt("Reason for voiding this spend record?");
+                          if (reason && reason.trim().length >= 5) voidSpend.mutate({ id: entry.id, reason: reason.trim() });
+                        }}>
+                          <Ban className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </div>
+                    {entry.voidReason && <p className="mt-2 text-[10px] text-red-300">Voided: {entry.voidReason}</p>}
+                  </div>
+                ))}
+                {!spendEntries.data?.length && <p className="text-xs text-white/25">No campaign spend recorded yet.</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+          <Card className="border-white/[0.07] bg-white/[0.018]">
+            <CardContent className="p-0">
+              <div className="border-b border-white/[0.07] p-5">
+                <h2 className="text-sm font-bold uppercase tracking-wider">Last-touch channel economics</h2>
+                <p className="mt-1 text-xs text-white/30">
+                  Conversion and closed revenue by the final attributable marketing touch before enquiry.
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-left text-xs">
+                  <thead className="border-b border-white/[0.07] text-white/35">
+                    <tr>
+                      <th className="px-5 py-3">Channel</th>
+                      <th className="px-3 py-3">Enquiries</th>
+                      <th className="px-3 py-3">Qualified</th>
+                      <th className="px-3 py-3">Proposal</th>
+                      <th className="px-3 py-3">Won</th>
+                      <th className="px-3 py-3">P→W</th>
+                      <th className="px-3 py-3">Won revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {intelligence.data?.byLastTouchChannel.map((row) => (
+                      <tr key={row.key} className="border-b border-white/[0.05] last:border-0">
+                        <td className="px-5 py-3 font-medium">{row.key.replace(/_/g, " ")}</td>
+                        <td className="px-3 py-3">{row.enquiries}</td>
+                        <td className="px-3 py-3">{row.qualified}</td>
+                        <td className="px-3 py-3">{row.proposals}</td>
+                        <td className="px-3 py-3 text-emerald-400">{row.won}</td>
+                        <td className="px-3 py-3">{pct(row.proposalWinRate)}</td>
+                        <td className="px-3 py-3">
+                          {row.economicsByCurrency.length
+                            ? row.economicsByCurrency.map((item) => (
+                                `${money(item.wonRevenue, item.currency)} · CAC ${item.cac === null ? "—" : money(item.cac, item.currency)} · ROAS ${item.roas === null ? "—" : item.roas + "x"}`
+                              )).join(" | ")
+                            : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                    {!intelligence.data?.byLastTouchChannel.length && (
+                      <tr><td colSpan={7} className="px-5 py-8 text-center text-white/25">No attributed conversions in this cohort.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="space-y-4">
+            <Card className="border-white/[0.07] bg-white/[0.018]">
+              <CardContent className="p-5">
+                <h2 className="text-sm font-bold uppercase tracking-wider">Funnel velocity</h2>
+                <dl className="mt-4 space-y-3 text-xs">
+                  <div className="flex justify-between gap-4"><dt className="text-white/35">Enquiry → qualified</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToQualified ?? "—"} days</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-white/35">Enquiry → proposal</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToProposal ?? "—"} days</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-white/35">Enquiry → won</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToWon ?? "—"} days</dd></div>
+                </dl>
+              </CardContent>
+            </Card>
+            <Card className="border-white/[0.07] bg-white/[0.018]">
+              <CardContent className="p-5">
+                <h2 className="text-sm font-bold uppercase tracking-wider">Attribution coverage</h2>
+                <p className="mt-3 text-3xl font-black">{pct(intelligence.data?.attributionCoverage.lastTouchRate ?? 0)}</p>
+                <p className="mt-1 text-xs text-white/35">leads with last-touch evidence</p>
+                <p className="mt-4 text-[10px] leading-5 text-white/30">
+                  CAC/payback remains disabled until campaign spend is ingested. No spend assumption is being fabricated.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-3">
+          {[
+            { title: "Last-touch sources", rows: intelligence.data?.byLastTouchSource ?? [] },
+            { title: "Campaigns", rows: intelligence.data?.byCampaign ?? [] },
+            { title: "Landing pages", rows: intelligence.data?.byLandingPage ?? [] },
+          ].map((group) => (
+            <Card key={group.title} className="border-white/[0.07] bg-white/[0.018]">
+              <CardContent className="p-5">
+                <h2 className="text-sm font-bold uppercase tracking-wider">{group.title}</h2>
+                <div className="mt-4 space-y-3">
+                  {group.rows.slice(0, 8).map((row) => (
+                    <div key={row.key} className="rounded-lg border border-white/[0.06] bg-black/10 p-3">
+                      <div className="flex justify-between gap-3">
+                        <p className="truncate text-xs font-medium">{row.key}</p>
+                        <Badge variant="outline">{row.enquiries}</Badge>
+                      </div>
+                      <p className="mt-2 text-[10px] text-white/35">
+                        {row.proposals} proposals · {row.won} won · P→W {pct(row.proposalWinRate)}
+                      </p>
+                    </div>
+                  ))}
+                  {!group.rows.length && <p className="text-xs text-white/25">No data in this cohort.</p>}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </section>
+
+        <section>
+          <Card className="border-white/[0.07] bg-white/[0.018]">
+            <CardContent className="p-0">
+              <div className="border-b border-white/[0.07] p-5">
+                <h2 className="text-sm font-bold uppercase tracking-wider">Channel × service economics</h2>
+                <p className="mt-1 text-xs text-white/30">The capital-allocation view: which channel produces which service outcome.</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[760px] text-left text-xs">
+                  <thead className="border-b border-white/[0.07] text-white/35">
+                    <tr><th className="px-5 py-3">Channel</th><th className="px-3 py-3">Service</th><th className="px-3 py-3">Enquiries</th><th className="px-3 py-3">Proposal</th><th className="px-3 py-3">Won</th><th className="px-3 py-3">Won revenue</th></tr>
+                  </thead>
+                  <tbody>
+                    {intelligence.data?.byChannelService.map((row) => (
+                      <tr key={row.key} className="border-b border-white/[0.05] last:border-0">
+                        <td className="px-5 py-3">{row.channel.replace(/_/g, " ")}</td>
+                        <td className="px-3 py-3">{row.service.replace(/-/g, " ")}</td>
+                        <td className="px-3 py-3">{row.enquiries}</td>
+                        <td className="px-3 py-3">{row.proposals}</td>
+                        <td className="px-3 py-3 text-emerald-400">{row.won}</td>
+                        <td className="px-3 py-3">{row.wonRevenueByCurrency.map((item) => money(item.revenue, item.currency)).join(" · ") || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+          <Card className="border-white/[0.07] bg-white/[0.018]">
+            <CardContent className="p-0">
+              <div className="border-b border-white/[0.07] p-5">
+                <h2 className="text-sm font-bold uppercase tracking-wider">Revenue by service</h2>
+                <p className="mt-1 text-xs text-white/30">Closed-won value stays currency-separated.</p>
+              </div>
+              <div className="divide-y divide-white/[0.06]">
+                {intelligence.data?.byService.map((row) => (
+                  <div key={row.key} className="grid gap-3 p-4 sm:grid-cols-[1.4fr_.7fr_.7fr] sm:items-center">
+                    <div>
+                      <p className="text-xs font-semibold">{row.key.replace(/-/g, " ")}</p>
+                      <p className="mt-1 text-[10px] text-white/30">
+                        {row.enquiries} enquiries · {row.proposals} proposals · {row.won} won
+                      </p>
+                    </div>
+                    <div className="text-xs">
+                      <span className="text-white/30">P→W </span>{pct(row.proposalWinRate)}
+                    </div>
+                    <div className="text-xs font-semibold text-emerald-400">
+                      {row.wonRevenueByCurrency.length
+                        ? row.wonRevenueByCurrency.map((item) => money(item.revenue, item.currency)).join(" · ")
+                        : "—"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-white/[0.07] bg-white/[0.018]">
+            <CardContent className="p-5">
+              <h2 className="text-sm font-bold uppercase tracking-wider">Loss reasons</h2>
+              <div className="mt-4 space-y-3">
+                {intelligence.data?.lossReasons.slice(0, 8).map((row) => (
+                  <div key={row.reason} className="rounded-lg border border-white/[0.06] bg-black/10 p-3">
+                    <div className="flex justify-between gap-3">
+                      <p className="text-xs font-medium">{row.reason}</p>
+                      <Badge variant="outline">{row.count}</Badge>
+                    </div>
+                    {row.valueByCurrency.length > 0 && (
+                      <p className="mt-2 text-[10px] text-white/35">
+                        {row.valueByCurrency.map((item) => money(item.value, item.currency)).join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                ))}
+                {!intelligence.data?.lossReasons.length && <p className="text-xs text-white/25">No recorded losses in this cohort.</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
 
         <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
           <Card className="border-white/[0.07] bg-white/[0.018]">

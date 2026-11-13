@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Send } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { getAcquisitionAttribution, type AcquisitionAttribution } from "@/lib/acquisition";
 
 const budgets = [
   "Below MWK 1,000,000",
@@ -49,6 +50,7 @@ interface ConsultationPayload {
   budgetRange: string;
   expectedTimeline: string;
   consent: true;
+  attribution?: AcquisitionAttribution;
 }
 
 const emptyForm = {
@@ -122,6 +124,7 @@ export function ConsultationForm({ initialService = "" }: ConsultationFormProps)
       budgetRange: form.budgetRange,
       expectedTimeline: form.expectedTimeline,
       consent: true,
+      attribution: getAcquisitionAttribution(),
     });
   };
 

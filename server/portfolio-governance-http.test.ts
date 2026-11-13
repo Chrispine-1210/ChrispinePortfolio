@@ -264,6 +264,7 @@ describe("public form and CRM compatibility", () => {
 
   it("captures a structured consultation as a qualified CRM intake without inventing qualification", async () => {
     const api = request(app);
+    const attributionNow = new Date().toISOString();
     await api.post("/api/consultation").send({
       name: "Commercial lead fixture",
       email: "buyer@test.invalid",
@@ -275,6 +276,28 @@ describe("public form and CRM compatibility", () => {
       budgetRange: "MWK 5,000,000 – 15,000,000",
       expectedTimeline: "3–6 months",
       consent: true,
+      attribution: {
+        firstTouch: {
+          source: "",
+          medium: "",
+          campaign: "",
+          term: "",
+          content: "",
+          referrer: "",
+          landingPage: "/",
+          capturedAt: attributionNow,
+        },
+        lastTouch: {
+          source: "linkedin",
+          medium: "social",
+          campaign: "enterprise-proof",
+          term: "",
+          content: "case-study-cta",
+          referrer: "https://www.linkedin.com/",
+          landingPage: "/hire?utm_source=linkedin&utm_medium=social&utm_campaign=enterprise-proof",
+          capturedAt: attributionNow,
+        },
+      },
     }).expect(201);
 
     const leads = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
@@ -291,6 +314,45 @@ describe("public form and CRM compatibility", () => {
       qualificationScore: 0,
       consentStatus: "granted",
     })]);
+    const { rows: touches } = await database.query(
+      "select touch_type, channel, source, medium, campaign from lead_attribution_touches where lead_id = $1 order by touch_type",
+      [leads.body[0].id],
+    );
+    expect(touches).toEqual([
+      expect.objectContaining({ touch_type: "first", channel: "direct", source: "direct" }),
+      expect.objectContaining({ touch_type: "last", channel: "social", source: "linkedin", medium: "social", campaign: "enterprise-proof" }),
+    ]);
+  });
+
+  it("rejects attribution timestamps outside the accepted acquisition lookback", async () => {
+    const api = request(app);
+    const tooOld = new Date(Date.now() - 181 * 24 * 60 * 60 * 1000).toISOString();
+    const invalid = await api.post("/api/consultation").send({
+      name: "Attribution boundary fixture",
+      email: "attribution-boundary@test.invalid",
+      organization: "Example Institution",
+      industry: "Education",
+      serviceInterest: "enterprise-software",
+      challenge: "We need acquisition attribution without allowing stale client timestamps to distort reporting.",
+      budgetRange: "MWK 1,000,000 – 5,000,000",
+      expectedTimeline: "1–3 months",
+      consent: true,
+      attribution: {
+        firstTouch: {
+          source: "linkedin",
+          medium: "social",
+          campaign: "stale-campaign",
+          term: "",
+          content: "",
+          referrer: "https://www.linkedin.com/",
+          landingPage: "/hire",
+          capturedAt: tooOld,
+        },
+      },
+    }).expect(400);
+    expect(invalid.body.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: ["attribution", "firstTouch", "capturedAt"] }),
+    ]));
   });
 
   it("rejects consultation values outside the controlled commercial taxonomy", async () => {
@@ -314,7 +376,14 @@ describe("public form and CRM compatibility", () => {
   it("measures service funnel history and enforces late-stage commercial economics", async () => {
     const api = request(app);
 
-    const createConsultation = (email: string, serviceInterest: string) =>
+    const createConsultation = (
+      email: string,
+      serviceInterest: string,
+      attribution?: {
+        firstTouch?: Record<string, string>;
+        lastTouch?: Record<string, string>;
+      },
+    ) =>
       api.post("/api/consultation").send({
         name: `Funnel fixture ${serviceInterest}`,
         email,
@@ -326,6 +395,7 @@ describe("public form and CRM compatibility", () => {
         budgetRange: "MWK 1,000,000 – 5,000,000",
         expectedTimeline: "1–3 months",
         consent: true,
+        attribution,
       }).expect(201);
 
     await createConsultation("funnel-lost@test.invalid", "managed-it");
@@ -351,7 +421,29 @@ describe("public form and CRM compatibility", () => {
       .send({ stage: "lost", lostReason: "Budget deferred", probability: 90 }).expect(200);
     expect(relost.body).toMatchObject({ stage: "lost", probability: 0, lostReason: "Budget deferred" });
 
-    await createConsultation("funnel-won@test.invalid", "network-infrastructure");
+    const funnelAttributionNow = new Date().toISOString();
+    await createConsultation("funnel-won@test.invalid", "network-infrastructure", {
+      firstTouch: {
+        source: "google",
+        medium: "organic",
+        campaign: "",
+        term: "network support malawi",
+        content: "",
+        referrer: "https://www.google.com/",
+        landingPage: "/software-consulting-malawi",
+        capturedAt: funnelAttributionNow,
+      },
+      lastTouch: {
+        source: "linkedin",
+        medium: "social",
+        campaign: "managed-infrastructure",
+        term: "",
+        content: "network-case-study",
+        referrer: "https://www.linkedin.com/",
+        landingPage: "/hire?utm_source=linkedin&utm_medium=social&utm_campaign=managed-infrastructure",
+        capturedAt: funnelAttributionNow,
+      },
+    });
     const wonLeadSearch = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
       .query({ search: "funnel-won@test.invalid" }).expect(200);
     const wonLeadPath = `/api/admin/leads/${wonLeadSearch.body[0].id}`;
@@ -397,6 +489,138 @@ describe("public form and CRM compatibility", () => {
         lostValue: 2500000,
       }),
     ]));
+
+    await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "managed-infrastructure",
+        currency: "MWK",
+        amount: "0",
+        occurredAt: new Date().toISOString(),
+      })
+      .expect(400);
+
+    await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", viewer.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "managed-infrastructure",
+        currency: "MWK",
+        amount: 500000,
+        occurredAt: new Date().toISOString(),
+      })
+      .expect(403);
+
+    const spend = await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "managed-infrastructure",
+        currency: "MWK",
+        amount: 500000,
+        occurredAt: new Date().toISOString(),
+        notes: "LinkedIn campaign spend fixture",
+      })
+      .expect(201);
+    const voidedSpend = await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "managed-infrastructure",
+        currency: "MWK",
+        amount: 100000,
+        occurredAt: new Date().toISOString(),
+        notes: "Incorrect duplicate spend fixture",
+      })
+      .expect(201);
+    await api.post(`/api/admin/acquisition/spend/${voidedSpend.body.id}/void`)
+      .set("Cookie", administrator.cookie)
+      .send({ reason: "Duplicate spend record entered during verification" })
+      .expect(200);
+    expect(spend.body).toMatchObject({
+      channel: "social",
+      source: "linkedin",
+      campaign: "managed-infrastructure",
+      currency: "MWK",
+      amount: "500000.00",
+    });
+
+    const intelligence = await api.get("/api/admin/acquisition/intelligence")
+      .set("Cookie", administrator.cookie)
+      .query({ window: "all" })
+      .expect(200);
+    expect(intelligence.body.byLastTouchChannel).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "social",
+        enquiries: 2,
+        won: 1,
+        wonRevenueByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", revenue: 3500000, averageWonValue: 3500000 }),
+        ]),
+        economicsByCurrency: expect.arrayContaining([
+          expect.objectContaining({
+            currency: "MWK",
+            spend: 500000,
+            wonRevenue: 3500000,
+            wins: 1,
+            cac: 500000,
+            roas: 7,
+          }),
+        ]),
+      }),
+      expect.objectContaining({
+        key: "unattributed",
+        proposals: 1,
+        lost: 1,
+      }),
+    ]));
+    expect(intelligence.body.byLastTouchSource).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "linkedin",
+        enquiries: 2,
+        won: 1,
+        economicsByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", spend: 500000, roas: 7 }),
+        ]),
+      }),
+    ]));
+    expect(intelligence.body.byCampaign).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "managed-infrastructure",
+        won: 1,
+        economicsByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", cac: 500000, roas: 7 }),
+        ]),
+      }),
+    ]));
+    expect(intelligence.body.byChannelService).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        channel: "social",
+        service: "network-infrastructure",
+        won: 1,
+        wonRevenueByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", revenue: 3500000 }),
+        ]),
+      }),
+    ]));
+    expect(intelligence.body.spendEconomics).toMatchObject({
+      status: "available",
+      spendByCurrency: expect.arrayContaining([
+        expect.objectContaining({ currency: "MWK", spend: 500000 }),
+      ]),
+      paybackDays: null,
+    });
+    expect(intelligence.body.velocityDays.samples).toMatchObject({
+      qualified: expect.any(Number),
+      proposal: expect.any(Number),
+      won: expect.any(Number),
+    });
+
   });
 
   it("preserves newsletter subscription validation and duplicate detection", async () => {

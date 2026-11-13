@@ -14,11 +14,13 @@ import { Router } from "express";
 import { z } from "zod";
 import {
   blogPosts,
+  acquisitionSpendEntries,
   auditEvents,
   contentVersions,
   contactRequests,
   emailOutbox,
   leadActivities,
+  leadAttributionTouches,
   leads,
   newsletterSubscribers,
   notificationCampaigns,
@@ -87,6 +89,26 @@ function can(request: Express.Request, permission: string) {
     request.securityPrincipal.permissions.includes(permission)
   );
 }
+
+const acquisitionSpendInputSchema = z.object({
+  channel: z.enum(["email", "paid", "social", "organic_search", "referral", "direct", "other"]),
+  source: z.string().trim().min(1).max(160).transform((value) => value.toLowerCase()),
+  campaign: z.string().trim().max(180).nullable().optional(),
+  currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
+  amount: z.union([
+    z.number().positive(),
+    z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number).refine((value) => value > 0, {
+      message: "Spend amount must be greater than zero",
+    }),
+  ]),
+  occurredAt: z.string().datetime().superRefine((value, context) => {
+    const occurred = new Date(value).getTime();
+    if (!Number.isFinite(occurred) || occurred > Date.now() + 10 * 60 * 1000) {
+      context.addIssue({ code: "custom", message: "Spend timestamp cannot be in the future" });
+    }
+  }),
+  notes: z.string().trim().max(2000).nullable().optional(),
+}).strict();
 
 const updateLeadSchema = z
   .object({
@@ -695,6 +717,113 @@ export function createAdminRouter(): Router {
   );
 
   router.get(
+    "/api/admin/acquisition/spend",
+    requireAdminPermission("pipeline.financial.read"),
+    async (request, response) => {
+      const rows = await db
+        .select()
+        .from(acquisitionSpendEntries)
+        .orderBy(desc(acquisitionSpendEntries.occurredAt))
+        .limit(1000);
+      response.setHeader("Cache-Control", "no-store");
+      response.json(rows);
+    },
+  );
+
+  router.post(
+    "/api/admin/acquisition/spend",
+    requireAdminPermission("acquisition.spend.manage"),
+    async (request, response) => {
+      const parsed = acquisitionSpendInputSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return response.status(400).json({
+          message: "Invalid acquisition spend data",
+          errors: parsed.error.issues,
+        });
+      }
+      const input = parsed.data;
+      const [record] = await db.transaction(async (transaction) => {
+        const [created] = await transaction
+          .insert(acquisitionSpendEntries)
+          .values({
+            channel: input.channel,
+            source: input.source,
+            campaign: input.campaign || null,
+            currency: input.currency,
+            amount: String(input.amount),
+            occurredAt: new Date(input.occurredAt),
+            notes: input.notes || null,
+            createdBy: request.securityPrincipal?.userId ?? null,
+          })
+          .returning();
+        await transaction.insert(auditEvents).values({
+          actorUserId: request.securityPrincipal?.userId ?? null,
+          actorSessionId: request.securityPrincipal?.sessionId ?? null,
+          action: "acquisition.spend.create",
+          resourceType: "acquisition_spend",
+          resourceId: created.id,
+          result: "success",
+          requestId: request.requestId,
+          newState: created,
+        });
+        return [created];
+      });
+      response.status(201).json(record);
+    },
+  );
+
+  router.post(
+    "/api/admin/acquisition/spend/:id/void",
+    requireAdminPermission("acquisition.spend.manage"),
+    async (request, response) => {
+      const parsed = z.object({
+        reason: z.string().trim().min(5).max(1000),
+      }).strict().safeParse(request.body);
+      if (!parsed.success) {
+        return response.status(400).json({
+          message: "Invalid spend void request",
+          errors: parsed.error.issues,
+        });
+      }
+      const input = parsed.data;
+      const result = await db.transaction(async (transaction) => {
+        const [previous] = await transaction
+          .select()
+          .from(acquisitionSpendEntries)
+          .where(eq(acquisitionSpendEntries.id, request.params.id))
+          .limit(1);
+        if (!previous) return { outcome: "missing" as const };
+        if (previous.voidedAt) return { outcome: "already_voided" as const, record: previous };
+        const [record] = await transaction
+          .update(acquisitionSpendEntries)
+          .set({
+            voidedAt: new Date(),
+            voidedBy: request.securityPrincipal?.userId ?? null,
+            voidReason: input.reason,
+          })
+          .where(eq(acquisitionSpendEntries.id, previous.id))
+          .returning();
+        await transaction.insert(auditEvents).values({
+          actorUserId: request.securityPrincipal?.userId ?? null,
+          actorSessionId: request.securityPrincipal?.sessionId ?? null,
+          action: "acquisition.spend.void",
+          resourceType: "acquisition_spend",
+          resourceId: previous.id,
+          result: "success",
+          requestId: request.requestId,
+          previousState: previous,
+          newState: record,
+          justification: input.reason,
+        });
+        return { outcome: "ok" as const, record };
+      });
+      if (result.outcome === "missing") return response.status(404).json({ message: "Spend entry not found" });
+      if (result.outcome === "already_voided") return response.status(409).json({ message: "Spend entry is already voided" });
+      response.json(result.record);
+    },
+  );
+
+  router.get(
     "/api/admin/pipeline/funnel",
     requireAdminPermission("leads.read"),
     async (request, response) => {
@@ -878,6 +1007,373 @@ export function createAdminRouter(): Router {
         financialByCurrency: canViewFinancial
           ? [...financial.values()].sort((a, b) => a.currency.localeCompare(b.currency))
           : [],
+      });
+    },
+  );
+
+  router.get(
+    "/api/admin/acquisition/intelligence",
+    requireAdminPermission("leads.read"),
+    async (request, response) => {
+      const requestedWindow =
+        typeof request.query.window === "string" ? request.query.window : "90d";
+      const windowValue = ["30d", "90d", "365d", "all"].includes(requestedWindow)
+        ? requestedWindow
+        : "90d";
+      const windowDays =
+        windowValue === "all" ? null : windowValue === "30d" ? 30 : windowValue === "365d" ? 365 : 90;
+      const since = windowDays
+        ? new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000)
+        : null;
+
+      const [leadRows, spendRows] = await Promise.all([
+        db
+          .select({
+            id: leads.id,
+            serviceInterest: leads.serviceInterest,
+            stage: leads.stage,
+            currency: leads.currency,
+            estimatedValue: leads.estimatedValue,
+            lostReason: leads.lostReason,
+            createdAt: leads.createdAt,
+          })
+          .from(leads)
+          .where(and(isNull(leads.archivedAt), ...(since ? [gt(leads.createdAt, since)] : [])))
+          .orderBy(desc(leads.createdAt))
+          .limit(5000),
+        db
+          .select()
+          .from(acquisitionSpendEntries)
+          .where(and(
+            isNull(acquisitionSpendEntries.voidedAt),
+            ...(since ? [gt(acquisitionSpendEntries.occurredAt, since)] : []),
+          ))
+          .orderBy(desc(acquisitionSpendEntries.occurredAt))
+          .limit(5000),
+      ]);
+
+      const leadIds = leadRows.map((lead) => lead.id);
+      const [touches, stageEvents] = leadIds.length
+        ? await Promise.all([
+            db
+              .select()
+              .from(leadAttributionTouches)
+              .where(inArray(leadAttributionTouches.leadId, leadIds))
+              .orderBy(leadAttributionTouches.capturedAt),
+            db
+              .select({
+                leadId: leadActivities.leadId,
+                metadata: leadActivities.metadata,
+                createdAt: leadActivities.createdAt,
+              })
+              .from(leadActivities)
+              .where(
+                and(
+                  inArray(leadActivities.leadId, leadIds),
+                  eq(leadActivities.type, "stage_changed"),
+                ),
+              )
+              .orderBy(leadActivities.createdAt),
+          ])
+        : [[], []];
+
+      const firstTouch = new Map<string, (typeof touches)[number]>();
+      const lastTouch = new Map<string, (typeof touches)[number]>();
+      for (const touch of touches) {
+        if (touch.touchType === "first") firstTouch.set(touch.leadId, touch);
+        if (touch.touchType === "last") lastTouch.set(touch.leadId, touch);
+      }
+
+      type Milestones = { qualified?: Date; proposal?: Date; won?: Date };
+      const milestones = new Map<string, Milestones>();
+      const stageRank = (stage: string) =>
+        ["new", "reviewing", "qualified", "discovery", "proposal", "negotiation", "won"].indexOf(stage);
+      const reachedCurrentStage = (leadStage: string, milestone: "qualified" | "proposal") => {
+        if (leadStage === "lost") return false;
+        return stageRank(leadStage) >= stageRank(milestone);
+      };
+
+      for (const event of stageEvents) {
+        const metadata =
+          event.metadata && typeof event.metadata === "object"
+            ? (event.metadata as Record<string, unknown>)
+            : {};
+        const stage = typeof metadata.stage === "string" ? metadata.stage : "";
+        const current = milestones.get(event.leadId) ?? {};
+        if (!current.qualified && ["qualified", "discovery", "proposal", "negotiation", "won"].includes(stage))
+          current.qualified = event.createdAt;
+        if (!current.proposal && ["proposal", "negotiation", "won"].includes(stage))
+          current.proposal = event.createdAt;
+        if (!current.won && stage === "won") current.won = event.createdAt;
+        milestones.set(event.leadId, current);
+      }
+
+      type AttributionRow = {
+        key: string;
+        enquiries: number;
+        qualified: number;
+        proposals: number;
+        won: number;
+        lost: number;
+        wonValues: Map<string, { total: number; count: number }>;
+      };
+      const makeRow = (key: string): AttributionRow => ({
+        key,
+        enquiries: 0,
+        qualified: 0,
+        proposals: 0,
+        won: 0,
+        lost: 0,
+        wonValues: new Map(),
+      });
+      const firstChannelRows = new Map<string, AttributionRow>();
+      const channelRows = new Map<string, AttributionRow>();
+      const sourceRows = new Map<string, AttributionRow>();
+      const campaignRows = new Map<string, AttributionRow>();
+      const landingRows = new Map<string, AttributionRow>();
+      const serviceRows = new Map<string, AttributionRow>();
+      const channelServiceRows = new Map<string, AttributionRow>();
+      const lossRows = new Map<string, { reason: string; count: number; values: Map<string, number> }>();
+      const velocity = { qualified: [] as number[], proposal: [] as number[], won: [] as number[] };
+      const spendByChannel = new Map<string, Map<string, number>>();
+      const spendBySource = new Map<string, Map<string, number>>();
+      const spendByCampaign = new Map<string, Map<string, number>>();
+      const totalSpendByCurrency = new Map<string, number>();
+
+      const addSpend = (
+        target: Map<string, Map<string, number>>,
+        key: string,
+        currency: string,
+        amount: number,
+      ) => {
+        const currencyTotals = target.get(key) ?? new Map<string, number>();
+        currencyTotals.set(currency, (currencyTotals.get(currency) ?? 0) + amount);
+        target.set(key, currencyTotals);
+      };
+
+      for (const spend of spendRows) {
+        const amount = Number(spend.amount);
+        if (!Number.isFinite(amount) || amount <= 0) continue;
+        addSpend(spendByChannel, spend.channel, spend.currency, amount);
+        addSpend(spendBySource, spend.source, spend.currency, amount);
+        addSpend(spendByCampaign, spend.campaign || "unattributed", spend.currency, amount);
+        totalSpendByCurrency.set(
+          spend.currency,
+          (totalSpendByCurrency.get(spend.currency) ?? 0) + amount,
+        );
+      }
+
+      const addLead = (row: AttributionRow, lead: (typeof leadRows)[number]) => {
+        const history = milestones.get(lead.id);
+        row.enquiries += 1;
+        if (history?.qualified || reachedCurrentStage(lead.stage, "qualified")) row.qualified += 1;
+        if (history?.proposal || reachedCurrentStage(lead.stage, "proposal")) row.proposals += 1;
+        if (lead.stage === "won") row.won += 1;
+        if (lead.stage === "lost") row.lost += 1;
+        if (lead.stage === "won" && lead.estimatedValue) {
+          const currency = lead.currency || "USD";
+          const value = Number(lead.estimatedValue);
+          if (Number.isFinite(value) && value > 0) {
+            const current = row.wonValues.get(currency) ?? { total: 0, count: 0 };
+            current.total += value;
+            current.count += 1;
+            row.wonValues.set(currency, current);
+          }
+        }
+      };
+
+      for (const lead of leadRows) {
+        const first = firstTouch.get(lead.id);
+        const last = lastTouch.get(lead.id);
+        const firstChannel = first?.channel ?? "unattributed";
+        const channel = last?.channel ?? "unattributed";
+        const source = last?.source ?? "unattributed";
+        const campaign = last?.campaign ?? "unattributed";
+        const landingPage = last?.landingPage ?? "unattributed";
+        const service = lead.serviceInterest || "unclassified";
+
+        const firstChannelRow = firstChannelRows.get(firstChannel) ?? makeRow(firstChannel);
+        addLead(firstChannelRow, lead);
+        firstChannelRows.set(firstChannel, firstChannelRow);
+
+        const channelRow = channelRows.get(channel) ?? makeRow(channel);
+        addLead(channelRow, lead);
+        channelRows.set(channel, channelRow);
+
+        const sourceRow = sourceRows.get(source) ?? makeRow(source);
+        addLead(sourceRow, lead);
+        sourceRows.set(source, sourceRow);
+
+        const campaignRow = campaignRows.get(campaign) ?? makeRow(campaign);
+        addLead(campaignRow, lead);
+        campaignRows.set(campaign, campaignRow);
+
+        const landingRow = landingRows.get(landingPage) ?? makeRow(landingPage);
+        addLead(landingRow, lead);
+        landingRows.set(landingPage, landingRow);
+
+        const serviceRow = serviceRows.get(service) ?? makeRow(service);
+        addLead(serviceRow, lead);
+        serviceRows.set(service, serviceRow);
+
+        const channelServiceKey = `${channel}::${service}`;
+        const channelServiceRow =
+          channelServiceRows.get(channelServiceKey) ?? makeRow(channelServiceKey);
+        addLead(channelServiceRow, lead);
+        channelServiceRows.set(channelServiceKey, channelServiceRow);
+
+        const times = milestones.get(lead.id);
+        const created = lead.createdAt.getTime();
+        if (times?.qualified) velocity.qualified.push((times.qualified.getTime() - created) / 86_400_000);
+        if (times?.proposal) velocity.proposal.push((times.proposal.getTime() - created) / 86_400_000);
+        if (times?.won) velocity.won.push((times.won.getTime() - created) / 86_400_000);
+
+        if (lead.stage === "lost") {
+          const reason = lead.lostReason?.trim() || "Unspecified";
+          const row = lossRows.get(reason) ?? { reason, count: 0, values: new Map<string, number>() };
+          row.count += 1;
+          if (lead.estimatedValue) {
+            const value = Number(lead.estimatedValue);
+            if (Number.isFinite(value) && value > 0) {
+              row.values.set(lead.currency, (row.values.get(lead.currency) ?? 0) + value);
+            }
+          }
+          lossRows.set(reason, row);
+        }
+      }
+
+      const round = (value: number) => Math.round(value * 10) / 10;
+      const average = (values: number[]) =>
+        values.length ? round(values.reduce((sum, value) => sum + value, 0) / values.length) : null;
+      const serializeRow = (
+        row: AttributionRow,
+        spend?: Map<string, number>,
+      ) => {
+        const currencies = new Set<string>([
+          ...row.wonValues.keys(),
+          ...(spend ? spend.keys() : []),
+        ]);
+        return {
+          key: row.key,
+          enquiries: row.enquiries,
+          qualified: row.qualified,
+          proposals: row.proposals,
+          won: row.won,
+          lost: row.lost,
+          qualificationRate: row.enquiries ? round((row.qualified / row.enquiries) * 100) : 0,
+          proposalRate: row.qualified ? round((row.proposals / row.qualified) * 100) : 0,
+          proposalWinRate: row.proposals ? round((row.won / row.proposals) * 100) : 0,
+          wonRevenueByCurrency: [...row.wonValues.entries()].map(([currency, value]) => ({
+            currency,
+            revenue: value.total,
+            averageWonValue: value.count ? Math.round(value.total / value.count) : 0,
+          })),
+          economicsByCurrency: [...currencies].map((currency) => {
+            const won = row.wonValues.get(currency) ?? { total: 0, count: 0 };
+            const spendValue = spend?.get(currency) ?? 0;
+            return {
+              currency,
+              spend: spendValue,
+              wonRevenue: won.total,
+              wins: won.count,
+              cac: spendValue > 0 && won.count > 0 ? Math.round(spendValue / won.count) : null,
+              roas: spendValue > 0 ? round(won.total / spendValue) : null,
+            };
+          }),
+        };
+      };
+
+      const canViewFinancial =
+        !request.securityPrincipal ||
+        request.securityPrincipal.permissions.includes("pipeline.financial.read");
+
+      response.setHeader("Cache-Control", "no-store");
+      response.json({
+        window: windowValue,
+        cohortStart: since?.toISOString() ?? null,
+        attributionCoverage: {
+          leads: leadRows.length,
+          firstTouchCaptured: firstTouch.size,
+          lastTouchCaptured: lastTouch.size,
+          firstTouchRate: leadRows.length ? round((firstTouch.size / leadRows.length) * 100) : 0,
+          lastTouchRate: leadRows.length ? round((lastTouch.size / leadRows.length) * 100) : 0,
+        },
+        byFirstTouchChannel: [...firstChannelRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row, spendByChannel.get(row.key));
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byLastTouchChannel: [...channelRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row, spendByChannel.get(row.key));
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byLastTouchSource: [...sourceRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row, spendBySource.get(row.key));
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byCampaign: [...campaignRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row, spendByCampaign.get(row.key));
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byLandingPage: [...landingRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row);
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byChannelService: [...channelServiceRows.values()]
+          .map((row) => {
+            const [channel, service] = row.key.split("::");
+            const serialized = serializeRow(row);
+            return {
+              ...(canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] }),
+              channel,
+              service,
+            };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byService: [...serviceRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row);
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        velocityDays: {
+          enquiryToQualified: average(velocity.qualified),
+          enquiryToProposal: average(velocity.proposal),
+          enquiryToWon: average(velocity.won),
+          samples: {
+            qualified: velocity.qualified.length,
+            proposal: velocity.proposal.length,
+            won: velocity.won.length,
+          },
+        },
+        lossReasons: [...lossRows.values()]
+          .map((row) => ({
+            reason: row.reason,
+            count: row.count,
+            valueByCurrency: canViewFinancial
+              ? [...row.values.entries()].map(([currency, value]) => ({ currency, value }))
+              : [],
+          }))
+          .sort((a, b) => b.count - a.count || a.reason.localeCompare(b.reason)),
+        spendEconomics: {
+          status: spendRows.length ? "available" : "not_configured",
+          spendByCurrency: canViewFinancial
+            ? [...totalSpendByCurrency.entries()].map(([currency, spend]) => ({ currency, spend }))
+            : [],
+          paybackDays: null,
+          note: spendRows.length
+            ? "CAC and ROAS are available by channel/source/campaign where matching-currency spend exists. Payback remains unavailable until recurring gross-margin data is ingested."
+            : "Campaign spend is not yet ingested; CAC, ROAS, and payback are intentionally unavailable.",
+        },
       });
     },
   );

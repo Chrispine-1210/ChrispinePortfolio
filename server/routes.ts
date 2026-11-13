@@ -311,6 +311,28 @@ router.post(
   },
 );
 
+const acquisitionTouchSchema = z.object({
+  source: z.string().trim().max(160),
+  medium: z.string().trim().max(120),
+  campaign: z.string().trim().max(180),
+  term: z.string().trim().max(240),
+  content: z.string().trim().max(240),
+  referrer: z.string().trim().max(2048),
+  landingPage: z.string().trim().min(1).max(2048),
+  capturedAt: z.string().datetime().superRefine((value, context) => {
+    const captured = new Date(value).getTime();
+    const now = Date.now();
+    const oldest = now - 180 * 24 * 60 * 60 * 1000;
+    const newest = now + 10 * 60 * 1000;
+    if (!Number.isFinite(captured) || captured < oldest || captured > newest) {
+      context.addIssue({
+        code: "custom",
+        message: "Attribution timestamp is outside the accepted 180-day lookback window",
+      });
+    }
+  }),
+}).strict();
+
 const consultationInputSchema = z.object({
   name: z.string().trim().min(2).max(180),
   email: z.string().trim().email().max(320),
@@ -354,6 +376,10 @@ const consultationInputSchema = z.object({
     "",
   ]).optional(),
   consent: z.literal(true),
+  attribution: z.object({
+    firstTouch: acquisitionTouchSchema.optional(),
+    lastTouch: acquisitionTouchSchema.optional(),
+  }).strict().optional(),
 }).strict();
 
 // Contact routes

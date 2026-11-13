@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ErrorBoundary } from "@/lib/errorBoundary";
+import { captureAcquisitionTouch } from "@/lib/acquisition";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
@@ -65,6 +66,10 @@ function AdminProtectedRoute({ component: Component }: { component: React.Compon
 function Router() {
   const [location] = useLocation();
   const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/analytics" || location === "/newsletter-manage" || location === "/external-posts";
+
+  useEffect(() => {
+    if (!adminSurface) captureAcquisitionTouch();
+  }, [location, adminSurface]);
 
   return (
     <div className="flex flex-col min-h-screen">
