@@ -582,7 +582,7 @@ export function createRevenueIntelligenceRouter() {
       )).orderBy(desc(leads.createdAt)).limit(5000);
 
       const leadIds = leadRows.map((lead) => lead.id);
-      const [touchRows, stageRows, revenueRows, costRows, agreementRows, spendRows] = await Promise.all([
+      const [touchRows, stageRows, revenueRows, costRows, attestationRows, agreementRows, spendRows] = await Promise.all([
         leadIds.length
           ? db.select().from(leadAttributionTouches)
             .where(inArray(leadAttributionTouches.leadId, leadIds))
@@ -609,6 +609,12 @@ export function createRevenueIntelligenceRouter() {
               inArray(directCostEntries.leadId, leadIds),
               isNull(directCostEntries.voidedAt),
             )).orderBy(directCostEntries.occurredAt)
+          : Promise.resolve([]),
+        leadIds.length
+          ? db.select().from(costEvidenceAttestations).where(and(
+              inArray(costEvidenceAttestations.leadId, leadIds),
+              isNull(costEvidenceAttestations.voidedAt),
+            )).orderBy(costEvidenceAttestations.throughAt)
           : Promise.resolve([]),
         leadIds.length
           ? db.select().from(recurringRevenueAgreements).where(and(
@@ -648,8 +654,10 @@ export function createRevenueIntelligenceRouter() {
       const revenueByLeadCurrency = new Map<string, Map<string, number>>();
       const recurringRevenueByLeadCurrency = new Map<string, Map<string, number>>();
       const costByLeadCurrency = new Map<string, Map<string, number>>();
+      const recurringCostByLeadCurrency = new Map<string, Map<string, number>>();
+      const latestRevenueAt = new Map<string, Map<string, Date>>();
+      const latestCostAttestation = new Map<string, Map<string, Date>>();
       const leadsWithRevenue = new Set<string>();
-      const leadsWithCostEvidence = new Set<string>();
       const activeMrrByLeadCurrency = new Map<string, Map<string, number>>();
 
       const addCurrency = (
@@ -663,6 +671,28 @@ export function createRevenueIntelligenceRouter() {
         target.set(leadId, values);
       };
 
+      const setLatestDate = (
+        target: Map<string, Map<string, Date>>,
+        leadId: string,
+        currency: string,
+        value: Date,
+      ) => {
+        const values = target.get(leadId) ?? new Map<string, Date>();
+        const previous = values.get(currency);
+        if (!previous || value.getTime() > previous.getTime()) values.set(currency, value);
+        target.set(leadId, values);
+      };
+
+      const costEvidenceComplete = (leadId: string, currency: string) => {
+        const latestRevenue = latestRevenueAt.get(leadId)?.get(currency);
+        const attestedThrough = latestCostAttestation.get(leadId)?.get(currency);
+        return Boolean(
+          latestRevenue &&
+          attestedThrough &&
+          attestedThrough.getTime() >= latestRevenue.getTime()
+        );
+      };
+
       for (const event of revenueRows) {
         const amount = Number(event.amount);
         if (!Number.isFinite(amount) || amount <= 0) continue;
@@ -670,13 +700,24 @@ export function createRevenueIntelligenceRouter() {
         if (event.revenueKind === "recurring") {
           addCurrency(recurringRevenueByLeadCurrency, event.leadId, event.currency, amount);
         }
+        setLatestDate(latestRevenueAt, event.leadId, event.currency, event.occurredAt);
         leadsWithRevenue.add(event.leadId);
       }
       for (const cost of costRows) {
         const amount = Number(cost.amount);
         if (!Number.isFinite(amount) || amount < 0) continue;
         addCurrency(costByLeadCurrency, cost.leadId, cost.currency, amount);
-        leadsWithCostEvidence.add(cost.leadId);
+        if (cost.costScope === "recurring") {
+          addCurrency(recurringCostByLeadCurrency, cost.leadId, cost.currency, amount);
+        }
+      }
+      for (const attestation of attestationRows) {
+        setLatestDate(
+          latestCostAttestation,
+          attestation.leadId,
+          attestation.currency,
+          attestation.throughAt,
+        );
       }
       for (const agreement of agreementRows) {
         if (agreement.status !== "active") continue;
