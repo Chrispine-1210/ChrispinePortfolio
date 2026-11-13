@@ -122,6 +122,13 @@ describe("portfolio governance HTTP routes", () => {
 
     const detail = await api.get(publicPath).expect("Cache-Control", "no-store").expect(200);
     expect(detail.body).toMatchObject({ slug: studyInput.slug, outcome: "Approved delivery scope" });
+    expect(detail.body.evidence).toEqual([
+      expect.objectContaining({
+        claim: "Engineering delivery was independently reviewed",
+        sourceType: "internal_record",
+        verificationStatus: "internally_verified",
+      }),
+    ]);
     expect(detail.body).not.toHaveProperty("projectId");
     expect(detail.body).not.toHaveProperty("evidenceGateStatus");
     expect(detail.text).not.toMatch(/Internal-only project scope|Confidential evidence reference|42000/);
@@ -253,6 +260,37 @@ describe("public form and CRM compatibility", () => {
     const qualified = await api.patch(leadPath).set("Cookie", administrator.cookie)
       .send({ stage: "qualified", qualificationScore: 70 }).expect(200);
     expect(qualified.body).toMatchObject({ stage: "qualified", qualificationScore: 70 });
+  });
+
+  it("captures a structured consultation as a qualified CRM intake without inventing qualification", async () => {
+    const api = request(app);
+    await api.post("/api/consultation").send({
+      name: "Commercial lead fixture",
+      email: "buyer@test.invalid",
+      organization: "Example Institution",
+      industry: "Education",
+      serviceInterest: "enterprise-software",
+      challenge: "We need one governed system to replace disconnected operational spreadsheets.",
+      currentTech: "Spreadsheets and email approvals",
+      budgetRange: "MWK 5,000,000 – 15,000,000",
+      expectedTimeline: "3–6 months",
+      consent: true,
+    }).expect(201);
+
+    const leads = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
+      .query({ search: "buyer@test.invalid" }).expect(200);
+    expect(leads.body).toEqual([expect.objectContaining({
+      organization: "Example Institution",
+      industry: "Education",
+      leadType: "consultation_request",
+      serviceInterest: "enterprise-software",
+      budgetRange: "MWK 5,000,000 – 15,000,000",
+      expectedTimeline: "3–6 months",
+      source: "portfolio_consultation",
+      stage: "new",
+      qualificationScore: 0,
+      consentStatus: "granted",
+    })]);
   });
 
   it("preserves newsletter subscription validation and duplicate detection", async () => {
