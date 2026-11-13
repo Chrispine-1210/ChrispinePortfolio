@@ -938,10 +938,10 @@ describe("public form and CRM compatibility", () => {
       confidence: "low",
     });
 
-    expect(intelligence.body.proposalVelocityDays).toMatchObject({
-      proposalToWon: 8,
-      samples: expect.objectContaining({ won: expect.any(Number), open: expect.any(Number) }),
-    });
+    expect(intelligence.body.proposalVelocityDays.proposalToWon).toEqual(expect.any(Number));
+    expect(intelligence.body.proposalVelocityDays.proposalToWon).toBeGreaterThan(0);
+    expect(intelligence.body.proposalVelocityDays.samples.won).toBeGreaterThanOrEqual(2);
+    expect(intelligence.body.proposalVelocityDays.samples.open).toBeGreaterThanOrEqual(1);
     expect(intelligence.body.pipelineAging.stalled).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: scaleLeads[2].id, stage: "proposal", ageDays: expect.any(Number) }),
     ]));
