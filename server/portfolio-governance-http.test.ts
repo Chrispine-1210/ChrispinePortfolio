@@ -275,6 +275,28 @@ describe("public form and CRM compatibility", () => {
       budgetRange: "MWK 5,000,000 – 15,000,000",
       expectedTimeline: "3–6 months",
       consent: true,
+      attribution: {
+        firstTouch: {
+          source: "",
+          medium: "",
+          campaign: "",
+          term: "",
+          content: "",
+          referrer: "",
+          landingPage: "/",
+          capturedAt: "2026-11-13T09:00:00.000Z",
+        },
+        lastTouch: {
+          source: "linkedin",
+          medium: "social",
+          campaign: "enterprise-proof",
+          term: "",
+          content: "case-study-cta",
+          referrer: "https://www.linkedin.com/",
+          landingPage: "/hire?utm_source=linkedin&utm_medium=social&utm_campaign=enterprise-proof",
+          capturedAt: "2026-11-13T09:05:00.000Z",
+        },
+      },
     }).expect(201);
 
     const leads = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
@@ -291,6 +313,14 @@ describe("public form and CRM compatibility", () => {
       qualificationScore: 0,
       consentStatus: "granted",
     })]);
+    const { rows: touches } = await database.query(
+      "select touch_type, channel, source, medium, campaign from lead_attribution_touches where lead_id = $1 order by touch_type",
+      [leads.body[0].id],
+    );
+    expect(touches).toEqual([
+      expect.objectContaining({ touch_type: "first", channel: "direct", source: "direct" }),
+      expect.objectContaining({ touch_type: "last", channel: "social", source: "linkedin", medium: "social", campaign: "enterprise-proof" }),
+    ]);
   });
 
   it("rejects consultation values outside the controlled commercial taxonomy", async () => {
@@ -314,7 +344,14 @@ describe("public form and CRM compatibility", () => {
   it("measures service funnel history and enforces late-stage commercial economics", async () => {
     const api = request(app);
 
-    const createConsultation = (email: string, serviceInterest: string) =>
+    const createConsultation = (
+      email: string,
+      serviceInterest: string,
+      attribution?: {
+        firstTouch?: Record<string, string>;
+        lastTouch?: Record<string, string>;
+      },
+    ) =>
       api.post("/api/consultation").send({
         name: `Funnel fixture ${serviceInterest}`,
         email,
@@ -326,6 +363,7 @@ describe("public form and CRM compatibility", () => {
         budgetRange: "MWK 1,000,000 – 5,000,000",
         expectedTimeline: "1–3 months",
         consent: true,
+        attribution,
       }).expect(201);
 
     await createConsultation("funnel-lost@test.invalid", "managed-it");
@@ -351,7 +389,28 @@ describe("public form and CRM compatibility", () => {
       .send({ stage: "lost", lostReason: "Budget deferred", probability: 90 }).expect(200);
     expect(relost.body).toMatchObject({ stage: "lost", probability: 0, lostReason: "Budget deferred" });
 
-    await createConsultation("funnel-won@test.invalid", "network-infrastructure");
+    await createConsultation("funnel-won@test.invalid", "network-infrastructure", {
+      firstTouch: {
+        source: "google",
+        medium: "organic",
+        campaign: "",
+        term: "network support malawi",
+        content: "",
+        referrer: "https://www.google.com/",
+        landingPage: "/software-consulting-malawi",
+        capturedAt: "2026-11-13T09:10:00.000Z",
+      },
+      lastTouch: {
+        source: "linkedin",
+        medium: "social",
+        campaign: "managed-infrastructure",
+        term: "",
+        content: "network-case-study",
+        referrer: "https://www.linkedin.com/",
+        landingPage: "/hire?utm_source=linkedin&utm_medium=social&utm_campaign=managed-infrastructure",
+        capturedAt: "2026-11-13T09:15:00.000Z",
+      },
+    });
     const wonLeadSearch = await api.get("/api/admin/leads").set("Cookie", administrator.cookie)
       .query({ search: "funnel-won@test.invalid" }).expect(200);
     const wonLeadPath = `/api/admin/leads/${wonLeadSearch.body[0].id}`;
@@ -397,6 +456,31 @@ describe("public form and CRM compatibility", () => {
         lostValue: 2500000,
       }),
     ]));
+
+    const intelligence = await api.get("/api/admin/acquisition/intelligence")
+      .set("Cookie", administrator.cookie)
+      .query({ window: "all" })
+      .expect(200);
+    expect(intelligence.body.byLastTouchChannel).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "social",
+        enquiries: 2,
+        won: 1,
+        wonRevenueByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", revenue: 3500000, averageWonValue: 3500000 }),
+        ]),
+      }),
+    ]));
+    expect(intelligence.body.velocityDays.samples).toMatchObject({
+      qualified: expect.any(Number),
+      proposal: expect.any(Number),
+      won: expect.any(Number),
+    });
+    expect(intelligence.body.spendEconomics).toMatchObject({
+      status: "not_configured",
+      cac: null,
+      paybackDays: null,
+    });
   });
 
   it("preserves newsletter subscription validation and duplicate detection", async () => {
