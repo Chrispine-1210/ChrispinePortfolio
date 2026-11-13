@@ -524,6 +524,53 @@ describe("secure-foundation migration", () => {
     }
   }, 40_000);
 
+  it("applies the revenue intelligence foundation idempotently", async () => {
+    const foundation = await readFile("migrations/0000_secure_foundation.sql", "utf8");
+    const emailFoundation = await readFile("migrations/0001_email_delivery_foundation.sql", "utf8");
+    const notifications = await readFile("migrations/0002_notification_platform.sql", "utf8");
+    const crm = await readFile("migrations/0003_crm_pipeline.sql", "utf8");
+    const attribution = await readFile("migrations/0007_acquisition_attribution.sql", "utf8");
+    const revenue = await readFile("migrations/0008_revenue_intelligence_capital_allocation.sql", "utf8");
+    const database = new PGlite();
+    try {
+      await database.exec(foundation);
+      await database.exec(emailFoundation);
+      await database.exec(notifications);
+      await database.exec(crm);
+      await database.exec(attribution);
+      await database.exec(revenue);
+      await database.exec(revenue);
+
+      const tables = await database.query<{ count: number }>(
+        `select count(*)::int as count
+         from information_schema.tables
+         where table_schema = 'public'
+           and table_name in ('recurring_revenue_agreements', 'revenue_events', 'direct_cost_entries')`,
+      );
+      const serviceColumn = await database.query<{ count: number }>(
+        `select count(*)::int as count
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'acquisition_spend_entries'
+           and column_name = 'service_interest'`,
+      );
+      const permission = await database.query<{ count: number }>(
+        `select count(*)::int as count
+         from role_permissions rp
+         join roles r on r.id = rp.role_id
+         join permissions p on p.id = rp.permission_id
+         where p.key = 'revenue.economics.manage'
+           and r.key in ('super_administrator', 'administrator', 'business_development_manager')`,
+      );
+
+      expect(tables.rows[0]?.count).toBe(3);
+      expect(serviceColumn.rows[0]?.count).toBe(1);
+      expect(permission.rows[0]?.count).toBe(3);
+    } finally {
+      await database.close();
+    }
+  }, 45_000);
+
   it("applies the content workflow idempotently and creates a baseline version", async () => {
     const foundation = await readFile("migrations/0000_secure_foundation.sql", "utf8");
     const emailFoundation = await readFile("migrations/0001_email_delivery_foundation.sql", "utf8");
