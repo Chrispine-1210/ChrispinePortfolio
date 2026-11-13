@@ -1,8 +1,10 @@
 import { and, asc, eq, or } from "drizzle-orm";
 import {
   caseStudies,
+  caseStudyEvidence,
   type CaseStudy,
   type PortfolioProject,
+  type PublicPortfolioProject,
 } from "../../shared/schema.js";
 import { db } from "../db.js";
 
@@ -45,7 +47,7 @@ export async function listPublicCaseStudies(): Promise<PortfolioProject[]> {
 
 export async function getPublicCaseStudyBySlug(
   slug: string,
-): Promise<PortfolioProject | undefined> {
+): Promise<PublicPortfolioProject | undefined> {
   const [record] = await db
     .select()
     .from(caseStudies)
@@ -61,5 +63,29 @@ export async function getPublicCaseStudyBySlug(
       ),
     )
     .limit(1);
-  return record ? toPublicPortfolioProject(record) : undefined;
+  if (!record) return undefined;
+
+  const evidence = await db
+    .select({
+      id: caseStudyEvidence.id,
+      claim: caseStudyEvidence.claim,
+      claimType: caseStudyEvidence.claimType,
+      sourceType: caseStudyEvidence.sourceType,
+      verificationStatus: caseStudyEvidence.verificationStatus,
+      verifiedAt: caseStudyEvidence.verifiedAt,
+    })
+    .from(caseStudyEvidence)
+    .where(
+      and(
+        eq(caseStudyEvidence.caseStudyId, record.id),
+        eq(caseStudyEvidence.disclosureStatus, "approved_public"),
+        or(
+          eq(caseStudyEvidence.verificationStatus, "internally_verified"),
+          eq(caseStudyEvidence.verificationStatus, "externally_verified"),
+        ),
+      ),
+    )
+    .orderBy(asc(caseStudyEvidence.createdAt));
+
+  return { ...toPublicPortfolioProject(record), evidence };
 }
