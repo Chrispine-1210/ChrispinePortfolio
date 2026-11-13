@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExternalLink, Github, Code, Boxes, Layers, Activity, Lock, Wifi } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { CaseStudyCover } from "@/components/CaseStudyCover";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import type { PortfolioProject } from "@shared/schema";
@@ -12,10 +11,9 @@ interface PortfolioShowcaseProps {
   projects: PortfolioProject[];
 }
 
-const categories = ["All", "ICT Infrastructure", "MEL Systems", "Hardware Engineering", "Data Analytics"];
-
 export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const categories = ["All", ...Array.from(new Set(projects.map((project) => project.category)))];
 
   const filteredProjects = selectedCategory === "All"
     ? projects
@@ -28,11 +26,10 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center space-y-4 mb-12">
           <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight uppercase" data-testid="text-portfolio-title">
-            <span className="text-primary font-mono mr-4">{"//"}</span>
-            PROJECT_NODES
+            Selected case studies
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto font-mono" data-testid="text-portfolio-subtitle">
-            ACCESSING_REPOSITORY: Filterable system architecture showcase
+            Project scope, delivery decisions, and the evidence available for review.
           </p>
         </div>
 
@@ -53,7 +50,7 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
         </Tabs>
 
         {/* Projects Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredProjects.map((project, index) => (
               <motion.div
@@ -65,51 +62,11 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
                 <div className="tech-card group h-full flex flex-col hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all duration-300">
-                  {project.featuredImage && (
-                    <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary/10 to-blue-600/10">
-                      <img
-                        src={project.featuredImage}
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-105 grayscale group-hover:grayscale-0 transition-all duration-500 brightness-75 group-hover:brightness-100"
-                      />
-                      <div className="absolute inset-0 bg-primary/30 mix-blend-multiply opacity-0 group-hover:opacity-70 transition-opacity duration-300" />
-                      
-                      {/* Holographic HUD Overlay */}
-                      <div className="absolute inset-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                        <div className="flex justify-between items-start h-full">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-1.5 text-[8px] font-mono text-primary bg-black/60 px-1.5 py-0.5 border-l-2 border-primary">
-                              <Activity className="h-2 w-2 animate-pulse" />
-                              NODE_STABLE
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[8px] font-mono text-primary bg-black/60 px-1.5 py-0.5 border-l-2 border-primary">
-                              <Wifi className="h-2 w-2 animate-pulse" />
-                              SIGNAL_100%
-                            </div>
-                          </div>
-                          <div className="text-[8px] font-mono text-primary bg-black/60 px-1.5 py-0.5 border-r-2 border-primary text-right">
-                            {Math.random().toString(16).substring(2, 8).toUpperCase()}
-                            <br />
-                            SECURED_NODE
-                          </div>
-                        </div>
-                        <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end">
-                          <div className="h-1 w-12 bg-primary/40 animate-pulse" />
-                          <div className="text-[8px] font-mono text-primary">SCANNING_DATA...</div>
-                        </div>
-                      </div>
-
-                      <div className="absolute top-4 left-4 group-hover:opacity-0 transition-opacity">
-                        <div className="bg-black/80 text-primary border border-primary/30 px-2 py-0.5 font-mono text-[10px] uppercase">
-                          ID: {index.toString().padStart(2, '0')}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <CaseStudyCover project={project} className="border-b border-white/10" />
                   <div className="p-6 flex-1 flex flex-col relative">
                     <div className="mb-4">
                       <div className="text-xs text-primary font-mono mb-2 uppercase tracking-tighter">
-                        MODULE: {project.category}
+                        {project.category}
                       </div>
                       <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors uppercase leading-tight">
                         {project.title}
@@ -131,12 +88,12 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
                     <div className="mt-auto flex gap-2 pt-4 border-t border-white/5">
                       <Button variant="outline" size="sm" className="flex-1 rounded-none border-primary/30 hover:border-primary text-xs font-mono" asChild>
                         <Link href={`/portfolio/${project.slug}`}>
-                          EXECUTE_DETAILS
+                          View Case Study
                         </Link>
                       </Button>
                       {project.liveUrl && (
                         <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 rounded-none" asChild>
-                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                          <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open public site for ${project.title}`}>
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         </Button>

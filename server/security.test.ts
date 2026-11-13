@@ -14,6 +14,7 @@ beforeAll(async () => {
   vi.stubEnv("ADMIN_EMAIL", "admin@test.invalid");
   vi.stubEnv("ADMIN_PASSWORD", "isolated-test-password");
   vi.stubEnv("DATABASE_URL", "postgresql://test:test@localhost:5432/test");
+  vi.stubEnv("ADMIN_AUTH_MODE", "temporary");
 
   const auth = await import("./custom-auth.js");
   ({ generateToken, verifyToken } = auth);
@@ -50,6 +51,13 @@ describe("administrative route boundaries", () => {
 });
 
 describe("temporary signed-token containment", () => {
+  it("does not grant access to case-study governance", async () => {
+    const token = generateToken("admin@test.invalid", true);
+    await request(app).get("/api/admin/case-studies")
+      .set("Authorization", `Bearer ${token}`)
+      .expect(503, { message: "Portfolio governance requires database authentication" });
+  });
+
   it("accepts an intact token inside its maximum age", () => {
     const token = generateToken("admin@test.invalid", true);
 

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { BlogPost as BlogPostType } from "@shared/schema";
 import { setSEO } from "@/lib/seoHelper";
+import { EditorialPhoto, articlePhoto } from "@/components/EditorialPhoto";
 import { motion } from "framer-motion";
 import { Terminal, Calendar, Tag, Clock, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -99,7 +100,7 @@ export default function BlogPost() {
             </div>
           </div>
 
-          {post.featuredImage && (
+          {post.featuredImage ? (
             <div className="relative aspect-video overflow-hidden tech-card border-none rounded-none">
               <img
                 src={post.featuredImage}
@@ -108,6 +109,8 @@ export default function BlogPost() {
               />
               <div className="scanline" />
             </div>
+          ) : (
+            <EditorialPhoto photo={articlePhoto(post.category)} />
           )}
 
           <div className="space-y-8 text-sm leading-relaxed opacity-90">

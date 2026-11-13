@@ -1,64 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, Briefcase, GraduationCap, Award, Users, Terminal, Cpu, Shield, Database, Code, Network, TrendingUp, Mail, Link as LinkIcon } from "lucide-react";
+import { Briefcase, GraduationCap, Award, Users, Cpu, Shield, Database, Code, Network, TrendingUp, Mail, Link as LinkIcon } from "lucide-react";
 import { motion } from "framer-motion";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link } from "wouter";
+import publicCvUrl from "@assets/Chrispine-Mndala-CV-2026.pdf?url";
 import aboutImage from "@assets/portfolio_photos/chrispine-about-campus.png";
 
-const TechTerm = ({ children, definition }: { children: React.ReactNode, definition: string }) => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="text-primary cursor-help border-b border-primary/30 font-mono italic hover:bg-primary/5 transition-colors">
-          {children}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent className="bg-[#0a0c14] border-primary/50 text-white font-mono text-[10px] p-3 rounded-none shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-        <div className="text-primary mb-1 uppercase font-black tracking-widest text-[9px]">SYSTEM_INTEL //</div>
-        {definition}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
-
 export default function About() {
-  const [binaryCols, setBinaryCols] = useState<{ id: number; left: string; duration: string; delay: string; content: string }[]>([]);
-
   useEffect(() => {
     document.title = "About | Chrispine Mndala";
-    
-    // Generate binary stream columns
-    const cols = Array.from({ length: 20 }).map((_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      duration: `${10 + Math.random() * 20}s`,
-      delay: `${Math.random() * -20}s`,
-      content: Array.from({ length: 50 }).map(() => (Math.random() > 0.5 ? "1" : "0")).join("\n")
-    }));
-    setBinaryCols(cols);
   }, []);
 
   return (
     <div className="min-h-screen pt-24 pb-16 bg-[#0a0c14] relative overflow-hidden">
-      <div className="tech-grid-bg opacity-20" />
-      <div className="binary-bg">
-        {binaryCols.map((col) => (
-          <div
-            key={col.id}
-            className="binary-column"
-            style={{
-              left: col.left,
-              animationDuration: col.duration,
-              animationDelay: col.delay
-            }}
-          >
-            {col.content}
-          </div>
-        ))}
-      </div>
+      <div className="tech-grid-bg opacity-20" aria-hidden="true" />
 
       {/* Hero Section */}
       <section className="relative py-16 sm:py-24 overflow-hidden">
@@ -69,41 +26,29 @@ export default function About() {
               animate={{ opacity: 1, x: 0 }}
               className="space-y-8"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary text-white font-mono text-[10px] font-black uppercase shadow-[0_0_10px_rgba(59,130,246,0.5)]">
-                <Terminal size={12} />
-                PROFESSIONAL_PROFILE // V1.0
+              <div className="inline-flex px-3 py-1 bg-primary text-white font-mono text-[10px] font-black uppercase shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                Professional Profile
               </div>
               <h1 className="text-6xl sm:text-8xl font-black text-white uppercase tracking-tighter leading-none" data-testid="text-page-title">
-                About<span className="text-primary italic">_ME</span>
+                About <span className="text-primary italic">Me</span>
               </h1>
               <div className="space-y-6 text-lg text-muted-foreground font-mono leading-relaxed opacity-80">
                 <p data-testid="text-intro-1">
-                  I'm a <TechTerm definition="A senior professional who designs and oversees enterprise-grade software systems combining business strategy with technical architecture.">full-stack systems architect</TechTerm> and 
-                  <TechTerm definition="A technology leader who guides organizations through digital transformation by aligning technology investments with business outcomes.">digital transformation consultant</TechTerm> with 
-                  7+ years building scalable platforms that drive measurable business impact.
+                  I’m Chrispine Mndala, a full-stack programmer based in Malawi. I build web applications, APIs, and database-backed tools that help organizations run their day-to-day work.
                 </p>
                 <p data-testid="text-intro-2">
-                  I combine <TechTerm definition="End-to-end software development from frontend user interfaces to backend APIs and databases.">full-stack engineering</TechTerm> with 
-                  <TechTerm definition="The practice of designing robust, scalable technology infrastructure for enterprise environments.">systems architecture</TechTerm>, 
-                  <TechTerm definition="Professional networking design, configuration, and optimization.">network engineering</TechTerm>, and
-                  <TechTerm definition="Using data to inform strategic business decisions and optimize organizational performance.">business intelligence</TechTerm> 
-                  to deliver enterprise solutions that solve real business problems.
-                </p>
-                <p data-testid="text-intro-3" className="text-primary font-medium">
-                  I don't just write code — I design and build scalable digital systems that create competitive advantage.
+                  Mtendere Education Consult hired me as a programmer to develop its digital platform. My work covered the public website, the administration portal, and the workflows that connect them.
                 </p>
               </div>
               <div className="pt-4 flex flex-col sm:flex-row gap-4">
                 <Button size="lg" className="bg-primary text-white rounded-none h-14 px-10 font-mono text-xs uppercase shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all" asChild data-testid="button-hire-about">
-                  <Link href="/hire" className="flex items-center gap-2">
-                    <Briefcase className="mr-2 h-5 w-5" />
-                    HIRE_ME
+                  <Link href="/hire">
+                    Hire Me
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" asChild data-testid="button-download-cv">
-                  <a href="/attached_assets/Chrispine-Mndala-CV-2026.pdf" download className="flex items-center gap-2">
-                    <Download className="mr-2 h-5 w-5" />
-                    DOWNLOAD_CV
+                  <a href={publicCvUrl} download="Chrispine-Mndala-CV-2026.pdf">
+                    Download CV
                   </a>
                 </Button>
               </div>
@@ -340,7 +285,7 @@ export default function About() {
         </div>
       </section>
 
-      {/* Entrepreneurial Ventures */}
+      {/* Selected Work and Ventures */}
       <section className="py-24 bg-primary/5 border-y border-primary/10 relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -350,10 +295,10 @@ export default function About() {
             className="space-y-12"
           >
             <div className="text-center space-y-4">
-              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">04 // Ventures</span>
-              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Entrepreneurial Ventures</h2>
+              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">04 // Selected Work</span>
+              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Projects &amp; Ventures</h2>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Building technology-driven businesses that solve real problems across Africa.
+                Selected programming work and technology ventures.
               </p>
             </div>
 
@@ -361,14 +306,14 @@ export default function About() {
               {[
                 {
                   name: "Aothothe LLC",
-                  role: "Founder & Systems Architect",
+                  role: "Founder & CEO",
                   desc: "Technology innovation company focused on building scalable digital platforms for African enterprises. Driving digital transformation through custom software solutions.",
                   focus: "Digital Platforms"
                 },
                 {
                   name: "Mtendere Education Consult",
-                  role: "Co-Founder & CTO",
-                  desc: "Education-consultancy platform case study limited to inspectable engineering scope and public endpoint evidence.",
+                  role: "Programmer, Digital Development",
+                  desc: "Developed the public education consultancy website and administration tools for managing content and consultation requests.",
                   focus: "EdTech"
                 },
                 {
@@ -522,16 +467,16 @@ export default function About() {
                 <div className="tech-card p-6 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-bold text-white uppercase">Technology Expertise</h4>
-                    <Badge variant="outline" className="text-[10px] font-mono">Production</Badge>
+                    <Badge variant="outline" className="text-[10px] font-mono">Evidence-led</Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      ["React + TypeScript", "Working"],
-                      ["Node.js / Express", "93%"],
-                      ["PostgreSQL", "90%"],
-                      ["REST API Design", "92%"],
-                      ["IoT / LoRaWAN", "85%"],
-                      ["Cloud Deploy", "87%"],
+                      ["React + TypeScript", "Applied"],
+                      ["Node.js / Express", "Applied"],
+                      ["PostgreSQL", "Applied"],
+                      ["REST API Design", "Applied"],
+                      ["Computer Networks", "Certified"],
+                      ["Project Management", "Certified"],
                     ].map(([tech, level]) => (
                       <div key={tech} className="p-2 bg-white/5">
                         <div className="text-[10px] text-white font-mono uppercase">{tech}</div>

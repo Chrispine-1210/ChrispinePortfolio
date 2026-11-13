@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect, useState } from "react";
 import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -122,13 +123,16 @@ export default function Subscribe() {
   return (
     <div className="min-h-screen pt-16">
       <div className="bg-gradient-to-br from-background via-background to-accent/5 py-16 sm:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl sm:text-6xl font-bold text-foreground mb-6" data-testid="text-page-title">
-            Upgrade to Premium
-          </h1>
-          <p className="text-xl text-muted-foreground" data-testid="text-page-description">
-            Get unlimited access to premium tutorials, templates, and exclusive content
-          </p>
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+          <div>
+            <h1 className="text-5xl sm:text-6xl font-bold text-foreground mb-6" data-testid="text-page-title">
+              Upgrade to Premium
+            </h1>
+            <p className="text-xl text-muted-foreground" data-testid="text-page-description">
+              Get unlimited access to premium tutorials, templates, and exclusive content
+            </p>
+          </div>
+          <EditorialPhoto photo="reading" eager />
         </div>
       </div>
 

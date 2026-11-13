@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -9,7 +10,6 @@ import { Footer } from "@/components/Footer";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
-import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Portfolio from "@/pages/Portfolio";
 import PortfolioAdvanced from "@/pages/PortfolioAdvanced";
@@ -34,34 +34,35 @@ import GitHubProfile from "@/pages/GitHubProfile";
 import ContactsManagement from "@/pages/admin/ContactsManagement";
 import AudienceManagement from "@/pages/admin/AudienceManagement";
 import ContentManagement from "@/pages/admin/ContentManagement";
-import PortfolioManagement from "@/pages/admin/PortfolioManagement";
+import ProjectManagement from "@/pages/admin/ProjectManagement";
+import CaseStudyManagement from "@/pages/admin/CaseStudyManagement";
 import LeadPipeline from "@/pages/admin/LeadPipeline";
 import SecurityManagement from "@/pages/admin/SecurityManagement";
 import UserManagement from "@/pages/admin/UserManagement";
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated, isLoading } = useCustomAuth();
-  
+function AdminProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { isAdmin, isLoading } = useCustomAuth();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAdmin) navigate("/login");
+  }, [isAdmin, isLoading, navigate]);
+
   if (isLoading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (!isAuthenticated) return <Route path="/login" component={Login} />;
+  if (!isAdmin) return null;
   return <Component />;
 }
 
 function Router() {
-  const { isAuthenticated, isLoading, user, isAdmin } = useCustomAuth();
   const [location] = useLocation();
-  const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/newsletter-manage";
+  const adminSurface = location === "/admin" || location.startsWith("/admin/") || location === "/analytics" || location === "/newsletter-manage" || location === "/external-posts";
 
   return (
     <div className="flex flex-col min-h-screen">
       {!adminSurface && <Navigation />}
       <main className="flex-1">
         <Switch>
-          {isLoading || !isAuthenticated ? (
-            <Route path="/" component={Landing} />
-          ) : (
-            <Route path="/" component={Home} />
-          )}
+          <Route path="/" component={Landing} />
           <Route path="/portfolio" component={PortfolioAdvanced} />
           <Route path="/portfolio/:slug" component={PortfolioDetail} />
           <Route path="/blog" component={Blog} />
@@ -75,19 +76,21 @@ function Router() {
           <Route path="/subscribe" component={Subscribe} />
           <Route path="/login" component={Login} />
           <Route path="/dashboard" component={Dashboard} />
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/admin/communications" component={NewsletterManagement} />
-          <Route path="/admin/contacts" component={ContactsManagement} />
-          <Route path="/admin/audience" component={AudienceManagement} />
-          <Route path="/admin/content" component={ContentManagement} />
-          <Route path="/admin/portfolio" component={PortfolioManagement} />
-          <Route path="/admin/pipeline" component={LeadPipeline} />
-          <Route path="/admin/security" component={SecurityManagement} />
-          <Route path="/admin/users" component={UserManagement} />
-          <Route path="/analytics" component={Analytics} />
+          <Route path="/admin"><AdminProtectedRoute component={AdminDashboard} /></Route>
+          <Route path="/admin/communications"><AdminProtectedRoute component={NewsletterManagement} /></Route>
+          <Route path="/admin/contacts"><AdminProtectedRoute component={ContactsManagement} /></Route>
+          <Route path="/admin/audience"><AdminProtectedRoute component={AudienceManagement} /></Route>
+          <Route path="/admin/content"><AdminProtectedRoute component={ContentManagement} /></Route>
+          <Route path="/admin/portfolio"><AdminProtectedRoute component={CaseStudyManagement} /></Route>
+          <Route path="/admin/projects"><AdminProtectedRoute component={ProjectManagement} /></Route>
+          <Route path="/admin/case-studies"><AdminProtectedRoute component={CaseStudyManagement} /></Route>
+          <Route path="/admin/pipeline"><AdminProtectedRoute component={LeadPipeline} /></Route>
+          <Route path="/admin/security"><AdminProtectedRoute component={SecurityManagement} /></Route>
+          <Route path="/admin/users"><AdminProtectedRoute component={UserManagement} /></Route>
+          <Route path="/analytics"><AdminProtectedRoute component={Analytics} /></Route>
           <Route path="/newsletter" component={Landing} />
-          <Route path="/newsletter-manage" component={NewsletterManagement} />
-          <Route path="/external-posts" component={ExternalPostsPage} />
+          <Route path="/newsletter-manage"><AdminProtectedRoute component={NewsletterManagement} /></Route>
+          <Route path="/external-posts"><AdminProtectedRoute component={ExternalPostsPage} /></Route>
           <Route path="/projects" component={Portfolio} />
           <Route path="/software-consulting-malawi" component={SoftwareConsultingMalawi} />
           <Route path="/digital-transformation-africa" component={DigitalTransformationAfrica} />

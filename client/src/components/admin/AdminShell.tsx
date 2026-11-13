@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  BarChart3, Bell, BookOpen, BriefcaseBusiness, ChevronRight, LayoutDashboard,
+  BarChart3, Bell, BookOpen, BriefcaseBusiness, ChevronRight, FileCheck2, FolderKanban, LayoutDashboard,
   LogOut, Mail, Menu, MessageSquare, Settings, ShieldCheck, Users, Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ import { useCustomAuth } from "@/hooks/useCustomAuth";
 const navigation = [
   { label: "Overview", path: "/admin", icon: LayoutDashboard, permission: "analytics.read", live: true },
   { label: "Content", path: "/admin/content", icon: BookOpen, permission: "content.read", live: true },
-  { label: "Portfolio", path: "/admin/portfolio", icon: BriefcaseBusiness, permission: "portfolio.read", live: true },
+  { label: "Projects", path: "/admin/projects", icon: FolderKanban, permission: "portfolio.read", live: true },
+  { label: "Case studies", path: "/admin/case-studies", icon: FileCheck2, permission: "portfolio.read", live: true },
   { label: "Contacts", path: "/admin/contacts", icon: MessageSquare, permission: "leads.read", live: true },
   { label: "Pipeline", path: "/admin/pipeline", icon: Workflow, permission: "leads.read", live: true },
   { label: "Audience", path: "/admin/audience", icon: Users, permission: "email.delivery.read", live: true },

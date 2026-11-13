@@ -1,3 +1,4 @@
+import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PortfolioShowcase } from "@/components/PortfolioShowcase";
@@ -22,13 +23,7 @@ export default function PortfolioAdvanced() {
     queryKey: ["/api/categories/portfolio"],
   });
 
-  const categories = categoriesData?.categories || [
-    "All",
-    "MEL Systems",
-    "ICT Infrastructure",
-    "Hardware Engineering",
-    "Data Analytics",
-  ];
+  const categories = ["All", ...(categoriesData?.categories ?? [])];
 
   // Fetch filtered projects
   const { data: searchResults, isLoading } = useQuery<{
@@ -64,13 +59,14 @@ export default function PortfolioAdvanced() {
     <div className="min-h-screen pt-16">
       <div className="bg-gradient-to-br from-background via-background to-accent/5 py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <span className="text-[10px] font-mono text-primary uppercase tracking-widest">SYSTEM_NODE // CASE_STUDIES</span>
+          <span className="text-[10px] font-mono text-primary uppercase tracking-widest">Selected Work</span>
           <h1 className="text-5xl sm:text-6xl font-black text-foreground uppercase tracking-tighter">
             Case Studies
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Explore my work across MEL systems, ICT infrastructure, hardware engineering, and data analytics.
+            Explore the software delivered, the decisions behind it, and the public evidence for each project.
           </p>
+          <EditorialPhoto photo="workspace" className="mx-auto max-w-2xl text-left" eager />
         </div>
       </div>
 
@@ -87,7 +83,7 @@ export default function PortfolioAdvanced() {
             <Search className="absolute left-4 h-5 w-5 text-primary" />
             <Input
               type="search"
-              placeholder="Search projects by title, description, or tech stack..."
+              placeholder="Search case studies by title, evidence summary, or technology..."
               className="pl-12 h-12 bg-card/50 border-primary/30 focus:ring-primary/50"
               value={searchQuery}
               onChange={(e) => {
@@ -186,7 +182,7 @@ export default function PortfolioAdvanced() {
         ) : (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              No projects found matching your filters.
+              No published case studies match your filters.
             </p>
           </div>
         )}

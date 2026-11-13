@@ -5,11 +5,9 @@ import { requireAdminPermission } from "./custom-auth.js";
 
 const createContent = requireAdminPermission("content.create");
 const updateContent = requireAdminPermission("content.update");
-const managePortfolio = requireAdminPermission("portfolio.manage");
 const readContent = requireAdminPermission("content.read");
 const readAnalytics = requireAdminPermission("analytics.read");
 import {
-  insertPortfolioProjectSchema,
   insertNewsletterSubscriberSchema,
   insertContactRequestSchema,
   insertBlogCommentSchema,
@@ -18,12 +16,13 @@ import {
   type BlogPost,
 } from "../shared/schema.js";
 import Stripe from "stripe";
-import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
+import { seedBlogPosts } from "./seed-data.js";
 import {
   enqueueContactAutomation,
   enqueueNewsletterWelcome,
 } from "./email/automations.js";
 import { createLeadFromContact } from "./crm/lead-service.js";
+import { getPublicCaseStudyBySlug, listPublicCaseStudies } from "./portfolio/public-case-study-service.js";
 
 const fallbackBlogPosts: BlogPost[] = seedBlogPosts.map((post, index) => ({
   ...post,
@@ -49,26 +48,31 @@ const fallbackBlogPosts: BlogPost[] = seedBlogPosts.map((post, index) => ({
   updatedAt: new Date(),
 }));
 
-const fallbackPortfolioProjects = seedPortfolioProjects.map(
-  (project, index) => ({
-    ...project,
-    id: `seed-project-${index + 1}`,
-    challenge: project.challenge ?? null,
-    solution: project.solution ?? null,
-    outcome: project.outcome ?? null,
-    techStack: project.techStack ?? [],
-    featuredImage: null,
-    images: project.images ?? [],
-    liveUrl: project.liveUrl ?? null,
-    githubUrl: project.githubUrl ?? null,
-    featured: project.featured ?? false,
-    order: project.order ?? index,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }),
-);
-
 const hasDatabase = () => Boolean(process.env.DATABASE_URL);
+
+function logRouteFailure(context: string, error: unknown) {
+  const record = error && typeof error === "object" ? error as {
+    name?: unknown;
+    message?: unknown;
+    code?: unknown;
+    cause?: unknown;
+  } : {};
+  const cause = record.cause && typeof record.cause === "object" ? record.cause as {
+    name?: unknown;
+    message?: unknown;
+    code?: unknown;
+  } : {};
+  console.error(context, JSON.stringify({
+    name: typeof record.name === "string" ? record.name : undefined,
+    message: typeof record.message === "string" ? record.message : undefined,
+    code: typeof record.code === "string" ? record.code : undefined,
+    cause: {
+      name: typeof cause.name === "string" ? cause.name : undefined,
+      message: typeof cause.message === "string" ? cause.message : undefined,
+      code: typeof cause.code === "string" ? cause.code : undefined,
+    },
+  }));
+}
 
 // Note: Middleware utilities created but router uses standard patterns for now
 // const { sendResponse, sendError, ApiError, asyncHandler, requirePremium } from "./middleware.js";
@@ -205,127 +209,66 @@ router.delete(
   },
 );
 
-// Portfolio routes
+// Public case-study routes. Only published, evidence-approved case studies are returned.
 router.get("/api/portfolio", async (req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
   try {
-    // Set cache headers for portfolio
-    res.setHeader("Cache-Control", "public, max-age=300");
-    // Public case studies are curated in source until the evidence workflow can
-    // approve database-backed publication records. This prevents legacy CMS data
-    // from surfacing unsupported outcome claims.
-    let projects = fallbackPortfolioProjects;
-
-    // Apply filters
+    let projects = await listPublicCaseStudies();
     const { category, search, featured } = req.query;
-
     if (category && typeof category === "string") {
-      projects = projects.filter((p) => p.category === category);
+      projects = projects.filter((project) => project.category === category);
     }
-
     if (search && typeof search === "string") {
-      const searchLower = search.toLowerCase();
-      projects = projects.filter(
-        (p) =>
-          p.title.toLowerCase().includes(searchLower) ||
-          p.description.toLowerCase().includes(searchLower) ||
-          (p.techStack || []).some((tech) =>
-            tech.toLowerCase().includes(searchLower),
-          ),
+      const query = search.toLowerCase();
+      projects = projects.filter((project) =>
+        project.title.toLowerCase().includes(query) ||
+        project.description.toLowerCase().includes(query) ||
+        (project.techStack || []).some((technology) => technology.toLowerCase().includes(query))
       );
     }
-
-    if (featured === "true") {
-      projects = projects.filter((p) => p.featured);
-    } else if (featured === "false") {
-      projects = projects.filter((p) => !p.featured);
-    }
-
+    if (featured === "true") projects = projects.filter((project) => project.featured);
+    if (featured === "false") projects = projects.filter((project) => !project.featured);
     res.json(projects);
   } catch (error) {
-    console.error("Error fetching projects:", error);
-    res.status(500).json({ message: "Failed to fetch projects" });
+    logRouteFailure("Error fetching public case studies", error);
+    res.status(500).json({ message: "Failed to fetch case studies" });
   }
 });
 
-router.get("/api/portfolio/featured", async (req: Request, res: Response) => {
+router.get("/api/portfolio/featured", async (_req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
   try {
-    const projects = fallbackPortfolioProjects.filter((project) => project.featured);
+    const projects = (await listPublicCaseStudies()).filter((project) => project.featured);
     res.json(projects);
   } catch (error) {
-    console.error("Error fetching featured projects:", error);
-    res.status(500).json({ message: "Failed to fetch featured projects" });
+    logRouteFailure("Error fetching featured case studies", error);
+    res.status(500).json({ message: "Failed to fetch featured case studies" });
   }
 });
 
 router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
+  res.setHeader("Cache-Control", "no-store");
   try {
-    const project = fallbackPortfolioProjects.find((item) => item.slug === req.params.slug);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
+    const project = await getPublicCaseStudyBySlug(req.params.slug);
+    if (!project) return res.status(404).json({ message: "Case study not found" });
     res.json(project);
   } catch (error) {
-    console.error("Error fetching project:", error);
-    res.status(500).json({ message: "Failed to fetch project" });
+    logRouteFailure("Error fetching case study", error);
+    res.status(500).json({ message: "Failed to fetch case study" });
   }
 });
 
-router.post(
-  "/api/portfolio",
-  managePortfolio,
-  async (req: Request, res: Response) => {
-    try {
-      const data = insertPortfolioProjectSchema.parse(req.body);
-      const project = await storage.createProject(data);
-      res.json(project);
-    } catch (error: any) {
-      console.error("Error creating project:", error);
-      if (error.name === "ZodError") {
-        return res
-          .status(400)
-          .json({ message: "Invalid data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create project" });
-    }
-  },
-);
-
-router.put(
-  "/api/portfolio/:id",
-  managePortfolio,
-  async (req: Request, res: Response) => {
-    try {
-      const data = insertPortfolioProjectSchema.partial().parse(req.body);
-      const project = await storage.updateProject(req.params.id, data);
-      if (!project) {
-        return res.status(404).json({ message: "Project not found" });
-      }
-      res.json(project);
-    } catch (error: any) {
-      console.error("Error updating project:", error);
-      if (error.name === "ZodError") {
-        return res
-          .status(400)
-          .json({ message: "Invalid data", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update project" });
-    }
-  },
-);
-
-router.delete(
-  "/api/portfolio/:id",
-  managePortfolio,
-  async (req: Request, res: Response) => {
-    try {
-      await storage.deleteProject(req.params.id);
-      res.json({ message: "Project deleted" });
-    } catch (error) {
-      console.error("Error deleting project:", error);
-      res.status(500).json({ message: "Failed to delete project" });
-    }
-  },
-);
+// Legacy portfolio mutations are disabled. Internal projects and public case
+// studies now have separate governed administrative endpoints.
+router.post("/api/portfolio", requireAdminPermission("portfolio.manage"), (_req, res) => {
+  res.status(410).json({ message: "Use /api/admin/projects or /api/admin/case-studies" });
+});
+router.put("/api/portfolio/:id", requireAdminPermission("portfolio.manage"), (_req, res) => {
+  res.status(410).json({ message: "Use /api/admin/projects/:id or /api/admin/case-studies/:id" });
+});
+router.delete("/api/portfolio/:id", requireAdminPermission("portfolio.manage"), (_req, res) => {
+  res.status(410).json({ message: "Permanent deletion is disabled; archive governed records instead" });
+});
 
 // Newsletter routes
 router.post(
@@ -361,7 +304,7 @@ router.post(
       if (error.name === "ZodError") {
         return res
           .status(400)
-          .json({ message: "Invalid data", errors: error.errors });
+          .json({ message: "Invalid data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to subscribe" });
     }
@@ -388,7 +331,7 @@ router.post("/api/contact", async (req: Request, res: Response) => {
     if (error.name === "ZodError") {
       return res
         .status(400)
-        .json({ message: "Invalid data", errors: error.errors });
+        .json({ message: "Invalid data", errors: error.issues });
     }
     res.status(500).json({ message: "Failed to submit contact request" });
   }
@@ -478,7 +421,7 @@ router.post(
       if (error.name === "ZodError") {
         return res
           .status(400)
-          .json({ message: "Invalid data", errors: error.errors });
+          .json({ message: "Invalid data", errors: error.issues });
       }
       res.status(500).json({ message: "Failed to create template" });
     }

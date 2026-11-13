@@ -24,7 +24,8 @@ import {
   notificationCampaigns,
   notificationInbox,
   permissions,
-  portfolioProjects,
+  caseStudies,
+  projects,
   rolePermissions,
   roles,
   securityEvents,
@@ -1147,8 +1148,9 @@ export function createAdminRouter(): Router {
       const [
         [posts],
         [publishedPosts],
-        [projects],
-        [featuredProjects],
+        [projectCount],
+        [publicCaseStudyCount],
+        [featuredCaseStudyCount],
         [subscribers],
         [activeSubscribers],
         [contacts],
@@ -1170,11 +1172,24 @@ export function createAdminRouter(): Router {
           .select({ count })
           .from(blogPosts)
           .where(eq(blogPosts.isPublished, true)),
-        db.select({ count }).from(portfolioProjects),
+        db.select({ count }).from(projects).where(isNull(projects.archivedAt)),
         db
           .select({ count })
-          .from(portfolioProjects)
-          .where(eq(portfolioProjects.featured, true)),
+          .from(caseStudies)
+          .where(and(
+            eq(caseStudies.workflowStatus, "published"),
+            eq(caseStudies.visibility, "public"),
+            eq(caseStudies.evidenceGateStatus, "approved"),
+          )),
+        db
+          .select({ count })
+          .from(caseStudies)
+          .where(and(
+            eq(caseStudies.featured, true),
+            eq(caseStudies.workflowStatus, "published"),
+            eq(caseStudies.visibility, "public"),
+            eq(caseStudies.evidenceGateStatus, "approved"),
+          )),
         db.select({ count }).from(newsletterSubscribers),
         db
           .select({ count })
@@ -1290,8 +1305,9 @@ export function createAdminRouter(): Router {
             0,
             (posts?.count ?? 0) - (publishedPosts?.count ?? 0),
           ),
-          projects: projects?.count ?? 0,
-          featuredProjects: featuredProjects?.count ?? 0,
+          projects: projectCount?.count ?? 0,
+          caseStudies: publicCaseStudyCount?.count ?? 0,
+          featuredCaseStudies: featuredCaseStudyCount?.count ?? 0,
         },
         audience: {
           subscribers: subscribers?.count ?? 0,
