@@ -50,6 +50,30 @@ const fallbackBlogPosts: BlogPost[] = seedBlogPosts.map((post, index) => ({
 
 const hasDatabase = () => Boolean(process.env.DATABASE_URL);
 
+function logRouteFailure(context: string, error: unknown) {
+  const record = error && typeof error === "object" ? error as {
+    name?: unknown;
+    message?: unknown;
+    code?: unknown;
+    cause?: unknown;
+  } : {};
+  const cause = record.cause && typeof record.cause === "object" ? record.cause as {
+    name?: unknown;
+    message?: unknown;
+    code?: unknown;
+  } : {};
+  console.error(context, JSON.stringify({
+    name: typeof record.name === "string" ? record.name : undefined,
+    message: typeof record.message === "string" ? record.message : undefined,
+    code: typeof record.code === "string" ? record.code : undefined,
+    cause: {
+      name: typeof cause.name === "string" ? cause.name : undefined,
+      message: typeof cause.message === "string" ? cause.message : undefined,
+      code: typeof cause.code === "string" ? cause.code : undefined,
+    },
+  }));
+}
+
 // Note: Middleware utilities created but router uses standard patterns for now
 // const { sendResponse, sendError, ApiError, asyncHandler, requirePremium } from "./middleware.js";
 // These will be integrated in next phase
@@ -206,7 +230,7 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
     if (featured === "false") projects = projects.filter((project) => !project.featured);
     res.json(projects);
   } catch (error) {
-    console.error("Error fetching public case studies:", error);
+    logRouteFailure("Error fetching public case studies", error);
     res.status(500).json({ message: "Failed to fetch case studies" });
   }
 });
@@ -217,7 +241,7 @@ router.get("/api/portfolio/featured", async (_req: Request, res: Response) => {
     const projects = (await listPublicCaseStudies()).filter((project) => project.featured);
     res.json(projects);
   } catch (error) {
-    console.error("Error fetching featured case studies:", error);
+    logRouteFailure("Error fetching featured case studies", error);
     res.status(500).json({ message: "Failed to fetch featured case studies" });
   }
 });
@@ -229,7 +253,7 @@ router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
     if (!project) return res.status(404).json({ message: "Case study not found" });
     res.json(project);
   } catch (error) {
-    console.error("Error fetching case study:", error);
+    logRouteFailure("Error fetching case study", error);
     res.status(500).json({ message: "Failed to fetch case study" });
   }
 });
