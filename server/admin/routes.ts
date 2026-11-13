@@ -988,7 +988,10 @@ export function createAdminRouter(): Router {
         wonValues: new Map(),
       });
       const channelRows = new Map<string, AttributionRow>();
+      const sourceRows = new Map<string, AttributionRow>();
+      const landingRows = new Map<string, AttributionRow>();
       const serviceRows = new Map<string, AttributionRow>();
+      const channelServiceRows = new Map<string, AttributionRow>();
       const lossRows = new Map<string, { reason: string; count: number; values: Map<string, number> }>();
       const velocity = { qualified: [] as number[], proposal: [] as number[], won: [] as number[] };
 
@@ -1014,14 +1017,31 @@ export function createAdminRouter(): Router {
       for (const lead of leadRows) {
         const last = lastTouch.get(lead.id);
         const channel = last?.channel ?? "unattributed";
+        const source = last?.source ?? "unattributed";
+        const landingPage = last?.landingPage ?? "unattributed";
+        const service = lead.serviceInterest || "unclassified";
+
         const channelRow = channelRows.get(channel) ?? makeRow(channel);
         addLead(channelRow, lead);
         channelRows.set(channel, channelRow);
 
-        const service = lead.serviceInterest || "unclassified";
+        const sourceRow = sourceRows.get(source) ?? makeRow(source);
+        addLead(sourceRow, lead);
+        sourceRows.set(source, sourceRow);
+
+        const landingRow = landingRows.get(landingPage) ?? makeRow(landingPage);
+        addLead(landingRow, lead);
+        landingRows.set(landingPage, landingRow);
+
         const serviceRow = serviceRows.get(service) ?? makeRow(service);
         addLead(serviceRow, lead);
         serviceRows.set(service, serviceRow);
+
+        const channelServiceKey = `${channel}::${service}`;
+        const channelServiceRow =
+          channelServiceRows.get(channelServiceKey) ?? makeRow(channelServiceKey);
+        addLead(channelServiceRow, lead);
+        channelServiceRows.set(channelServiceKey, channelServiceRow);
 
         const times = milestones.get(lead.id);
         const created = lead.createdAt.getTime();
@@ -1082,6 +1102,29 @@ export function createAdminRouter(): Router {
           .map((row) => {
             const serialized = serializeRow(row);
             return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byLastTouchSource: [...sourceRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row);
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byLandingPage: [...landingRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row);
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byChannelService: [...channelServiceRows.values()]
+          .map((row) => {
+            const [channel, service] = row.key.split("::");
+            const serialized = serializeRow(row);
+            return {
+              ...(canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] }),
+              channel,
+              service,
+            };
           })
           .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         byService: [...serviceRows.values()]
