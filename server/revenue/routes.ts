@@ -860,12 +860,11 @@ export function createRevenueIntelligenceRouter() {
         const proposalWinRate = proposals ? round((wins / proposals) * 100) : 0;
         const stalled = group.leads.filter((lead) => staleLeads.some((item) => item.id === lead.id)).length;
         const stalledShare = enquiries ? round((stalled / enquiries) * 100) : 0;
-        const winsWithRevenue = wonLeads.filter((lead) => leadsWithRevenue.has(lead.id)).length;
-        const winsWithCost = wonLeads.filter((lead) =>
-          leadsWithRevenue.has(lead.id) && leadsWithCostEvidence.has(lead.id)).length;
-        const revenueCoveragePct = wins ? round((winsWithRevenue / wins) * 100) : 0;
-        const costCoveragePct = winsWithRevenue ? round((winsWithCost / winsWithRevenue) * 100) : 0;
         const spendCurrencies = spendByGroupCurrency.get(group.key) ?? new Map<string, number>();
+        const earliestSpend = earliestSpendByGroup.get(group.key);
+        const spendAgeDays = earliestSpend
+          ? round(Math.max(0, (now.getTime() - earliestSpend.getTime()) / DAY_MS))
+          : null;
         const currencies = new Set<string>([
           ...spendCurrencies.keys(),
           ...wonLeads.flatMap((lead) => [
@@ -879,6 +878,17 @@ export function createRevenueIntelligenceRouter() {
 
         for (const currency of currencies) {
           const spend = spendCurrencies.get(currency) ?? 0;
+          const revenueCustomers = wonLeads.filter(
+            (lead) => (revenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0) > 0,
+          );
+          const winsWithRevenue = revenueCustomers.length;
+          const winsWithCompleteCostEvidence = revenueCustomers.filter(
+            (lead) => costEvidenceComplete(lead.id, currency),
+          ).length;
+          const revenueCoveragePct = wins ? round((winsWithRevenue / wins) * 100) : 0;
+          const costCoveragePct = winsWithRevenue
+            ? round((winsWithCompleteCostEvidence / winsWithRevenue) * 100)
+            : 0;
           const recognizedRevenue = wonLeads.reduce(
             (sum, lead) => sum + (revenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
@@ -887,11 +897,20 @@ export function createRevenueIntelligenceRouter() {
             (sum, lead) => sum + (costByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
           );
+          const recurringRevenue = wonLeads.reduce(
+            (sum, lead) => sum + (recurringRevenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
+            0,
+          );
+          const recurringCost = wonLeads.reduce(
+            (sum, lead) => sum + (recurringCostByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
+            0,
+          );
           const mrr = wonLeads.reduce(
             (sum, lead) => sum + (activeMrrByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
           );
-          const completeCosts = winsWithRevenue > 0 && winsWithCost === winsWithRevenue;
+          const completeCosts =
+            winsWithRevenue > 0 && winsWithCompleteCostEvidence === winsWithRevenue;
           const grossProfit = completeCosts ? recognizedRevenue - directCost : null;
           const grossMarginPct = completeCosts && recognizedRevenue > 0
             ? round(((recognizedRevenue - directCost) / recognizedRevenue) * 100)
@@ -899,30 +918,55 @@ export function createRevenueIntelligenceRouter() {
           const grossProfitRoas = grossProfit !== null && spend > 0
             ? round(grossProfit / spend, 2)
             : null;
-          const monthlyGrossProfit = grossMarginPct !== null && mrr > 0
-            ? mrr * (grossMarginPct / 100)
-            : null;
-          const paybackDays = monthlyGrossProfit && monthlyGrossProfit > 0 && spend > 0
-            ? round((spend / monthlyGrossProfit) * 30.44)
-            : null;
-          const revenueCustomers = wonLeads.filter((lead) =>
-            (revenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0) > 0);
+
+          const recurringRevenueCustomers = wonLeads.filter(
+            (lead) => (recurringRevenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0) > 0,
+          );
+          const recurringCostComplete =
+            recurringRevenueCustomers.length > 0 &&
+            recurringRevenueCustomers.every((lead) => costEvidenceComplete(lead.id, currency));
+          const recurringGrossMarginPct =
+            recurringCostComplete && recurringRevenue > 0
+              ? round(((recurringRevenue - recurringCost) / recurringRevenue) * 100)
+              : null;
+          const monthlyGrossProfit =
+            recurringGrossMarginPct !== null && mrr > 0
+              ? mrr * (recurringGrossMarginPct / 100)
+              : null;
+          const paybackDays =
+            monthlyGrossProfit && monthlyGrossProfit > 0 && spend > 0
+              ? round((spend / monthlyGrossProfit) * 30.44)
+              : null;
+
           const observedRevenueLtv = revenueCustomers.length
             ? Math.round(recognizedRevenue / revenueCustomers.length)
             : null;
-          const observedGrossProfitLtv = completeCosts && revenueCustomers.length && grossProfit !== null
-            ? Math.round(grossProfit / revenueCustomers.length)
-            : null;
+          const observedGrossProfitLtv =
+            completeCosts && revenueCustomers.length && grossProfit !== null
+              ? Math.round(grossProfit / revenueCustomers.length)
+              : null;
 
           const blockers: string[] = [];
           if (enquiries < policy.minimumEnquiries) blockers.push(`fewer than ${policy.minimumEnquiries} enquiries`);
           if (proposals < policy.minimumProposals) blockers.push(`fewer than ${policy.minimumProposals} proposals`);
           if (spend <= 0) blockers.push("no service-tagged acquisition spend");
-          if (wins > 0 && revenueCoveragePct < policy.minimumRevenueCoveragePct) blockers.push("revenue evidence coverage below 80%");
-          if (winsWithRevenue > 0 && costCoveragePct < policy.minimumCostCoveragePct) blockers.push("direct-cost evidence coverage below 80%");
+          if (wins > 0 && revenueCoveragePct < policy.minimumRevenueCoveragePct) {
+            blockers.push("revenue evidence coverage below 80%");
+          }
+          if (winsWithRevenue > 0 && costCoveragePct < policy.minimumCostCoveragePct) {
+            blockers.push("cost-completeness attestation coverage below 80%");
+          }
+          if (mrr > 0 && paybackDays === null) {
+            blockers.push("recurring payback unavailable until recurring revenue and attested recurring costs exist");
+          }
 
           let decision: "scale" | "maintain" | "cut" | "insufficient_data" = "insufficient_data";
           const reasons: string[] = [];
+          const matureZeroEnquirySpendCut =
+            enquiries === 0 &&
+            spend > 0 &&
+            spendAgeDays !== null &&
+            spendAgeDays >= policy.minimumSpendMaturityDaysForZeroEnquiryCut;
           const noWinCut = proposals >= 5 && wins === 0 && spend > 0;
           const economicsReady =
             enquiries >= policy.minimumEnquiries &&
@@ -934,26 +978,31 @@ export function createRevenueIntelligenceRouter() {
             grossMarginPct !== null &&
             grossProfitRoas !== null;
 
-          if (noWinCut) {
+          if (matureZeroEnquirySpendCut) {
+            decision = "cut";
+            reasons.push("Mature service-tagged spend produced zero enquiries.");
+          } else if (noWinCut) {
             decision = "cut";
             reasons.push("Five or more proposals produced no wins despite recorded service-tagged spend.");
           } else if (economicsReady) {
+            const recurringPaybackPasses =
+              mrr <= 0 || (paybackDays !== null && paybackDays <= policy.scaleMaximumPaybackDays);
             const scale =
               proposalWinRate >= policy.scaleProposalWinRatePct &&
               grossMarginPct >= policy.scaleGrossMarginPct &&
               grossProfitRoas >= policy.scaleGrossProfitRoas &&
-              (paybackDays === null || paybackDays <= policy.scaleMaximumPaybackDays) &&
+              recurringPaybackPasses &&
               stalledShare < 30;
             const cut =
               grossMarginPct < policy.cutGrossMarginPct ||
               grossProfitRoas < policy.cutGrossProfitRoas ||
-              (paybackDays !== null && paybackDays > policy.cutMaximumPaybackDays);
+              (mrr > 0 && paybackDays !== null && paybackDays > policy.cutMaximumPaybackDays);
             if (scale) {
               decision = "scale";
-              reasons.push("Conversion, gross-margin efficiency and acquisition economics clear the scale policy.");
+              reasons.push("Conversion, attested gross-margin efficiency and acquisition economics clear the scale policy.");
             } else if (cut) {
               decision = "cut";
-              reasons.push("Observed gross-margin efficiency or payback breaches the cut policy.");
+              reasons.push("Observed gross-margin efficiency or recurring payback breaches the cut policy.");
             } else {
               decision = "maintain";
               reasons.push("Economics are sufficiently evidenced but do not yet clear scale or cut thresholds.");
@@ -963,8 +1012,12 @@ export function createRevenueIntelligenceRouter() {
           }
 
           const confidence =
-            enquiries >= 20 && proposals >= 8 && wins >= 4 &&
-            revenueCoveragePct === 100 && costCoveragePct === 100 && spend > 0
+            enquiries >= 20 &&
+            proposals >= 8 &&
+            wins >= 4 &&
+            revenueCoveragePct === 100 &&
+            costCoveragePct === 100 &&
+            spend > 0
               ? "high"
               : decision !== "insufficient_data"
                 ? "medium"
@@ -986,11 +1039,15 @@ export function createRevenueIntelligenceRouter() {
               proposalWinRate,
               stalledShare,
               spend,
+              spendAgeDays,
               recognizedRevenue,
               directCost: completeCosts ? directCost : null,
               grossProfit,
               grossMarginPct,
               grossProfitRoas,
+              recurringRevenue,
+              recurringCost: recurringCostComplete ? recurringCost : null,
+              recurringGrossMarginPct,
               mrr,
               arr: mrr * 12,
               paybackDays,
