@@ -987,8 +987,10 @@ export function createAdminRouter(): Router {
         lost: 0,
         wonValues: new Map(),
       });
+      const firstChannelRows = new Map<string, AttributionRow>();
       const channelRows = new Map<string, AttributionRow>();
       const sourceRows = new Map<string, AttributionRow>();
+      const campaignRows = new Map<string, AttributionRow>();
       const landingRows = new Map<string, AttributionRow>();
       const serviceRows = new Map<string, AttributionRow>();
       const channelServiceRows = new Map<string, AttributionRow>();
@@ -1015,11 +1017,18 @@ export function createAdminRouter(): Router {
       };
 
       for (const lead of leadRows) {
+        const first = firstTouch.get(lead.id);
         const last = lastTouch.get(lead.id);
+        const firstChannel = first?.channel ?? "unattributed";
         const channel = last?.channel ?? "unattributed";
         const source = last?.source ?? "unattributed";
+        const campaign = last?.campaign ?? "unattributed";
         const landingPage = last?.landingPage ?? "unattributed";
         const service = lead.serviceInterest || "unclassified";
+
+        const firstChannelRow = firstChannelRows.get(firstChannel) ?? makeRow(firstChannel);
+        addLead(firstChannelRow, lead);
+        firstChannelRows.set(firstChannel, firstChannelRow);
 
         const channelRow = channelRows.get(channel) ?? makeRow(channel);
         addLead(channelRow, lead);
@@ -1028,6 +1037,10 @@ export function createAdminRouter(): Router {
         const sourceRow = sourceRows.get(source) ?? makeRow(source);
         addLead(sourceRow, lead);
         sourceRows.set(source, sourceRow);
+
+        const campaignRow = campaignRows.get(campaign) ?? makeRow(campaign);
+        addLead(campaignRow, lead);
+        campaignRows.set(campaign, campaignRow);
 
         const landingRow = landingRows.get(landingPage) ?? makeRow(landingPage);
         addLead(landingRow, lead);
@@ -1098,6 +1111,12 @@ export function createAdminRouter(): Router {
           firstTouchRate: leadRows.length ? round((firstTouch.size / leadRows.length) * 100) : 0,
           lastTouchRate: leadRows.length ? round((lastTouch.size / leadRows.length) * 100) : 0,
         },
+        byFirstTouchChannel: [...firstChannelRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row);
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         byLastTouchChannel: [...channelRows.values()]
           .map((row) => {
             const serialized = serializeRow(row);
@@ -1105,6 +1124,12 @@ export function createAdminRouter(): Router {
           })
           .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         byLastTouchSource: [...sourceRows.values()]
+          .map((row) => {
+            const serialized = serializeRow(row);
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+          })
+          .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
+        byCampaign: [...campaignRows.values()]
           .map((row) => {
             const serialized = serializeRow(row);
             return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
