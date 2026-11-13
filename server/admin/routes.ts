@@ -543,29 +543,55 @@ export function createAdminRouter(): Router {
     requireAdminPermission("leads.manage"),
     async (request, response) => {
       const input = updateLeadSchema.parse(request.body);
-      const changes = {
-        ...input,
-        estimatedValue:
-          input.estimatedValue === undefined
-            ? undefined
-            : input.estimatedValue === null
-              ? null
-              : String(input.estimatedValue),
-        followUpAt:
-          input.followUpAt === undefined
-            ? undefined
-            : input.followUpAt === null
-              ? null
-              : new Date(input.followUpAt),
-        updatedAt: new Date(),
-      };
-      const updated = await db.transaction(async (transaction) => {
+      const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction
           .select()
           .from(leads)
           .where(eq(leads.id, request.params.id))
           .limit(1);
-        if (!previous) return undefined;
+        if (!previous) return { outcome: "missing" as const };
+
+        const targetStage = input.stage ?? previous.stage;
+        const effectiveEstimatedValue =
+          input.estimatedValue === undefined
+            ? previous.estimatedValue
+            : input.estimatedValue;
+        if (
+          ["proposal", "negotiation", "won"].includes(targetStage) &&
+          (!effectiveEstimatedValue || Number(effectiveEstimatedValue) <= 0)
+        ) {
+          return { outcome: "value_required" as const };
+        }
+
+        const changes = {
+          ...input,
+          estimatedValue:
+            input.estimatedValue === undefined
+              ? undefined
+              : input.estimatedValue === null
+                ? null
+                : String(input.estimatedValue),
+          probability:
+            targetStage === "won"
+              ? 100
+              : targetStage === "lost"
+                ? 0
+                : input.probability,
+          lostReason:
+            targetStage === "lost"
+              ? input.lostReason
+              : input.stage && previous.stage === "lost" && input.lostReason === undefined
+                ? null
+                : input.lostReason,
+          followUpAt:
+            input.followUpAt === undefined
+              ? undefined
+              : input.followUpAt === null
+                ? null
+                : new Date(input.followUpAt),
+          updatedAt: new Date(),
+        };
+
         const [record] = await transaction
           .update(leads)
           .set(changes)
@@ -579,7 +605,12 @@ export function createAdminRouter(): Router {
           body: stageChanged
             ? `Pipeline stage changed from ${previous.stage} to ${input.stage}.`
             : "Lead details updated.",
-          metadata: input,
+          metadata: {
+            ...input,
+            probability: record.probability,
+            estimatedValue: record.estimatedValue,
+            currency: record.currency,
+          },
         });
         await transaction.insert(auditEvents).values({
           actorUserId: request.securityPrincipal?.userId ?? null,
@@ -592,11 +623,15 @@ export function createAdminRouter(): Router {
           previousState: previous,
           newState: record,
         });
-        return record;
+        return { outcome: "ok" as const, record };
       });
-      if (!updated)
+      if (result.outcome === "missing")
         return response.status(404).json({ message: "Lead not found" });
-      response.json(updated);
+      if (result.outcome === "value_required")
+        return response.status(409).json({
+          message: "Estimated commercial value is required before proposal, negotiation, or won stages",
+        });
+      response.json(result.record);
     },
   );
 
