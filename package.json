@@ -14,7 +14,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:push": "drizzle-kit push",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
-    "verify:release": "npm run check && npm test && npm run build && npm audit --omit=dev --audit-level=high"
+    "verify:release": "npm run check && npm test && npm run build && npm audit --omit=dev --audit-level=high && npm audit --audit-level=high"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.2",
