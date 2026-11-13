@@ -39,6 +39,7 @@ const ContentManagement = lazy(() => import("@/pages/admin/ContentManagement"));
 const ProjectManagement = lazy(() => import("@/pages/admin/ProjectManagement"));
 const CaseStudyManagement = lazy(() => import("@/pages/admin/CaseStudyManagement"));
 const LeadPipeline = lazy(() => import("@/pages/admin/LeadPipeline"));
+const RevenueIntelligence = lazy(() => import("@/pages/admin/RevenueIntelligence"));
 const SecurityManagement = lazy(() => import("@/pages/admin/SecurityManagement"));
 const UserManagement = lazy(() => import("@/pages/admin/UserManagement"));
 
@@ -100,6 +101,7 @@ function Router() {
           <Route path="/admin/projects"><AdminProtectedRoute component={ProjectManagement} /></Route>
           <Route path="/admin/case-studies"><AdminProtectedRoute component={CaseStudyManagement} /></Route>
           <Route path="/admin/pipeline"><AdminProtectedRoute component={LeadPipeline} /></Route>
+          <Route path="/admin/revenue-intelligence"><AdminProtectedRoute component={RevenueIntelligence} /></Route>
           <Route path="/admin/security"><AdminProtectedRoute component={SecurityManagement} /></Route>
           <Route path="/admin/users"><AdminProtectedRoute component={UserManagement} /></Route>
           <Route path="/analytics"><AdminProtectedRoute component={Analytics} /></Route>
