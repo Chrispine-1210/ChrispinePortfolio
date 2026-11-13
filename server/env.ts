@@ -14,6 +14,10 @@ const environmentSchema = z
       (value) => (value === "" ? undefined : value),
       z.string().url().optional(),
     ),
+    APP_DATABASE_URL: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().url().optional(),
+    ),
     AUTH_SECRET: z.preprocess(
       (value) => (value === "" ? undefined : value),
       z.string().min(32, "AUTH_SECRET must contain at least 32 characters").optional(),
