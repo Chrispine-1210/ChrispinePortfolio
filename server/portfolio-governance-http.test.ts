@@ -206,6 +206,11 @@ describe("portfolio governance HTTP routes", () => {
       action: "case_study.evidence.withdraw",
       justification: "Unsupported claim removed from publication scope",
     }]);
+
+    await api.post(`${studyPath}/transition`).set("Cookie", administrator.cookie)
+      .send({ action: "archive", justification: "Test cleanup after evidence withdrawal verification" })
+      .expect(200);
+    await api.get(`/api/portfolio/${input.slug}`).expect(404);
   });
 
   it("keeps private studies inaccessible and unlisted studies out of discovery", async () => {
