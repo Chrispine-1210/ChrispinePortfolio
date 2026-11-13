@@ -14,6 +14,7 @@ beforeAll(async () => {
   vi.stubEnv("ADMIN_EMAIL", "admin@test.invalid");
   vi.stubEnv("ADMIN_PASSWORD", "isolated-test-password");
   vi.stubEnv("DATABASE_URL", "postgresql://test:test@localhost:5432/test");
+  vi.stubEnv("ADMIN_AUTH_MODE", "temporary");
 
   const auth = await import("./custom-auth.js");
   ({ generateToken, verifyToken } = auth);
