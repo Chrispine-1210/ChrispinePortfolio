@@ -90,7 +90,7 @@ export async function createLeadFromConsultation(
     await transaction.insert(leadActivities).values({
       leadId: lead.id,
       type: "created",
-      body: "Qualified consultation request captured from the portfolio.",
+      body: "Structured consultation request captured from the portfolio.",
       metadata: {
         contactRequestId: contact.id,
         serviceInterest: input.serviceInterest,
