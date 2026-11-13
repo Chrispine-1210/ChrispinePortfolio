@@ -14,6 +14,7 @@ import { Router } from "express";
 import { z } from "zod";
 import {
   blogPosts,
+  acquisitionSpendEntries,
   auditEvents,
   contentVersions,
   contactRequests,
@@ -88,6 +89,24 @@ function can(request: Express.Request, permission: string) {
     request.securityPrincipal.permissions.includes(permission)
   );
 }
+
+const acquisitionSpendInputSchema = z.object({
+  channel: z.enum(["email", "paid", "social", "organic_search", "referral", "direct", "other"]),
+  source: z.string().trim().min(1).max(160).transform((value) => value.toLowerCase()),
+  campaign: z.string().trim().max(180).nullable().optional(),
+  currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
+  amount: z.union([
+    z.number().positive(),
+    z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number),
+  ]),
+  occurredAt: z.string().datetime().superRefine((value, context) => {
+    const occurred = new Date(value).getTime();
+    if (!Number.isFinite(occurred) || occurred > Date.now() + 10 * 60 * 1000) {
+      context.addIssue({ code: "custom", message: "Spend timestamp cannot be in the future" });
+    }
+  }),
+  notes: z.string().trim().max(2000).nullable().optional(),
+}).strict();
 
 const updateLeadSchema = z
   .object({
@@ -692,6 +711,99 @@ export function createAdminRouter(): Router {
           canViewFinancial ? row : { ...row, value: null, weightedValue: null },
         ),
       );
+    },
+  );
+
+  router.get(
+    "/api/admin/acquisition/spend",
+    requireAdminPermission("pipeline.financial.read"),
+    async (request, response) => {
+      const rows = await db
+        .select()
+        .from(acquisitionSpendEntries)
+        .orderBy(desc(acquisitionSpendEntries.occurredAt))
+        .limit(1000);
+      response.setHeader("Cache-Control", "no-store");
+      response.json(rows);
+    },
+  );
+
+  router.post(
+    "/api/admin/acquisition/spend",
+    requireAdminPermission("acquisition.spend.manage"),
+    async (request, response) => {
+      const input = acquisitionSpendInputSchema.parse(request.body);
+      const [record] = await db.transaction(async (transaction) => {
+        const [created] = await transaction
+          .insert(acquisitionSpendEntries)
+          .values({
+            channel: input.channel,
+            source: input.source,
+            campaign: input.campaign || null,
+            currency: input.currency,
+            amount: String(input.amount),
+            occurredAt: new Date(input.occurredAt),
+            notes: input.notes || null,
+            createdBy: request.securityPrincipal?.userId ?? null,
+          })
+          .returning();
+        await transaction.insert(auditEvents).values({
+          actorUserId: request.securityPrincipal?.userId ?? null,
+          actorSessionId: request.securityPrincipal?.sessionId ?? null,
+          action: "acquisition.spend.create",
+          resourceType: "acquisition_spend",
+          resourceId: created.id,
+          result: "success",
+          requestId: request.requestId,
+          newState: created,
+        });
+        return [created];
+      });
+      response.status(201).json(record);
+    },
+  );
+
+  router.post(
+    "/api/admin/acquisition/spend/:id/void",
+    requireAdminPermission("acquisition.spend.manage"),
+    async (request, response) => {
+      const input = z.object({
+        reason: z.string().trim().min(5).max(1000),
+      }).strict().parse(request.body);
+      const result = await db.transaction(async (transaction) => {
+        const [previous] = await transaction
+          .select()
+          .from(acquisitionSpendEntries)
+          .where(eq(acquisitionSpendEntries.id, request.params.id))
+          .limit(1);
+        if (!previous) return { outcome: "missing" as const };
+        if (previous.voidedAt) return { outcome: "already_voided" as const, record: previous };
+        const [record] = await transaction
+          .update(acquisitionSpendEntries)
+          .set({
+            voidedAt: new Date(),
+            voidedBy: request.securityPrincipal?.userId ?? null,
+            voidReason: input.reason,
+          })
+          .where(eq(acquisitionSpendEntries.id, previous.id))
+          .returning();
+        await transaction.insert(auditEvents).values({
+          actorUserId: request.securityPrincipal?.userId ?? null,
+          actorSessionId: request.securityPrincipal?.sessionId ?? null,
+          action: "acquisition.spend.void",
+          resourceType: "acquisition_spend",
+          resourceId: previous.id,
+          result: "success",
+          requestId: request.requestId,
+          previousState: previous,
+          newState: record,
+          justification: input.reason,
+        });
+        return { outcome: "ok" as const, record };
+      });
+      if (result.outcome === "missing") return response.status(404).json({ message: "Spend entry not found" });
+      if (result.outcome === "already_voided") return response.status(409).json({ message: "Spend entry is already voided" });
+      response.json(result.record);
     },
   );
 
