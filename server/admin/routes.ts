@@ -1010,20 +1010,31 @@ export function createAdminRouter(): Router {
         ? new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000)
         : null;
 
-      const leadRows = await db
-        .select({
-          id: leads.id,
-          serviceInterest: leads.serviceInterest,
-          stage: leads.stage,
-          currency: leads.currency,
-          estimatedValue: leads.estimatedValue,
-          lostReason: leads.lostReason,
-          createdAt: leads.createdAt,
-        })
-        .from(leads)
-        .where(and(isNull(leads.archivedAt), ...(since ? [gt(leads.createdAt, since)] : [])))
-        .orderBy(desc(leads.createdAt))
-        .limit(5000);
+      const [leadRows, spendRows] = await Promise.all([
+        db
+          .select({
+            id: leads.id,
+            serviceInterest: leads.serviceInterest,
+            stage: leads.stage,
+            currency: leads.currency,
+            estimatedValue: leads.estimatedValue,
+            lostReason: leads.lostReason,
+            createdAt: leads.createdAt,
+          })
+          .from(leads)
+          .where(and(isNull(leads.archivedAt), ...(since ? [gt(leads.createdAt, since)] : [])))
+          .orderBy(desc(leads.createdAt))
+          .limit(5000),
+        db
+          .select()
+          .from(acquisitionSpendEntries)
+          .where(and(
+            isNull(acquisitionSpendEntries.voidedAt),
+            ...(since ? [gt(acquisitionSpendEntries.occurredAt, since)] : []),
+          ))
+          .orderBy(desc(acquisitionSpendEntries.occurredAt))
+          .limit(5000),
+      ]);
 
       const leadIds = leadRows.map((lead) => lead.id);
       const [touches, stageEvents] = leadIds.length
@@ -1108,6 +1119,33 @@ export function createAdminRouter(): Router {
       const channelServiceRows = new Map<string, AttributionRow>();
       const lossRows = new Map<string, { reason: string; count: number; values: Map<string, number> }>();
       const velocity = { qualified: [] as number[], proposal: [] as number[], won: [] as number[] };
+      const spendByChannel = new Map<string, Map<string, number>>();
+      const spendBySource = new Map<string, Map<string, number>>();
+      const spendByCampaign = new Map<string, Map<string, number>>();
+      const totalSpendByCurrency = new Map<string, number>();
+
+      const addSpend = (
+        target: Map<string, Map<string, number>>,
+        key: string,
+        currency: string,
+        amount: number,
+      ) => {
+        const currencyTotals = target.get(key) ?? new Map<string, number>();
+        currencyTotals.set(currency, (currencyTotals.get(currency) ?? 0) + amount);
+        target.set(key, currencyTotals);
+      };
+
+      for (const spend of spendRows) {
+        const amount = Number(spend.amount);
+        if (!Number.isFinite(amount) || amount <= 0) continue;
+        addSpend(spendByChannel, spend.channel, spend.currency, amount);
+        addSpend(spendBySource, spend.source, spend.currency, amount);
+        addSpend(spendByCampaign, spend.campaign || "unattributed", spend.currency, amount);
+        totalSpendByCurrency.set(
+          spend.currency,
+          (totalSpendByCurrency.get(spend.currency) ?? 0) + amount,
+        );
+      }
 
       const addLead = (row: AttributionRow, lead: (typeof leadRows)[number]) => {
         const history = milestones.get(lead.id);
@@ -1191,22 +1229,43 @@ export function createAdminRouter(): Router {
       const round = (value: number) => Math.round(value * 10) / 10;
       const average = (values: number[]) =>
         values.length ? round(values.reduce((sum, value) => sum + value, 0) / values.length) : null;
-      const serializeRow = (row: AttributionRow) => ({
-        key: row.key,
-        enquiries: row.enquiries,
-        qualified: row.qualified,
-        proposals: row.proposals,
-        won: row.won,
-        lost: row.lost,
-        qualificationRate: row.enquiries ? round((row.qualified / row.enquiries) * 100) : 0,
-        proposalRate: row.qualified ? round((row.proposals / row.qualified) * 100) : 0,
-        proposalWinRate: row.proposals ? round((row.won / row.proposals) * 100) : 0,
-        wonRevenueByCurrency: [...row.wonValues.entries()].map(([currency, value]) => ({
-          currency,
-          revenue: value.total,
-          averageWonValue: value.count ? Math.round(value.total / value.count) : 0,
-        })),
-      });
+      const serializeRow = (
+        row: AttributionRow,
+        spend?: Map<string, number>,
+      ) => {
+        const currencies = new Set<string>([
+          ...row.wonValues.keys(),
+          ...(spend ? spend.keys() : []),
+        ]);
+        return {
+          key: row.key,
+          enquiries: row.enquiries,
+          qualified: row.qualified,
+          proposals: row.proposals,
+          won: row.won,
+          lost: row.lost,
+          qualificationRate: row.enquiries ? round((row.qualified / row.enquiries) * 100) : 0,
+          proposalRate: row.qualified ? round((row.proposals / row.qualified) * 100) : 0,
+          proposalWinRate: row.proposals ? round((row.won / row.proposals) * 100) : 0,
+          wonRevenueByCurrency: [...row.wonValues.entries()].map(([currency, value]) => ({
+            currency,
+            revenue: value.total,
+            averageWonValue: value.count ? Math.round(value.total / value.count) : 0,
+          })),
+          economicsByCurrency: [...currencies].map((currency) => {
+            const won = row.wonValues.get(currency) ?? { total: 0, count: 0 };
+            const spendValue = spend?.get(currency) ?? 0;
+            return {
+              currency,
+              spend: spendValue,
+              wonRevenue: won.total,
+              wins: won.count,
+              cac: spendValue > 0 && won.count > 0 ? Math.round(spendValue / won.count) : null,
+              roas: spendValue > 0 ? round(won.total / spendValue) : null,
+            };
+          }),
+        };
+      };
 
       const canViewFinancial =
         !request.securityPrincipal ||
@@ -1225,32 +1284,32 @@ export function createAdminRouter(): Router {
         },
         byFirstTouchChannel: [...firstChannelRows.values()]
           .map((row) => {
-            const serialized = serializeRow(row);
-            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+            const serialized = serializeRow(row, spendByChannel.get(row.key));
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
           })
           .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         byLastTouchChannel: [...channelRows.values()]
           .map((row) => {
-            const serialized = serializeRow(row);
-            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+            const serialized = serializeRow(row, spendByChannel.get(row.key));
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
           })
           .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         byLastTouchSource: [...sourceRows.values()]
           .map((row) => {
-            const serialized = serializeRow(row);
-            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+            const serialized = serializeRow(row, spendBySource.get(row.key));
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
           })
           .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         byCampaign: [...campaignRows.values()]
           .map((row) => {
-            const serialized = serializeRow(row);
-            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+            const serialized = serializeRow(row, spendByCampaign.get(row.key));
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
           })
           .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         byLandingPage: [...landingRows.values()]
           .map((row) => {
             const serialized = serializeRow(row);
-            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
           })
           .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         byChannelService: [...channelServiceRows.values()]
@@ -1267,7 +1326,7 @@ export function createAdminRouter(): Router {
         byService: [...serviceRows.values()]
           .map((row) => {
             const serialized = serializeRow(row);
-            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [] };
+            return canViewFinancial ? serialized : { ...serialized, wonRevenueByCurrency: [], economicsByCurrency: [] };
           })
           .sort((a, b) => b.enquiries - a.enquiries || a.key.localeCompare(b.key)),
         velocityDays: {
@@ -1290,10 +1349,14 @@ export function createAdminRouter(): Router {
           }))
           .sort((a, b) => b.count - a.count || a.reason.localeCompare(b.reason)),
         spendEconomics: {
-          status: "not_configured",
-          cac: null,
+          status: spendRows.length ? "available" : "not_configured",
+          spendByCurrency: canViewFinancial
+            ? [...totalSpendByCurrency.entries()].map(([currency, spend]) => ({ currency, spend }))
+            : [],
           paybackDays: null,
-          note: "Campaign spend is not yet ingested; CAC and payback are intentionally unavailable.",
+          note: spendRows.length
+            ? "CAC and ROAS are available by channel/source/campaign where matching-currency spend exists. Payback remains unavailable until recurring gross-margin data is ingested."
+            : "Campaign spend is not yet ingested; CAC, ROAS, and payback are intentionally unavailable.",
         },
       });
     },
