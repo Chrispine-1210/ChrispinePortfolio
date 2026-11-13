@@ -31,6 +31,17 @@ describe("case study evidence policy", () => {
       approvedPublicClaims: 1,
     });
   });
+
+  it("retains withdrawn evidence for audit without letting it block publication", () => {
+    expect(evaluateEvidenceGate([
+      { verificationStatus: "internally_verified", disclosureStatus: "approved_public" },
+      { verificationStatus: "rejected", disclosureStatus: "withdrawn" },
+    ] as any)).toEqual({
+      status: "approved",
+      reasons: [],
+      approvedPublicClaims: 1,
+    });
+  });
 });
 
 describe("project and case-study separation migration", () => {
