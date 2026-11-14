@@ -12,6 +12,7 @@ vi.mock("./db.js", () => ({ db: drizzle(database, { schema }) }));
 let app: Express;
 let administrator: { cookie: string; userId: string; sessionId: string };
 let manager: { cookie: string; userId: string; sessionId: string };
+let finance: { cookie: string; userId: string; sessionId: string };
 let viewer: { cookie: string; userId: string; sessionId: string };
 
 beforeAll(async () => {
@@ -44,6 +45,7 @@ beforeAll(async () => {
 
   administrator = await provision("super_administrator");
   manager = await provision("portfolio_test_manager");
+  finance = await provision("finance_manager");
   viewer = await provision("viewer");
   ({ app } = await import("./app.js"));
 });
