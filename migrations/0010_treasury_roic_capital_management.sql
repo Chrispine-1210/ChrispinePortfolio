@@ -46,6 +46,8 @@ create index if not exists treasury_balance_account_time_idx
   on treasury_balance_snapshots (account_id, captured_at);
 create index if not exists treasury_balance_active_time_idx
   on treasury_balance_snapshots (voided_at, captured_at);
+create unique index if not exists treasury_balance_account_snapshot_idx
+  on treasury_balance_snapshots (account_id, captured_at) where voided_at is null;
 
 create table if not exists treasury_cash_disbursements (
   id varchar primary key default gen_random_uuid(),
@@ -74,6 +76,18 @@ create table if not exists treasury_cash_disbursements (
       'growth_capex','maintenance_capex','working_capital','product_development',
       'debt_service','owner_distribution','other_financing'
     )
+  ),
+  constraint treasury_cash_type_category_consistent check (
+    (cash_use_type = 'operating' and category in (
+      'direct_delivery','payroll','marketing','software_infrastructure',
+      'rent_utilities','professional_fees','tax','other_operating'
+    ))
+    or (cash_use_type = 'capital' and category in (
+      'growth_capex','maintenance_capex','working_capital','product_development'
+    ))
+    or (cash_use_type = 'financing' and category in (
+      'debt_service','owner_distribution','other_financing'
+    ))
   )
 );
 
@@ -157,6 +171,8 @@ create index if not exists invested_capital_currency_time_idx
   on invested_capital_snapshots (currency, captured_at);
 create index if not exists invested_capital_active_time_idx
   on invested_capital_snapshots (voided_at, captured_at);
+create unique index if not exists invested_capital_currency_snapshot_idx
+  on invested_capital_snapshots (currency, captured_at) where voided_at is null;
 
 create table if not exists capital_deployment_entries (
   id varchar primary key default gen_random_uuid(),
