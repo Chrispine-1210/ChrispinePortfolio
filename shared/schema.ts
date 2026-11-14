@@ -985,7 +985,48 @@ export type TreasuryCashDisbursement = typeof treasuryCashDisbursements.$inferSe
 export type OperatingExpenseEntry = typeof operatingExpenseEntries.$inferSelect;
 export type OperatingTaxProvision = typeof operatingTaxProvisions.$inferSelect;
 export type InvestedCapitalSnapshot = typeof investedCapitalSnapshots.$inferSelect;
+export const financialEvidenceAttestations = pgTable("financial_evidence_attestations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  evidenceType: varchar("evidence_type", { length: 40 }).notNull(),
+  throughAt: timestamp("through_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  typeTimeIdx: index("financial_evidence_attestation_type_time_idx").on(
+    table.evidenceType,
+    table.currency,
+    table.throughAt,
+  ),
+  activeIdx: index("financial_evidence_attestation_active_idx").on(table.voidedAt, table.throughAt),
+}));
+
+export const capitalHurdlePolicies = pgTable("capital_hurdle_policies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  annualHurdleRatePct: numeric("annual_hurdle_rate_pct", { precision: 7, scale: 3 }).notNull(),
+  effectiveFrom: timestamp("effective_from").notNull(),
+  effectiveTo: timestamp("effective_to"),
+  rationale: text("rationale").notNull(),
+  approvedBy: varchar("approved_by").notNull().references(() => users.id, { onDelete: "restrict" }),
+  approvedAt: timestamp("approved_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  currencyPeriodIdx: index("capital_hurdle_currency_period_idx").on(
+    table.currency,
+    table.effectiveFrom,
+    table.effectiveTo,
+  ),
+}));
+
 export type CapitalDeploymentEntry = typeof capitalDeploymentEntries.$inferSelect;
+export type FinancialEvidenceAttestation = typeof financialEvidenceAttestations.$inferSelect;
+export type CapitalHurdlePolicy = typeof capitalHurdlePolicies.$inferSelect;
 
 // Blog Likes
 export const blogLikes = pgTable("blog_likes", {
