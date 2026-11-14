@@ -190,10 +190,50 @@ create index if not exists capital_deployment_category_time_idx
 create index if not exists capital_deployment_active_time_idx
   on capital_deployment_entries (voided_at, occurred_at);
 
+create table if not exists financial_evidence_attestations (
+  id varchar primary key default gen_random_uuid(),
+  currency varchar(3) not null,
+  evidence_type varchar(40) not null,
+  through_at timestamp not null,
+  source_reference text not null,
+  notes text,
+  created_by varchar references users(id) on delete set null,
+  voided_at timestamp,
+  voided_by varchar references users(id) on delete set null,
+  void_reason text,
+  created_at timestamp not null default now(),
+  constraint financial_evidence_attestation_type_valid check (
+    evidence_type in ('operating_expenses_complete','cash_disbursements_complete')
+  )
+);
+
+create index if not exists financial_evidence_attestation_type_time_idx
+  on financial_evidence_attestations (evidence_type, currency, through_at);
+create index if not exists financial_evidence_attestation_active_idx
+  on financial_evidence_attestations (voided_at, through_at);
+
+create table if not exists capital_hurdle_policies (
+  id varchar primary key default gen_random_uuid(),
+  currency varchar(3) not null,
+  annual_hurdle_rate_pct numeric(7,3) not null,
+  effective_from timestamp not null,
+  effective_to timestamp,
+  rationale text not null,
+  approved_by varchar not null references users(id) on delete restrict,
+  approved_at timestamp not null,
+  created_at timestamp not null default now(),
+  constraint capital_hurdle_rate_nonnegative check (annual_hurdle_rate_pct >= 0),
+  constraint capital_hurdle_period_valid check (effective_to is null or effective_to >= effective_from)
+);
+
+create index if not exists capital_hurdle_currency_period_idx
+  on capital_hurdle_policies (currency, effective_from, effective_to);
+
 insert into permissions (key, description) values
   ('treasury.evidence.manage', 'Record and correct treasury accounts, balances and cash disbursement evidence'),
   ('roic.evidence.manage', 'Record and correct operating expense, tax and invested-capital evidence'),
-  ('capital.deployment.manage', 'Record and correct approved capital deployment evidence')
+  ('capital.deployment.manage', 'Record and correct approved capital deployment evidence'),
+  ('capital.hurdle.approve', 'Approve explicit company capital hurdle rates used for ROIC spread decisions')
 on conflict (key) do update set description = excluded.description;
 
 insert into role_permissions (role_id, permission_id)
@@ -203,7 +243,8 @@ where roles.key in ('super_administrator','administrator')
   and permissions.key in (
     'treasury.evidence.manage',
     'roic.evidence.manage',
-    'capital.deployment.manage'
+    'capital.deployment.manage',
+    'capital.hurdle.approve'
   )
 on conflict do nothing;
 
