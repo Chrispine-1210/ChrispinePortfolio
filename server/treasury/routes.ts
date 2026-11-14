@@ -7,6 +7,7 @@ import {
   isNull,
   lte,
   or,
+  sql,
 } from "drizzle-orm";
 import { Router } from "express";
 import { z } from "zod";
@@ -160,6 +161,22 @@ function round(value: number, digits = 1) {
 
 function daysBetween(start: Date, end: Date) {
   return Math.max(0, (end.getTime() - start.getTime()) / DAY_MS);
+}
+
+function proratedAmountForOverlap(
+  amount: number,
+  sourceStart: Date,
+  sourceEnd: Date,
+  periodStart: Date,
+  periodEnd: Date,
+) {
+  const overlapStart = new Date(Math.max(sourceStart.getTime(), periodStart.getTime()));
+  const overlapEnd = new Date(Math.min(sourceEnd.getTime(), periodEnd.getTime()));
+  if (overlapEnd.getTime() < overlapStart.getTime()) return 0;
+  const sourceDays = daysBetween(sourceStart, sourceEnd) + 1;
+  const overlapDays = daysBetween(overlapStart, overlapEnd) + 1;
+  if (sourceDays <= 0) return 0;
+  return amount * Math.min(1, overlapDays / sourceDays);
 }
 
 function clipIntervals(
@@ -459,24 +476,56 @@ export function createTreasuryRoicRouter() {
         if (!row) return response.status(404).json({ message: "Capital budget allocation not found" });
         if (row.budget.status !== "approved") return response.status(409).json({ message: "Capital budget must be approved before deployment" });
         if (row.budget.currency !== input.currency) return response.status(409).json({ message: "Capital deployment currency must match approved budget" });
-        if (input.serviceInterest && row.allocation.serviceInterest !== input.serviceInterest) {
+        if (input.serviceInterest !== row.allocation.serviceInterest) {
           return response.status(409).json({ message: "Capital deployment service must match budget allocation" });
         }
+        if (occurredAt < row.budget.periodStart || occurredAt > row.budget.periodEnd) {
+          return response.status(409).json({ message: "Capital deployment must occur inside the approved budget period" });
+        }
+
+        const [usage] = await db.select({
+          deployedAmount: sql<string>`coalesce(sum(${capitalDeploymentEntries.amount}), 0)`,
+        }).from(capitalDeploymentEntries).where(and(
+          eq(capitalDeploymentEntries.budgetAllocationId, input.budgetAllocationId),
+          isNull(capitalDeploymentEntries.voidedAt),
+        ));
+        const approvedAmount = Number(row.allocation.approvedAmount);
+        const alreadyDeployed = Number(usage?.deployedAmount ?? 0);
+        if (alreadyDeployed + input.amount > approvedAmount + 0.005) {
+          return response.status(409).json({
+            message: "Capital deployment exceeds approved allocation balance",
+            approvedAmount,
+            alreadyDeployed,
+            remainingAmount: Math.max(0, round(approvedAmount - alreadyDeployed, 2)),
+          });
+        }
       }
-      const [record] = await db.insert(capitalDeploymentEntries).values({
-        budgetAllocationId: input.budgetAllocationId || null,
-        currency: input.currency,
-        amount: String(input.amount),
-        category: input.category,
-        serviceInterest: input.serviceInterest || null,
-        occurredAt,
-        sourceReference: input.sourceReference,
-        approvalReference: input.approvalReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "capital.deployment.create", "capital_deployment_entry", record.id, null, record);
-      response.status(201).json(record);
+
+      try {
+        const [record] = await db.insert(capitalDeploymentEntries).values({
+          budgetAllocationId: input.budgetAllocationId || null,
+          currency: input.currency,
+          amount: String(input.amount),
+          category: input.category,
+          serviceInterest: input.serviceInterest || null,
+          occurredAt,
+          sourceReference: input.sourceReference,
+          approvalReference: input.approvalReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "capital.deployment.create", "capital_deployment_entry", record.id, null, record);
+        return response.status(201).json(record);
+      } catch (error) {
+        const cause = error instanceof Error
+          ? (error as Error & { cause?: { message?: string } }).cause?.message ?? ""
+          : "";
+        const message = `${error instanceof Error ? error.message : String(error)} ${cause}`;
+        if (message.includes("Capital deployment exceeds approved allocation balance")) {
+          return response.status(409).json({ message: "Capital deployment exceeds approved allocation balance" });
+        }
+        throw error;
+      }
     },
   );
 
@@ -782,7 +831,13 @@ export function createTreasuryRoicRouter() {
         const directCost = costs.reduce((sum, row) => sum + Number(row.amount), 0);
         const acquisition = spend.reduce((sum, row) => sum + Number(row.amount), 0);
         const operatingExpense = opex.reduce((sum, row) => sum + Number(row.amount), 0);
-        const taxProvision = taxRows.reduce((sum, row) => sum + Number(row.amount), 0);
+        const taxProvision = round(taxRows.reduce((sum, row) => sum + proratedAmountForOverlap(
+          Number(row.amount),
+          row.periodStart,
+          row.periodEnd,
+          start,
+          end,
+        ), 0), 2);
 
         const revenueLeadIds = [...new Set(rev.map((row) => row.leadId))];
         const completeRevenueLeads = revenueLeadIds.filter((leadId) => {

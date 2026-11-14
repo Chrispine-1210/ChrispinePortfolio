@@ -245,6 +245,101 @@ create table if not exists capital_hurdle_policies (
 create index if not exists capital_hurdle_currency_period_idx
   on capital_hurdle_policies (currency, effective_from, effective_to);
 
+
+create or replace function enforce_capital_deployment_budget_guard()
+returns trigger
+language plpgsql
+as $$
+declare
+  allocation_approved numeric(14,2);
+  allocation_service varchar(180);
+  budget_status varchar(24);
+  budget_currency varchar(3);
+  budget_start timestamp;
+  budget_end timestamp;
+  already_deployed numeric(14,2);
+begin
+  if NEW.voided_at is not null then
+    return NEW;
+  end if;
+
+  if NEW.budget_allocation_id is null then
+    if NEW.category in (
+      'growth_capex','maintenance_capex','working_capital',
+      'product_development','strategic_investment'
+    ) then
+      raise exception 'Operating capital deployment requires an approved capital budget allocation'
+        using errcode = '23514';
+    end if;
+    return NEW;
+  end if;
+
+  select
+    allocation.approved_amount,
+    allocation.service_interest,
+    budget.status,
+    budget.currency,
+    budget.period_start,
+    budget.period_end
+  into
+    allocation_approved,
+    allocation_service,
+    budget_status,
+    budget_currency,
+    budget_start,
+    budget_end
+  from capital_budget_allocations allocation
+  join capital_budget_cycles budget on budget.id = allocation.budget_id
+  where allocation.id = NEW.budget_allocation_id
+  for update of allocation;
+
+  if not found then
+    raise exception 'Capital budget allocation not found'
+      using errcode = '23503';
+  end if;
+
+  if budget_status <> 'approved' then
+    raise exception 'Capital budget must be approved before deployment'
+      using errcode = '23514';
+  end if;
+
+  if budget_currency <> NEW.currency then
+    raise exception 'Capital deployment currency must match approved budget'
+      using errcode = '23514';
+  end if;
+
+  if NEW.service_interest is distinct from allocation_service then
+    raise exception 'Capital deployment service must match budget allocation'
+      using errcode = '23514';
+  end if;
+
+  if NEW.occurred_at < budget_start or NEW.occurred_at > budget_end then
+    raise exception 'Capital deployment must occur inside the approved budget period'
+      using errcode = '23514';
+  end if;
+
+  select coalesce(sum(amount), 0)
+  into already_deployed
+  from capital_deployment_entries
+  where budget_allocation_id = NEW.budget_allocation_id
+    and voided_at is null
+    and id is distinct from NEW.id;
+
+  if already_deployed + NEW.amount > allocation_approved then
+    raise exception 'Capital deployment exceeds approved allocation balance'
+      using errcode = '23514';
+  end if;
+
+  return NEW;
+end;
+$$;
+
+drop trigger if exists capital_deployment_budget_guard on capital_deployment_entries;
+create trigger capital_deployment_budget_guard
+before insert or update of budget_allocation_id, amount, currency, category, service_interest, occurred_at, voided_at
+on capital_deployment_entries
+for each row execute function enforce_capital_deployment_budget_guard();
+
 insert into permissions (key, description) values
   ('treasury.evidence.manage', 'Record and correct treasury accounts, balances and cash disbursement evidence'),
   ('roic.evidence.manage', 'Record and correct operating expense, tax and invested-capital evidence'),

@@ -1485,6 +1485,7 @@ describe("public form and CRM compatibility", () => {
     const now = Date.now();
     const dayMs = 86_400_000;
     const ttmStart = new Date(now - 365 * dayMs);
+    const taxPeriodStart = new Date(ttmStart.getTime() - 30 * dayMs);
     const nowIso = new Date(now).toISOString();
 
     const { rows: [lead] } = await database.query<{ id: string }>(
@@ -1638,7 +1639,7 @@ describe("public form and CRM compatibility", () => {
       .send({
         currency: "USD",
         amount: 8000,
-        periodStart: ttmStart.toISOString(),
+        periodStart: taxPeriodStart.toISOString(),
         periodEnd: nowIso,
         recognizedAt: nowIso,
         sourceReference: "tax-provision-ttm-001",
@@ -1746,6 +1747,33 @@ describe("public form and CRM compatibility", () => {
       })
       .expect(201);
 
+    await api.post("/api/admin/treasury/deployments")
+      .set("Cookie", finance.cookie)
+      .send({
+        budgetAllocationId: allocation.body.id,
+        currency: "USD",
+        amount: 1,
+        category: "growth_capex",
+        serviceInterest: "enterprise-software",
+        occurredAt: new Date(now - 9 * dayMs).toISOString(),
+        sourceReference: "growth-capex-over-allocation-api",
+        approvalReference: "approved-budget-roic-fixture",
+      })
+      .expect(409, {
+        message: "Capital deployment exceeds approved allocation balance",
+        approvedAmount: 16000,
+        alreadyDeployed: 16000,
+        remainingAmount: 0,
+      });
+
+    await expect(database.query(
+      `insert into capital_deployment_entries
+        (budget_allocation_id,currency,amount,category,service_interest,occurred_at,source_reference,approval_reference)
+       values
+        ('${allocation.body.id}','USD',1,'growth_capex','enterprise-software',
+         now()-interval '8 days','growth-capex-over-allocation-db','approved-budget-roic-fixture')`,
+    )).rejects.toThrow(/Capital deployment exceeds approved allocation balance/);
+
     const intelligence = await api.get("/api/admin/treasury/intelligence")
       .set("Cookie", finance.cookie)
       .expect(200);
@@ -1775,15 +1803,11 @@ describe("public form and CRM compatibility", () => {
       acquisitionSpend: 10000,
       operatingExpense: 20000,
       ebit: 40000,
-      taxProvision: 8000,
-      nopat: 32000,
       beginningInvestedCapital: 200000,
       endingInvestedCapital: 240000,
       averageInvestedCapital: 220000,
-      roicPct: 14.55,
       capitalTurnover: 0.45,
       operatingDeployment: 16000,
-      operatingDeploymentRatePct: 50,
       evidence: expect.objectContaining({
         directCostCoveragePct: 100,
         operatingExpenseComplete: true,
@@ -1793,9 +1817,20 @@ describe("public form and CRM compatibility", () => {
         complete: true,
       }),
     });
+    const sourceTaxDays = (now - taxPeriodStart.getTime()) / dayMs + 1;
+    const ttmTaxDays = (now - ttmStart.getTime()) / dayMs + 1;
+    const expectedTaxProvision = Math.round(8000 * (ttmTaxDays / sourceTaxDays) * 100) / 100;
+    const expectedNopat = 40000 - expectedTaxProvision;
+    const expectedRoicPct = Math.round(expectedNopat / 220000 * 100 * 100) / 100;
+    const expectedDeploymentRatePct = Math.round(16000 / expectedNopat * 100 * 100) / 100;
+
+    expect(roic.currentTtm.taxProvision).toBeCloseTo(expectedTaxProvision, 2);
+    expect(roic.currentTtm.nopat).toBeCloseTo(expectedNopat, 2);
+    expect(roic.currentTtm.roicPct).toBe(expectedRoicPct);
+    expect(roic.currentTtm.operatingDeploymentRatePct).toBe(expectedDeploymentRatePct);
     expect(roic.hurdle).toMatchObject({ annualHurdleRatePct: 10 });
-    expect(roic.valueCreationSpreadPct).toBe(4.55);
-    expect(roic.economicProfit).toBe(10000);
+    expect(roic.valueCreationSpreadPct).toBe(Math.round((expectedRoicPct - 10) * 100) / 100);
+    expect(roic.economicProfit).toBe(Math.round(expectedNopat - 220000 * 0.10));
     expect(roic.incrementalRoicPct).toBeNull();
     expect(roic.posture).toBe("selective");
 
