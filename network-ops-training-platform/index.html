@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#08111f" />
+  <title>Network Operations Training Command Center</title>
+  <style>
+
+:root{
+  --bg:#07101d;
+  --bg2:#0a1423;
+  --panel:#101a2b;
+  --panel2:#131f33;
+  --panel3:#0d1727;
+  --line:#24344d;
+  --line2:#314664;
+  --text:#edf4ff;
+  --muted:#91a2bd;
+  --muted2:#6f839f;
+  --blue:#5ea0ff;
+  --cyan:#5ed8d3;
+  --green:#4fd1a5;
+  --amber:#f4c467;
+  --red:#ff7b8b;
+  --purple:#9a8cff;
+  --shadow:0 18px 60px rgba(0,0,0,.22);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 84% 12%, rgba(94,160,255,.08), transparent 25%),
+    radial-gradient(circle at 12% 88%, rgba(94,216,211,.05), transparent 28%),
+    linear-gradient(180deg,var(--bg),#08111f 55%,#07101d);
+  color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  min-height:100vh;
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+input,textarea,select{
+  width:100%;
+  background:#091423;
+  color:var(--text);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:11px 12px;
+  outline:none;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(94,160,255,.1)}
+textarea{min-height:110px;resize:vertical}
+.app-shell{display:grid;grid-template-columns:268px minmax(0,1fr);min-height:100vh}
+.sidebar{
+  border-right:1px solid var(--line);
+  background:rgba(7,16,29,.92);
+  backdrop-filter:blur(16px);
+  padding:22px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  position:sticky;
+  top:0;
+  height:100vh;
+}
+.brand-block{display:flex;gap:12px;align-items:center;padding:4px 6px 18px;border-bottom:1px solid var(--line)}
+.brand-mark{
+  width:42px;height:42px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#1f5ca9,#12315c);
+  border:1px solid #3c6fa8;font-weight:900;letter-spacing:.04em
+}
+.brand-title{font-weight:800;font-size:15px}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.nav{display:grid;gap:5px}
+.nav-item{
+  text-align:left;border:1px solid transparent;background:transparent;color:var(--muted);
+  padding:11px 12px;border-radius:10px;display:flex;gap:11px;align-items:center
+}
+.nav-item span{font-size:10px;color:#59708e;width:20px}
+.nav-item:hover,.nav-item.active{background:#101b2d;color:var(--text);border-color:var(--line)}
+.nav-item.active span{color:var(--blue)}
+.sidebar-status{margin-top:auto;border-top:1px solid var(--line);padding:16px 6px 0}
+.status-line{font-size:12px;display:flex;align-items:center;gap:8px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status-dot.online{background:var(--green);box-shadow:0 0 14px rgba(79,209,165,.55)}
+.status-meta{font-size:10px;color:var(--muted2);margin-top:5px}
+.main-shell{min-width:0}
+.topbar{
+  display:flex;justify-content:space-between;gap:18px;align-items:center;
+  padding:20px 28px;border-bottom:1px solid var(--line);
+  background:rgba(8,17,31,.78);backdrop-filter:blur(14px);position:sticky;top:0;z-index:20
+}
+.eyebrow{font-size:10px;letter-spacing:.16em;color:#6f8caf;font-weight:800}
+.topbar h1{margin:4px 0 0;font-size:22px}
+.topbar-actions,.toolbar,.hero-actions,.actions-row,.dialog-actions,.stack-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.week-pill,.pill,.status-pill{
+  border:1px solid var(--line);background:#0f1a2b;color:#b7c5d9;border-radius:999px;
+  padding:7px 10px;font-size:11px
+}
+.btn{
+  border:1px solid var(--line);background:#122038;color:var(--text);
+  border-radius:9px;padding:10px 13px;font-weight:700;font-size:12px
+}
+.btn:hover{border-color:var(--line2);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(180deg,#4f92ed,#3b78c9);border-color:#69a9fb;color:#06111f}
+.btn.secondary{background:#101b2e}
+.btn.ghost{background:transparent}
+.btn.danger{background:#311722;border-color:#5e2a39;color:#ffd1d7}
+.btn.small{padding:7px 9px;font-size:11px}
+main{padding:24px 28px 40px}
+.view{display:none}.view.active{display:block}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(340px,.75fr);gap:16px;margin-bottom:16px}
+.hero-panel,.priority-panel,.panel,.metric-card{
+  background:linear-gradient(180deg,rgba(17,28,46,.98),rgba(13,23,39,.98));
+  border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)
+}
+.hero-panel{display:grid;grid-template-columns:1fr 190px;padding:24px;min-height:238px;overflow:hidden;position:relative}
+.hero-panel:after{
+  content:"";position:absolute;right:-80px;top:-90px;width:250px;height:250px;border-radius:50%;
+  border:1px solid rgba(94,160,255,.08);box-shadow:0 0 0 34px rgba(94,160,255,.025),0 0 0 68px rgba(94,160,255,.02)
+}
+.hero-copy{position:relative;z-index:1}
+.hero-copy h2{font-size:30px;line-height:1.12;margin:8px 0 10px;max-width:700px}
+.hero-copy p{color:var(--muted);max-width:720px;line-height:1.6}
+.readiness-ring-wrap{display:grid;place-items:center;position:relative;z-index:2}
+.readiness-ring{
+  width:144px;height:144px;border-radius:50%;
+  background:conic-gradient(var(--blue) calc(var(--score,0)*1%),#1a2639 0);
+  display:grid;place-items:center;position:relative
+}
+.readiness-ring:after{content:"";position:absolute;inset:11px;border-radius:50%;background:#0c1727;border:1px solid var(--line)}
+.ring-inner{position:relative;z-index:1;text-align:center}.ring-inner strong{display:block;font-size:35px}.ring-inner span{font-size:10px;color:var(--muted)}
+.priority-panel{padding:18px}
+.panel-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+.panel-header h3{margin:5px 0 0;font-size:16px}
+.priority-list{display:grid;gap:10px}
+.priority-item{padding:12px;border:1px solid var(--line);border-radius:11px;background:#0c1728}
+.priority-item .rank{font-size:10px;color:var(--blue);font-weight:900}
+.priority-item b{display:block;margin-top:4px;font-size:13px}
+.priority-item p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+.metric-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.metric-card{padding:15px}
+.metric-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.metric-value{font-size:26px;font-weight:900;margin:7px 0 4px}
+.metric-value.compact{font-size:16px;line-height:1.25;min-height:32px;display:flex;align-items:center}
+.metric-foot{font-size:10px;color:var(--muted2);line-height:1.35}
+.dashboard-grid,.lab-grid,.skills-layout,.review-grid,.settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.panel{padding:17px;min-width:0}
+.span-2{grid-column:span 2}.span-3{grid-column:span 3}
+.incident-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.fact-card{background:#0b1627;border:1px solid var(--line);border-radius:10px;padding:11px}
+.fact-card span{display:block;color:var(--muted2);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.fact-card b{display:block;margin-top:5px;font-size:12px;line-height:1.4}
+.topology-card{border:1px solid var(--line);border-radius:12px;background:#091423;padding:12px}
+.topology-head{display:flex;justify-content:space-between;font-size:11px;margin-bottom:8px}
+.muted{color:var(--muted)}
+.topology-svg{width:100%;height:210px;display:block}
+.topology-node rect{fill:#132039;stroke:#37506f;stroke-width:1.2}
+.topology-node text{fill:#dce8f7;font-size:10px;font-weight:700}
+.topology-link{stroke:#3d5877;stroke-width:2}
+.topology-link.fault{stroke:var(--red);stroke-dasharray:6 5}
+.weakness-list{display:grid;gap:11px}
+.weakness-item{display:grid;grid-template-columns:110px 1fr 42px;gap:8px;align-items:center;font-size:11px}
+.bar{height:8px;border-radius:999px;background:#091321;border:1px solid var(--line);overflow:hidden}
+.bar>span{display:block;height:100%;background:linear-gradient(90deg,#315d91,#69aaff)}
+.bar.risk>span{background:linear-gradient(90deg,#7d4d38,#ed9a62)}
+.bar.bad>span{background:linear-gradient(90deg,#6e3440,#ef7085)}
+.timeline{display:grid;gap:8px}
+.timeline-item{display:grid;grid-template-columns:105px 1fr auto;gap:12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.timeline-item:first-child{border-top:0}
+.timeline-date{font-size:10px;color:var(--muted2)}
+.timeline-main b{font-size:12px}.timeline-main p{margin:4px 0 0;color:var(--muted);font-size:11px}
+.score-pill{font-size:10px;padding:5px 8px;border-radius:999px;background:#102b25;color:#a8f5da;border:1px solid #235548}
+.section-heading{display:flex;justify-content:space-between;gap:18px;align-items:flex-end;margin-bottom:16px}
+.section-heading h2{margin:5px 0 6px;font-size:24px}.section-heading p{margin:0;color:var(--muted);max-width:760px;font-size:12px;line-height:1.55}
+.incident-shell{display:grid;gap:16px}
+.incident-header{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start;
+  padding:22px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#111d31,#0d1728)
+}
+.incident-header h2{margin:5px 0 8px;font-size:28px}
+.incident-meta{display:flex;gap:8px;flex-wrap:wrap}
+.incident-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.incident-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,.75fr);gap:16px}
+.incident-section{margin-bottom:16px}
+.incident-section h3{font-size:13px;margin:0 0 9px}
+.scenario-box{padding:15px;background:#091423;border:1px solid var(--line);border-radius:11px;line-height:1.65;color:#cfdbec;font-size:12px}
+.impact-box{padding:12px;border-left:3px solid var(--amber);background:#171b23;color:#e8d6ad;border-radius:8px;font-size:11px;line-height:1.5}
+.question-block{padding:13px;border:1px solid var(--line);border-radius:11px;background:#0b1627;margin-bottom:10px}
+.question-block b{display:block;font-size:12px;margin-bottom:8px}
+.question-block textarea{min-height:86px}
+.solution-box{display:none}
+.solution-box.open{display:block}
+.solution-step{display:grid;grid-template-columns:28px 1fr;gap:9px;margin:9px 0}
+.solution-step .step-num{width:26px;height:26px;border-radius:7px;background:#173052;display:grid;place-items:center;color:#9fc7ff;font-size:10px;font-weight:900}
+.solution-step p{margin:2px 0 0;color:#cbd8e8;font-size:11px;line-height:1.55}
+.notice{padding:11px 12px;border-radius:9px;background:#0e2035;border:1px solid #234567;color:#c7dcf2;font-size:11px;line-height:1.5}
+.warning{background:#241e13;border-color:#5f4d24;color:#f1d89a}
+.field{display:block;margin-bottom:12px}
+.field>span{display:block;font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em}
+.device-table,.data-table{width:100%;border-collapse:collapse}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}
+.device-table th,.device-table td,.data-table th,.data-table td{padding:10px 11px;border-bottom:1px solid var(--line);text-align:left;font-size:11px}
+.device-table th,.data-table th{background:#0a1525;color:#9eb0c8;font-size:10px;text-transform:uppercase;letter-spacing:.06em}
+.status-chip{display:inline-flex;padding:5px 8px;border-radius:999px;border:1px solid var(--line);font-size:10px}
+.status-chip.healthy{background:#102821;color:#b4f3db;border-color:#225241}
+.status-chip.suspect{background:#292112;color:#f2d791;border-color:#5b4924}
+.status-chip.fault{background:#301822;color:#ffbdc8;border-color:#6c3142}
+.command-row{display:grid;grid-template-columns:28px 1.1fr 1.5fr 130px 34px;gap:8px;align-items:center;padding:8px;border-top:1px solid var(--line)}
+.command-row:first-child{border-top:0}
+.command-row input,.command-row select{padding:8px;font-size:11px}
+.command-check{width:18px;height:18px}
+.icon-btn{border:0;background:transparent;color:var(--muted);font-size:20px}
+.challenge-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.challenge-card{border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,#101b2d,#0d1727);padding:15px;display:flex;flex-direction:column;min-height:250px}
+.challenge-card h3{font-size:14px;margin:9px 0 6px}.challenge-card p{color:var(--muted);font-size:11px;line-height:1.55;margin:0}
+.challenge-meta{display:flex;gap:7px;flex-wrap:wrap}
+.challenge-actions{margin-top:auto;padding-top:14px;display:flex;gap:7px;flex-wrap:wrap}
+.domain-chip{font-size:9px;padding:4px 7px;border-radius:999px;border:1px solid var(--line);background:#0a1524;color:#aebcd1}
+.runbook-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.runbook-card{border:1px solid var(--line);border-radius:14px;background:#101a2b;padding:17px}
+.runbook-card h3{margin:6px 0 8px;font-size:16px}
+.runbook-card p{color:var(--muted);font-size:11px;line-height:1.55}
+.runbook-steps{counter-reset:step;display:grid;gap:8px;margin-top:12px}
+.runbook-step{position:relative;padding:9px 9px 9px 38px;border:1px solid var(--line);border-radius:10px;background:#0a1525;font-size:11px;color:#cdd8e8}
+.runbook-step:before{counter-increment:step;content:counter(step);position:absolute;left:10px;top:9px;width:19px;height:19px;border-radius:6px;background:#17365e;color:#a9ceff;display:grid;place-items:center;font-size:9px;font-weight:900}
+.skill-row{display:grid;grid-template-columns:150px 1fr 70px 70px 70px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:11px}
+.skill-row:first-child{border-top:0}
+.gate-box{padding:14px;border:1px solid var(--line);border-radius:11px;background:#0b1627}
+.gate-level{font-size:28px;font-weight:900}.gate-copy{color:var(--muted);font-size:11px;line-height:1.55;margin-top:6px}
+.heatmap{display:grid;grid-template-columns:170px repeat(5,1fr);gap:7px;align-items:center}
+.heatmap .cell{padding:10px 6px;text-align:center;border-radius:8px;border:1px solid var(--line);font-size:10px}
+.cell.low{background:#10241f}.cell.med{background:#2a2414}.cell.high{background:#311923}
+.review-actions-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.review-action{padding:15px;border:1px solid var(--line);border-radius:12px;background:#0b1627}
+.review-action .rank{font-size:10px;color:var(--blue);font-weight:900}.review-action h4{font-size:13px;margin:5px 0 7px}.review-action p{font-size:11px;color:var(--muted);line-height:1.5;margin:0}
+.score-list{display:grid;gap:10px}.score-line{display:flex;justify-content:space-between;gap:12px;font-size:11px;border-bottom:1px solid var(--line);padding-bottom:8px}.score-line span{color:var(--muted)}
+.large-textarea{min-height:180px}
+.file-label input{display:none}
+dialog{
+  width:min(900px,calc(100% - 28px));max-height:90vh;overflow:auto;
+  background:#0d1728;color:var(--text);border:1px solid var(--line2);border-radius:16px;padding:18px;box-shadow:0 30px 100px rgba(0,0,0,.5)
+}
+dialog::backdrop{background:rgba(2,7,14,.78);backdrop-filter:blur(3px)}
+.dialog-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:15px}.dialog-header h2{margin:5px 0 0;font-size:20px}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.dialog-actions{justify-content:flex-end;border-top:1px solid var(--line);padding-top:14px;margin-top:10px}
+.empty{padding:28px;text-align:center;border:1px dashed var(--line);border-radius:11px;color:var(--muted);font-size:11px}
+@media(max-width:1250px){
+  .metric-grid{grid-template-columns:repeat(3,1fr)}
+  .hero-grid{grid-template-columns:1fr}
+  .challenge-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:980px){
+  .app-shell{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .nav{grid-template-columns:repeat(3,1fr)}
+  .sidebar-status{display:none}
+  .dashboard-grid,.lab-grid,.skills-layout,.review-grid,.settings-grid{grid-template-columns:1fr}
+  .span-2,.span-3{grid-column:auto}
+  .incident-layout{grid-template-columns:1fr}
+  .topbar{position:static}
+}
+@media(max-width:720px){
+  main{padding:16px}
+  .topbar{padding:16px;align-items:flex-start;flex-direction:column}
+  .nav{grid-template-columns:1fr 1fr}
+  .hero-panel{grid-template-columns:1fr;padding:18px}.readiness-ring-wrap{margin-top:18px}
+  .metric-grid{grid-template-columns:1fr 1fr}
+  .challenge-grid,.runbook-grid{grid-template-columns:1fr}
+  .incident-summary{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .command-row{grid-template-columns:24px 1fr;align-items:start}
+  .command-row>*:nth-child(n+3){grid-column:2}
+  .skill-row{grid-template-columns:1fr}
+  .heatmap{grid-template-columns:100px repeat(5,minmax(42px,1fr));overflow:auto}
+  .review-actions-grid{grid-template-columns:1fr}
+}
+
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-mark">NO</div>
+        <div>
+          <div class="brand-title">NetOps Command</div>
+          <div class="brand-sub">Training & Readiness System</div>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Primary navigation">
+        <button class="nav-item active" data-view="dashboard"><span>01</span> Command Center</button>
+        <button class="nav-item" data-view="incident"><span>02</span> Active Incident</button>
+        <button class="nav-item" data-view="lab"><span>03</span> Lab Workspace</button>
+        <button class="nav-item" data-view="library"><span>04</span> Challenge Library</button>
+        <button class="nav-item" data-view="runbooks"><span>05</span> Runbooks</button>
+        <button class="nav-item" data-view="skills"><span>06</span> Skills Matrix</button>
+        <button class="nav-item" data-view="review"><span>07</span> Weekly Review</button>
+        <button class="nav-item" data-view="history"><span>08</span> Evidence History</button>
+        <button class="nav-item" data-view="settings"><span>09</span> Data & Settings</button>
+      </nav>
+
+      <div class="sidebar-status">
+        <div class="status-line"><span class="status-dot online"></span> Workspace operational</div>
+        <div class="status-meta">Local-first • Editable • Exportable</div>
+      </div>
+    </aside>
+
+    <div class="main-shell">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">NETWORK OPERATIONS READINESS</div>
+          <h1 id="pageTitle">Command Center</h1>
+        </div>
+        <div class="topbar-actions">
+          <div class="week-pill" id="weekPill"></div>
+          <button class="btn secondary" id="quickAddBtn">+ Add Challenge</button>
+          <button class="btn primary" id="startCurrentBtn">Open Active Incident</button>
+        </div>
+      </header>
+
+      <main>
+        <!-- DASHBOARD -->
+        <section class="view active" id="view-dashboard">
+          <section class="hero-grid">
+            <div class="hero-panel">
+              <div class="hero-copy">
+                <div class="eyebrow">WEEKLY READINESS POSTURE</div>
+                <h2 id="readinessHeadline">Building baseline evidence</h2>
+                <p id="readinessNarrative">Complete incidents, record proof, and let the system increase difficulty only when diagnostic quality improves.</p>
+                <div class="hero-actions">
+                  <button class="btn primary" id="heroIncidentBtn">Continue Incident</button>
+                  <button class="btn ghost" id="heroReviewBtn">Open Weekly Review</button>
+                </div>
+              </div>
+              <div class="readiness-ring-wrap">
+                <div class="readiness-ring" id="readinessRing">
+                  <div class="ring-inner">
+                    <strong id="readinessScore">0</strong>
+                    <span>Readiness</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="priority-panel">
+              <div class="panel-header">
+                <div>
+                  <div class="eyebrow">DECISION QUEUE</div>
+                  <h3>Top 3 Practice Actions</h3>
+                </div>
+              </div>
+              <div id="priorityActions" class="priority-list"></div>
+            </div>
+          </section>
+
+          <section class="metric-grid">
+            <article class="metric-card">
+              <div class="metric-label">Completed incidents</div>
+              <div class="metric-value" id="kpiCompleted">0</div>
+              <div class="metric-foot" id="kpiCompletedFoot">No evidence recorded yet</div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-label">Average confidence</div>
+              <div class="metric-value" id="kpiConfidence">0%</div>
+              <div class="metric-foot">Post-review self-assessment</div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-label">Avg diagnostic quality</div>
+              <div class="metric-value" id="kpiQuality">0%</div>
+              <div class="metric-foot">Evidence + sequence + root-cause quality</div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-label">Current difficulty</div>
+              <div class="metric-value" id="kpiDifficulty">L1</div>
+              <div class="metric-foot">Adaptive progression gate</div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-label">Recurring weak area</div>
+              <div class="metric-value compact" id="kpiWeakArea">Unmeasured</div>
+              <div class="metric-foot" id="kpiWeakFoot">Build evidence first</div>
+            </article>
+            <article class="metric-card">
+              <div class="metric-label">Practice streak</div>
+              <div class="metric-value" id="kpiStreak">0</div>
+              <div class="metric-foot">Completed training cycles</div>
+            </article>
+          </section>
+
+          <section class="dashboard-grid">
+            <article class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <div class="eyebrow">ACTIVE INCIDENT</div>
+                  <h3 id="dashIncidentTitle">No active incident</h3>
+                </div>
+                <div id="dashIncidentBadges"></div>
+              </div>
+              <div id="dashIncidentSummary" class="incident-summary"></div>
+              <div class="topology-card">
+                <div class="topology-head">
+                  <span>Topology snapshot</span>
+                  <span class="muted">schematic</span>
+                </div>
+                <div id="topologyPreview"></div>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="eyebrow">WEAKNESS RADAR</div>
+                  <h3>Where mistakes are clustering</h3>
+                </div>
+              </div>
+              <div id="weaknessRadar" class="weakness-list"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="eyebrow">SKILL HEALTH</div>
+                  <h3>Readiness by domain</h3>
+                </div>
+              </div>
+              <div id="skillHealthMini"></div>
+            </article>
+
+            <article class="panel span-2">
+              <div class="panel-header">
+                <div>
+                  <div class="eyebrow">EVIDENCE STREAM</div>
+                  <h3>Recent diagnostic records</h3>
+                </div>
+              </div>
+              <div id="recentEvidenceTimeline" class="timeline"></div>
+            </article>
+          </section>
+        </section>
+
+        <!-- ACTIVE INCIDENT -->
+        <section class="view" id="view-incident">
+          <div id="incidentWorkspace"></div>
+        </section>
+
+        <!-- LAB WORKSPACE -->
+        <section class="view" id="view-lab">
+          <section class="section-heading">
+            <div>
+              <div class="eyebrow">OPERATIONS LAB</div>
+              <h2>Evidence-Driven Troubleshooting Workspace</h2>
+              <p>Capture what you observed, what you tested, and what changed. Avoid “guess-and-fix” troubleshooting.</p>
+            </div>
+            <button class="btn primary" id="saveLabBtn">Save Lab Evidence</button>
+          </section>
+
+          <div class="lab-grid">
+            <article class="panel span-2">
+              <div class="panel-header">
+                <div><div class="eyebrow">DEVICE INVENTORY</div><h3>Topology and roles</h3></div>
+                <button class="btn small secondary" id="addDeviceBtn">+ Device</button>
+              </div>
+              <div id="deviceTable"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div><div class="eyebrow">FAULT HYPOTHESIS</div><h3>Primary theory</h3></div>
+              </div>
+              <label class="field">
+                <span>What is failing?</span>
+                <textarea id="labHypothesis" placeholder="Example: DHCP option 6 is inconsistent across VLANs, causing DNS queries to hit the wrong resolver."></textarea>
+              </label>
+              <label class="field">
+                <span>What evidence would falsify this theory?</span>
+                <textarea id="labFalsifier" placeholder="Example: clients receive the correct resolver and direct nslookup to it succeeds consistently."></textarea>
+              </label>
+            </article>
+
+            <article class="panel span-2">
+              <div class="panel-header">
+                <div><div class="eyebrow">COMMAND PLAN</div><h3>Planned diagnostic sequence</h3></div>
+                <button class="btn small secondary" id="addCommandBtn">+ Command / Test</button>
+              </div>
+              <div id="commandPlan"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div><div class="eyebrow">LIVE FINDINGS</div><h3>Observation log</h3></div>
+              </div>
+              <label class="field">
+                <span>Finding / packet evidence</span>
+                <textarea id="labFindings" placeholder="Record exact outputs, packet behavior, ACL counters, route states, or Packet Tracer observations."></textarea>
+              </label>
+              <label class="field">
+                <span>Root cause candidate</span>
+                <textarea id="labRootCause" placeholder="Do not write 'DNS issue'. Be precise about the broken control or configuration."></textarea>
+              </label>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div><div class="eyebrow">CHANGE CONTROL</div><h3>Remediation and verification</h3></div>
+              </div>
+              <label class="field">
+                <span>Remediation performed</span>
+                <textarea id="labRemediation" placeholder="Record the exact change, device, interface, scope, ACL, record, or service setting."></textarea>
+              </label>
+              <label class="field">
+                <span>Verification after change</span>
+                <textarea id="labVerification" placeholder="What proved the service was restored and that the change did not break adjacent traffic?"></textarea>
+              </label>
+            </article>
+          </div>
+        </section>
+
+        <!-- LIBRARY -->
+        <section class="view" id="view-library">
+          <section class="section-heading">
+            <div>
+              <div class="eyebrow">CHALLENGE CATALOG</div>
+              <h2>Incident & Lab Library</h2>
+              <p>Progress from endpoint faults to multi-layer routing, DNS, VLAN, NAT, DHCP, and service dependency failures.</p>
+            </div>
+            <div class="toolbar">
+              <select id="libraryDomainFilter">
+                <option value="all">All domains</option>
+                <option>TCP/IP</option><option>Routing</option><option>DNS</option><option>DHCP</option>
+                <option>VLANs</option><option>NAT</option><option>Cisco Packet Tracer</option>
+              </select>
+              <button class="btn primary" id="libraryAddBtn">+ Create Challenge</button>
+            </div>
+          </section>
+          <div id="challengeLibrary" class="challenge-grid"></div>
+        </section>
+
+        <!-- RUNBOOKS -->
+        <section class="view" id="view-runbooks">
+          <section class="section-heading">
+            <div>
+              <div class="eyebrow">RUNBOOK VAULT</div>
+              <h2>Troubleshooting Playbooks</h2>
+              <p>Use these as disciplined investigation structures—not as substitutes for evidence.</p>
+            </div>
+          </section>
+          <div class="runbook-grid" id="runbookGrid"></div>
+        </section>
+
+        <!-- SKILLS -->
+        <section class="view" id="view-skills">
+          <section class="section-heading">
+            <div>
+              <div class="eyebrow">CAPABILITY MODEL</div>
+              <h2>Skills Matrix & Progression Gates</h2>
+              <p>Promotion is based on performance evidence, not time spent.</p>
+            </div>
+          </section>
+
+          <div class="skills-layout">
+            <article class="panel span-2">
+              <div class="panel-header">
+                <div><div class="eyebrow">DOMAIN READINESS</div><h3>Performance by technical area</h3></div>
+              </div>
+              <div id="skillsTable"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <div><div class="eyebrow">PROGRESSION GATE</div><h3>Difficulty decision</h3></div>
+              </div>
+              <div id="progressionGate"></div>
+            </article>
+
+            <article class="panel span-3">
+              <div class="panel-header">
+                <div><div class="eyebrow">WEAK-AREA HEATMAP</div><h3>Recurring failure patterns</h3></div>
+              </div>
+              <div id="weakAreaHeatmap"></div>
+            </article>
+          </div>
+        </section>
+
+        <!-- REVIEW -->
+        <section class="view" id="view-review">
+          <section class="section-heading">
+            <div>
+              <div class="eyebrow">WEEKLY GOVERNANCE</div>
+              <h2>Performance Review & Next Actions</h2>
+              <p>Convert raw practice into decisions: what to repeat, what to advance, and what to stop guessing about.</p>
+            </div>
+            <button class="btn primary" id="refreshReviewBtn">Recalculate Review</button>
+          </section>
+
+          <div class="review-grid">
+            <article class="panel span-2">
+              <div class="panel-header">
+                <div><div class="eyebrow">EXECUTIVE REVIEW</div><h3 id="reviewVerdict">Build baseline evidence</h3></div>
+              </div>
+              <div id="reviewNarrative"></div>
+            </article>
+            <article class="panel">
+              <div class="panel-header">
+                <div><div class="eyebrow">WEEK SCORECARD</div><h3>Measured output</h3></div>
+              </div>
+              <div id="reviewScorecard"></div>
+            </article>
+            <article class="panel span-3">
+              <div class="panel-header">
+                <div><div class="eyebrow">NEXT 3 ACTIONS</div><h3>Highest-impact practice queue</h3></div>
+              </div>
+              <div id="reviewActions" class="review-actions-grid"></div>
+            </article>
+            <article class="panel span-3">
+              <div class="panel-header">
+                <div><div class="eyebrow">POSTMORTEM NOTES</div><h3>What changed in your troubleshooting behavior?</h3></div>
+              </div>
+              <textarea id="weeklyNotes" class="large-textarea" placeholder="Record the week’s biggest diagnostic lesson, recurring mistake, and one operating rule to carry into next week."></textarea>
+              <div class="actions-row">
+                <button class="btn secondary" id="saveWeeklyNotesBtn">Save Review Notes</button>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section class="view" id="view-history">
+          <section class="section-heading">
+            <div>
+              <div class="eyebrow">AUDITABLE PRACTICE RECORD</div>
+              <h2>Evidence History</h2>
+              <p>Every completed challenge becomes a diagnostic record: reasoning, mistakes, confidence, quality, and follow-up.</p>
+            </div>
+          </section>
+          <div id="historyTable"></div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="view" id="view-settings">
+          <section class="section-heading">
+            <div>
+              <div class="eyebrow">WORKSPACE CONTROL</div>
+              <h2>Data, Backup & Difficulty Settings</h2>
+              <p>Everything remains editable and portable.</p>
+            </div>
+          </section>
+
+          <div class="settings-grid">
+            <article class="panel">
+              <div class="panel-header">
+                <div><div class="eyebrow">BACKUP</div><h3>Portable training record</h3></div>
+              </div>
+              <p class="muted">Export the entire workspace as JSON. Re-import it on another browser or machine.</p>
+              <div class="stack-actions">
+                <button class="btn primary" id="exportBtn">Export Workspace JSON</button>
+                <label class="btn secondary file-label">Import Workspace JSON<input type="file" id="importFile" accept=".json"></label>
+              </div>
+            </article>
+            <article class="panel">
+              <div class="panel-header">
+                <div><div class="eyebrow">DIFFICULTY POLICY</div><h3>Progression control</h3></div>
+              </div>
+              <label class="field">
+                <span>Manual target difficulty</span>
+                <select id="targetDifficulty">
+                  <option value="1">Level 1 — Endpoint & addressing</option>
+                  <option value="2">Level 2 — VLAN / DNS / DHCP isolation</option>
+                  <option value="3">Level 3 — Routing / ACL / NAT dependencies</option>
+                  <option value="4">Level 4 — Multi-fault, intermittent, cross-layer</option>
+                  <option value="5">Level 5 — Incident command / ambiguous evidence</option>
+                </select>
+              </label>
+              <div class="notice">The weekly review may recommend holding or reducing difficulty if diagnostic quality is falling.</div>
+            </article>
+            <article class="panel">
+              <div class="panel-header">
+                <div><div class="eyebrow">RESET</div><h3>Workspace controls</h3></div>
+              </div>
+              <p class="muted">Resetting deletes local evidence from this browser. Export first if you want to keep it.</p>
+              <button class="btn danger" id="resetBtn">Reset to Default Training Data</button>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="challengeDialog">
+    <form id="challengeForm" method="dialog">
+      <div class="dialog-header">
+        <div>
+          <div class="eyebrow">CHALLENGE EDITOR</div>
+          <h2 id="challengeDialogTitle">Create challenge</h2>
+        </div>
+        <button type="button" class="icon-btn" id="closeChallengeDialog">×</button>
+      </div>
+      <input type="hidden" id="challengeId" />
+      <div class="form-grid">
+        <label class="field"><span>Title</span><input id="challengeTitle" required /></label>
+        <label class="field"><span>Date</span><input id="challengeDate" type="date" required /></label>
+        <label class="field"><span>Difficulty</span>
+          <select id="challengeDifficulty"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+        </label>
+        <label class="field"><span>Domains (comma separated)</span><input id="challengeDomains" placeholder="DNS, Routing, VLANs" /></label>
+      </div>
+      <label class="field"><span>Scenario</span><textarea id="challengeScenario" required></textarea></label>
+      <label class="field"><span>Business / operational impact</span><textarea id="challengeImpact"></textarea></label>
+      <label class="field"><span>Diagnostic questions — one per line</span><textarea id="challengeQuestions"></textarea></label>
+      <label class="field"><span>Expected evidence / commands — one per line</span><textarea id="challengeEvidence"></textarea></label>
+      <label class="field"><span>Step-by-step solution — one per line</span><textarea id="challengeSolution"></textarea></label>
+      <label class="field"><span>Packet Tracer / hands-on exercise</span><textarea id="challengeExercise"></textarea></label>
+      <label class="field"><span>Follow-up variation</span><textarea id="challengeFollowup"></textarea></label>
+      <div class="dialog-actions">
+        <button type="button" class="btn secondary" id="cancelChallengeDialog">Cancel</button>
+        <button type="submit" class="btn primary">Save Challenge</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="completeDialog">
+    <form id="completeForm" method="dialog">
+      <div class="dialog-header">
+        <div>
+          <div class="eyebrow">INCIDENT CLOSEOUT</div>
+          <h2>Record diagnostic evidence</h2>
+        </div>
+        <button type="button" class="icon-btn" id="closeCompleteDialog">×</button>
+      </div>
+
+      <label class="field"><span>Your diagnosis and reasoning</span><textarea id="resultDiagnosis" required></textarea></label>
+      <label class="field"><span>Evidence that proved the root cause</span><textarea id="resultEvidence" required></textarea></label>
+      <label class="field"><span>Mistakes / missed signals — one per line</span><textarea id="resultMistakes"></textarea></label>
+
+      <div class="form-grid">
+        <label class="field"><span>Confidence (0–100)</span><input id="resultConfidence" type="number" min="0" max="100" value="70" /></label>
+        <label class="field"><span>Diagnostic quality (0–100)</span><input id="resultQuality" type="number" min="0" max="100" value="70" /></label>
+        <label class="field"><span>Time spent (minutes)</span><input id="resultTime" type="number" min="0" max="1000" value="35" /></label>
+        <label class="field"><span>Outcome</span><select id="resultOutcome"><option>Resolved independently</option><option>Resolved after solution review</option><option>Partially resolved</option><option>Escalation required</option></select></label>
+      </div>
+
+      <label class="field"><span>Follow-up practice</span><textarea id="resultFollowup"></textarea></label>
+      <div class="dialog-actions">
+        <button type="button" class="btn secondary" id="cancelCompleteDialog">Cancel</button>
+        <button type="submit" class="btn primary">Close Incident & Save Evidence</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="deviceDialog">
+    <form id="deviceForm" method="dialog">
+      <div class="dialog-header">
+        <div><div class="eyebrow">LAB DEVICE</div><h2>Add device</h2></div>
+        <button type="button" class="icon-btn" id="closeDeviceDialog">×</button>
+      </div>
+      <div class="form-grid">
+        <label class="field"><span>Name</span><input id="deviceName" required placeholder="R1" /></label>
+        <label class="field"><span>Role</span><input id="deviceRole" required placeholder="Inter-VLAN router" /></label>
+        <label class="field"><span>Address / VLAN</span><input id="deviceAddress" placeholder="10.10.10.1 / VLAN 10" /></label>
+        <label class="field"><span>Status</span><select id="deviceStatus"><option>Unknown</option><option>Healthy</option><option>Suspect</option><option>Fault confirmed</option></select></label>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="btn secondary" id="cancelDeviceDialog">Cancel</button>
+        <button type="submit" class="btn primary">Add Device</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+
+(() => {
+  const STORAGE_KEY = "netops-command-center-v2";
+  const skills = ["TCP/IP","Routing","DNS","DHCP","VLANs","NAT","Cisco Packet Tracer","Troubleshooting Method"];
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+
+  const defaultState = {
+    settings: { targetDifficulty: 2 },
+    weeklyNotes: "",
+    lab: {
+      hypothesis: "",
+      falsifier: "",
+      findings: "",
+      rootCause: "",
+      remediation: "",
+      verification: "",
+      devices: [
+        {id:"d1",name:"R1",role:"Router-on-a-stick / inter-VLAN gateway",address:"10.10.10.1 / trunk G0/0",status:"Unknown"},
+        {id:"d2",name:"SW1",role:"Access / trunk switching",address:"VLANs 10,20,30",status:"Unknown"},
+        {id:"d3",name:"DNS1",role:"Internal DNS + forwarder",address:"10.30.30.10",status:"Unknown"},
+        {id:"d4",name:"PC-A",role:"VLAN 10 client",address:"DHCP",status:"Unknown"}
+      ],
+      commands: [
+        {id:"c1",done:false,command:"ipconfig /all",purpose:"Confirm client addressing, gateway, DHCP source, and resolver",status:"Planned"},
+        {id:"c2",done:false,command:"ping 10.30.30.10",purpose:"Separate DNS failure from L3 reachability",status:"Planned"},
+        {id:"c3",done:false,command:"nslookup example.com 10.30.30.10",purpose:"Test resolver directly and bypass local resolver selection",status:"Planned"},
+        {id:"c4",done:false,command:"show access-lists",purpose:"Check deny entries/counters affecting UDP/TCP 53",status:"Planned"}
+      ]
+    },
+    challenges: [
+      {
+        id:"inc-001",title:"Intermittent DNS Failure Across Two VLANs",date:today,difficulty:2,status:"current",
+        domains:["DNS","Routing","VLANs","DHCP","Cisco Packet Tracer"],
+        impact:"Users can reach IP addresses, but SaaS logins and web browsing fail unpredictably. Support reports are increasing and the fault appears different across VLANs.",
+        scenario:"VLAN 10 users can ping the default gateway and public IP addresses, but hostname lookups fail intermittently. VLAN 20 resolves internal names but cannot resolve public domains. DNS1 sits in VLAN 30 behind a router-on-a-stick topology. DHCP serves both user VLANs. Your job is to determine whether the failure is client configuration, DHCP option delivery, inter-VLAN routing, ACL policy, or DNS forwarding.",
+        questions:[
+          "Which tests prove whether the fault is DNS-specific rather than general IP connectivity?",
+          "How will you verify the actual resolver each client received from DHCP?",
+          "What router or ACL evidence would prove UDP/TCP 53 is blocked or asymmetrically permitted?",
+          "Why could internal names resolve while public domains fail?",
+          "What Packet Tracer Simulation events would you follow first?"
+        ],
+        evidence:[
+          "ipconfig /all or equivalent DHCP lease inspection",
+          "ping to gateway, DNS1, and a known public IP",
+          "nslookup against default resolver and explicit DNS1",
+          "show ip route / show interfaces trunk / router subinterface status",
+          "show access-lists with counters",
+          "DNS server forwarder and zone checks",
+          "Packet Tracer Simulation-mode DNS query/response trace"
+        ],
+        solution:[
+          "Validate client IP address, subnet, gateway, DHCP source, and DNS resolver before changing anything.",
+          "Prove IP reachability to DNS1 and a public IP to isolate Layer 3 from name resolution.",
+          "Test nslookup using both the client-configured resolver and DNS1 explicitly.",
+          "Inspect DHCP option 6 separately for VLAN 10 and VLAN 20.",
+          "Inspect router subinterfaces, trunk state, inter-VLAN routes, and ACLs for UDP/TCP port 53.",
+          "Validate DNS1 internal zones, recursion, and external forwarding.",
+          "Use Simulation mode to identify the first hop where DNS packets are dropped, misrouted, or unanswered.",
+          "Correct only the confirmed fault, renew/flush clients, and retest internal + public names from both VLANs."
+        ],
+        exercise:"In Packet Tracer, build VLANs 10/20/30, router-on-a-stick, two DHCP scopes, DNS1, and an ACL. Introduce one fault that breaks name resolution without breaking raw IP reachability. Diagnose using evidence before editing configuration.",
+        followup:"Repeat with two simultaneous faults: wrong DHCP DNS option on VLAN 10 and blocked TCP 53 on the router ACL.",
+        result:null
+      },
+      {
+        id:"inc-002",title:"Branch Office Can Reach HQ but Not the Internet",date:today,difficulty:3,status:"planned",
+        domains:["Routing","NAT","TCP/IP","Cisco Packet Tracer"],
+        impact:"Branch users can access HQ file services over the WAN but cannot browse the internet. HQ internet remains normal.",
+        scenario:"A branch router has a working WAN route to HQ. Internal branch hosts can ping HQ servers. Default routing appears present, but internet-bound traffic from the branch never returns. Determine whether the issue is default-route selection, NAT, ACL policy, or asymmetric routing.",
+        questions:["What evidence distinguishes a missing default route from failed NAT?","Which NAT translations should exist during a test?","How would asymmetric return routing present?"],
+        evidence:["show ip route","show ip nat translations","show ip nat statistics","ACL counters","traceroute from branch host"],
+        solution:["Verify branch default route.","Confirm inside/outside NAT interfaces.","Generate traffic and inspect translations.","Validate NAT ACL matches branch subnet.","Trace return path.","Correct the smallest confirmed fault and retest."],
+        exercise:"Build HQ + branch routers with a simulated ISP cloud. Break NAT or routing intentionally and prove which one failed.",
+        followup:"Add a second branch and overlapping RFC1918 space to increase ambiguity.",
+        result:null
+      },
+      {
+        id:"inc-003",title:"DHCP Works on One Floor but Fails on Another",date:today,difficulty:2,status:"planned",
+        domains:["DHCP","VLANs","Routing","Cisco Packet Tracer"],
+        impact:"New devices on Floor 2 receive APIPA addresses while Floor 1 operates normally.",
+        scenario:"Both floors use separate VLANs and a centralized DHCP server. Floor 1 receives valid leases. Floor 2 does not. The switch uplink is a trunk and the router provides inter-VLAN routing.",
+        questions:["What would you inspect before touching the DHCP pool?","How can helper-address failure be proven?","Which trunk/VLAN mistakes could mimic DHCP failure?"],
+        evidence:["show vlan brief","show interfaces trunk","show run interface","ip helper-address","DHCP server scope utilization"],
+        solution:["Verify VLAN exists and ports are assigned.","Verify trunk carries Floor 2 VLAN.","Verify SVI/subinterface state.","Verify helper address.","Verify DHCP scope network and availability.","Trace DHCP Discover/Offer in Simulation mode."],
+        exercise:"Create a central DHCP server and two VLANs. Break helper-address or trunk allowance for only one VLAN.",
+        followup:"Introduce a full DHCP pool after fixing the relay issue.",
+        result:null
+      },
+      {
+        id:"inc-004",title:"Intermittent Route Flap During Peak Usage",date:today,difficulty:4,status:"planned",
+        domains:["Routing","TCP/IP","Troubleshooting Method"],
+        impact:"Voice calls and ERP sessions drop for 10–30 seconds several times per hour.",
+        scenario:"A routed site has two paths to a critical subnet. Users report short service interruptions. Basic pings look normal when tested manually. Logs show route changes but no permanent outage.",
+        questions:["What evidence proves route instability rather than congestion?","How do you correlate timestamps across layers?","What baseline should be captured before a change?"],
+        evidence:["routing table snapshots","interface counters/errors","logs/timestamps","continuous ping/jitter","CPU utilization","routing protocol neighbor state"],
+        solution:["Establish timeline.","Capture continuous reachability.","Inspect route/neighbor changes.","Inspect interface errors.","Compare control-plane events with packet loss.","Change only confirmed root cause.","Monitor for recurrence."],
+        exercise:"Simulate redundant routing and force an interface or metric instability.",
+        followup:"Make the failure intermittent and add misleading high CPU on an unrelated device.",
+        result:null
+      }
+    ]
+  };
+
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : clone(defaultState);
+    }catch(e){ return clone(defaultState); }
+  }
+  let state = load();
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s="") => String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,Number(n)||0));
+  const avg=(arr)=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;
+  const lines=(v)=>String(v||"").split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  const cap=(s)=>String(s||"").replace(/\b\w/g,c=>c.toUpperCase());
+  function save(render=true){ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); if(render) renderAll(); }
+  function current(){ return state.challenges.find(c=>c.status==="current") || state.challenges.find(c=>c.status==="planned") || null; }
+  function completed(){ return state.challenges.filter(c=>c.status==="completed"); }
+
+  function pageTitle(view){
+    return ({
+      dashboard:"Command Center",incident:"Active Incident",lab:"Lab Workspace",library:"Challenge Library",
+      runbooks:"Runbooks",skills:"Skills Matrix",review:"Weekly Review",history:"Evidence History",settings:"Data & Settings"
+    })[view]||"Network Operations Training";
+  }
+  function setView(view){
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
+    const target=$("view-"+view); if(target) target.classList.add("active");
+    $("pageTitle").textContent=pageTitle(view);
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function domainStats(){
+    const out={};
+    skills.forEach(s=>out[s]={attempts:0,confidence:0,quality:0,difficulty:0,mistakes:0});
+    completed().forEach(c=>{
+      (c.domains||[]).forEach(skill=>{
+        if(!out[skill]) out[skill]={attempts:0,confidence:0,quality:0,difficulty:0,mistakes:0};
+        const x=out[skill];
+        x.attempts++;
+        x.confidence += Number(c.result?.confidence||0);
+        x.quality += Number(c.result?.quality||0);
+        x.difficulty += Number(c.difficulty||1);
+        const txt=(c.result?.mistakes||[]).join(" ").toLowerCase();
+        if(txt.includes(skill.toLowerCase())) x.mistakes += 2;
+        else if(txt.length) x.mistakes += .35;
+      });
+    });
+    Object.values(out).forEach(x=>{
+      if(x.attempts){
+        x.confidence/=x.attempts; x.quality/=x.attempts; x.difficulty/=x.attempts;
+      }
+    });
+    return out;
+  }
+
+  function weaknessRank(){
+    const stats=domainStats();
+    return Object.entries(stats).map(([skill,x])=>{
+      const lack=x.attempts?100-((x.confidence*.45)+(x.quality*.55)):68;
+      const repeatPenalty=x.mistakes*12;
+      const exposurePenalty=Math.max(0,3-x.attempts)*6;
+      return {skill,score:clamp(lack*.68+repeatPenalty+exposurePenalty,0,100),...x};
+    }).sort((a,b)=>b.score-a.score);
+  }
+
+  function readiness(){
+    const comp=completed(); if(!comp.length) return 18;
+    const conf=avg(comp.map(c=>Number(c.result?.confidence||0)));
+    const qual=avg(comp.map(c=>Number(c.result?.quality||0)));
+    const diff=avg(comp.map(c=>Number(c.difficulty||1)));
+    const mistakePenalty=avg(comp.map(c=>(c.result?.mistakes||[]).length))*4;
+    const exposure=Math.min(18,comp.length*2.5);
+    return clamp((conf*.32)+(qual*.38)+(diff*6)+exposure-mistakePenalty,0,100);
+  }
+
+  function recommendations(){
+    const wr=weaknessRank(), comp=completed(), cur=current();
+    const conf=avg(comp.map(c=>Number(c.result?.confidence||0)));
+    const qual=avg(comp.map(c=>Number(c.result?.quality||0)));
+    let recs = wr.slice(0,3).map((w,i)=>{
+      let action;
+      if(w.attempts===0) action=`Run a baseline ${w.skill} incident and record command-level evidence.`;
+      else if(w.quality<60) action=`Repeat a ${w.skill} fault without solution access. Require evidence before each configuration change.`;
+      else if(w.confidence<70) action=`Run a timed ${w.skill} isolation drill and force a written hypothesis before using commands.`;
+      else action=`Increase ${w.skill} ambiguity: add a second misleading symptom or dependency and keep the same evidence standard.`;
+      return {title:w.skill,body:action,reason:`Weakness ${Math.round(w.score)}/100 • ${w.attempts} exposure(s) • ${Math.round(w.quality)}% quality`};
+    });
+    if(comp.length<3){
+      recs[2]={title:"Build evidence volume",body:"Complete three full incident cycles before increasing complexity. One successful lab is not enough to prove repeatable skill.",reason:"Sample size is still too small"};
+    }
+    if(cur && Number(cur.difficulty)>=4 && (qual<70 || conf<65)){
+      recs[0]={title:"Hold difficulty",body:"Stay below Level 4 until diagnostic quality is consistently above 70%. Complexity without method reinforces guessing.",reason:`Current averages: ${Math.round(qual)}% quality / ${Math.round(conf)}% confidence`};
+    }
+    return recs.slice(0,3);
+  }
+
+  function readinessNarrative(){
+    const score=readiness(), comp=completed();
+    if(!comp.length) return ["Building baseline evidence","Your next objective is not speed. It is a repeatable troubleshooting sequence with proof at each layer."];
+    if(score<45) return ["Method before complexity","Repeated exposure matters, but current evidence says your investigation sequence still needs discipline."];
+    if(score<65) return ["Operational foundation forming","You are resolving faults, but the next gains come from stronger proof, cleaner root-cause statements, and fewer speculative changes."];
+    if(score<80) return ["Ready for controlled complexity","You can begin adding multi-layer and intermittent failures while keeping the same evidence standard."];
+    return ["Strong troubleshooting readiness","Move into ambiguous, multi-fault incidents and time-boxed incident-command simulations."];
+  }
+
+  function topologySVG(){
+    return `
+    <svg class="topology-svg" viewBox="0 0 760 210" role="img" aria-label="Schematic network topology">
+      <line class="topology-link" x1="110" y1="105" x2="260" y2="105"/>
+      <line class="topology-link" x1="330" y1="105" x2="470" y2="55"/>
+      <line class="topology-link fault" x1="330" y1="105" x2="470" y2="155"/>
+      <line class="topology-link" x1="550" y1="55" x2="680" y2="55"/>
+      <line class="topology-link" x1="550" y1="155" x2="680" y2="155"/>
+      <g class="topology-node"><rect x="30" y="78" width="90" height="54" rx="10"/><text x="75" y="102" text-anchor="middle">CLIENTS</text><text x="75" y="118" text-anchor="middle">VLAN 10/20</text></g>
+      <g class="topology-node"><rect x="250" y="78" width="90" height="54" rx="10"/><text x="295" y="102" text-anchor="middle">SW1</text><text x="295" y="118" text-anchor="middle">TRUNK</text></g>
+      <g class="topology-node"><rect x="465" y="30" width="90" height="54" rx="10"/><text x="510" y="54" text-anchor="middle">R1</text><text x="510" y="70" text-anchor="middle">ROUTING</text></g>
+      <g class="topology-node"><rect x="465" y="130" width="90" height="54" rx="10"/><text x="510" y="154" text-anchor="middle">DNS1</text><text x="510" y="170" text-anchor="middle">VLAN 30</text></g>
+      <g class="topology-node"><rect x="670" y="30" width="70" height="54" rx="10"/><text x="705" y="54" text-anchor="middle">WAN</text><text x="705" y="70" text-anchor="middle">ISP</text></g>
+      <g class="topology-node"><rect x="670" y="130" width="70" height="54" rx="10"/><text x="705" y="154" text-anchor="middle">DHCP</text><text x="705" y="170" text-anchor="middle">SCOPES</text></g>
+    </svg>`;
+  }
+
+  function renderDashboard(){
+    const comp=completed(), cur=current(), score=readiness(), stats=domainStats(), wr=weaknessRank(), recs=recommendations();
+    const conf=avg(comp.map(c=>Number(c.result?.confidence||0)));
+    const qual=avg(comp.map(c=>Number(c.result?.quality||0)));
+    const narrative=readinessNarrative();
+    $("readinessHeadline").textContent=narrative[0];
+    $("readinessNarrative").textContent=narrative[1];
+    $("readinessScore").textContent=Math.round(score);
+    $("readinessRing").style.setProperty("--score",score);
+    $("kpiCompleted").textContent=comp.length;
+    $("kpiCompletedFoot").textContent=comp.length?`${state.challenges.length} total challenges in workspace`:"Complete your first incident closeout";
+    $("kpiConfidence").textContent=`${Math.round(conf)}%`;
+    $("kpiQuality").textContent=`${Math.round(qual)}%`;
+    $("kpiDifficulty").textContent=`L${cur?.difficulty || state.settings.targetDifficulty || 1}`;
+    $("kpiWeakArea").textContent=wr[0]?.skill||"Unmeasured";
+    $("kpiWeakFoot").textContent=`Weakness score ${Math.round(wr[0]?.score||0)}/100`;
+    $("kpiStreak").textContent=comp.length;
+    $("priorityActions").innerHTML=recs.map((r,i)=>`<div class="priority-item"><div class="rank">ACTION ${i+1}</div><b>${esc(r.title)}</b><p>${esc(r.body)}</p></div>`).join("");
+
+    if(cur){
+      $("dashIncidentTitle").textContent=cur.title;
+      $("dashIncidentBadges").innerHTML=`<span class="pill">Level ${cur.difficulty}</span>`;
+      $("dashIncidentSummary").innerHTML=`
+        <div class="fact-card"><span>Operational impact</span><b>${esc(cur.impact||"Not recorded")}</b></div>
+        <div class="fact-card"><span>Domains</span><b>${esc((cur.domains||[]).join(" • "))}</b></div>
+        <div class="fact-card"><span>Status</span><b>${esc(cur.status.toUpperCase())}</b></div>`;
+    }else{
+      $("dashIncidentTitle").textContent="No active incident";
+      $("dashIncidentBadges").innerHTML="";
+      $("dashIncidentSummary").innerHTML=`<div class="empty">Activate a challenge from the library.</div>`;
+    }
+    $("topologyPreview").innerHTML=topologySVG();
+
+    $("weaknessRadar").innerHTML=wr.slice(0,6).map(w=>`
+      <div class="weakness-item">
+        <span>${esc(w.skill)}</span>
+        <div class="bar ${w.score>70?"bad":w.score>45?"risk":""}"><span style="width:${w.score}%"></span></div>
+        <strong>${Math.round(w.score)}</strong>
+      </div>`).join("");
+
+    $("skillHealthMini").innerHTML=Object.entries(stats).slice(0,6).map(([skill,x])=>{
+      const health=x.attempts?clamp((x.confidence*.45)+(x.quality*.55),0,100):0;
+      return `<div class="weakness-item"><span>${esc(skill)}</span><div class="bar"><span style="width:${health}%"></span></div><strong>${Math.round(health)}</strong></div>`;
+    }).join("");
+
+    const recent=comp.slice().sort((a,b)=>(b.result?.completedAt||0)-(a.result?.completedAt||0)).slice(0,5);
+    $("recentEvidenceTimeline").innerHTML=recent.length?recent.map(c=>`
+      <div class="timeline-item">
+        <div class="timeline-date">${new Date(c.result.completedAt).toLocaleDateString()}</div>
+        <div class="timeline-main"><b>${esc(c.title)}</b><p>${esc((c.result.evidence||"").slice(0,120))}${(c.result.evidence||"").length>120?"…":""}</p></div>
+        <div class="score-pill">${c.result.quality}% quality</div>
+      </div>`).join(""):`<div class="empty">Your completed incidents will appear here.</div>`;
+  }
+
+  function renderIncident(){
+    const c=current();
+    if(!c){ $("incidentWorkspace").innerHTML=`<div class="empty">No active incident. Activate one from the Challenge Library.</div>`; return; }
+    $("incidentWorkspace").innerHTML=`
+      <div class="incident-shell">
+        <section class="incident-header">
+          <div>
+            <div class="eyebrow">ACTIVE INCIDENT • ${esc(c.id)}</div>
+            <h2>${esc(c.title)}</h2>
+            <div class="incident-meta">
+              <span class="pill">Difficulty ${c.difficulty}/5</span>
+              ${(c.domains||[]).map(d=>`<span class="domain-chip">${esc(d)}</span>`).join("")}
+            </div>
+          </div>
+          <div class="incident-actions">
+            <button class="btn secondary" id="incidentEditBtn">Edit challenge</button>
+            <button class="btn primary" id="incidentCloseBtn">Close incident</button>
+          </div>
+        </section>
+
+        <div class="incident-layout">
+          <article class="panel">
+            <div class="incident-section"><h3>Operational impact</h3><div class="impact-box">${esc(c.impact||"Not recorded")}</div></div>
+            <div class="incident-section"><h3>Scenario</h3><div class="scenario-box">${esc(c.scenario).replace(/\n/g,"<br>")}</div></div>
+            <div class="incident-section">
+              <h3>Diagnostic questions</h3>
+              ${(c.questions||[]).map((q,i)=>`
+                <div class="question-block">
+                  <b>${i+1}. ${esc(q)}</b>
+                  <textarea data-answer="${i}" placeholder="Write your reasoning, expected evidence, and next test..."></textarea>
+                </div>`).join("")}
+            </div>
+          </article>
+
+          <aside class="panel">
+            <div class="incident-section">
+              <h3>Required evidence</h3>
+              ${(c.evidence||[]).map((x,i)=>`<div class="solution-step"><div class="step-num">${i+1}</div><p>${esc(x)}</p></div>`).join("")}
+            </div>
+            <div class="notice warning">Do not edit configuration until you have at least one hypothesis and one falsifiable test. A fix without proof is not a completed troubleshooting cycle.</div>
+            <div class="incident-section" style="margin-top:16px">
+              <h3>Packet Tracer / hands-on exercise</h3>
+              <div class="scenario-box">${esc(c.exercise||"No exercise attached.")}</div>
+            </div>
+            <button class="btn secondary" id="revealSolutionBtn">Reveal step-by-step solution</button>
+            <div class="solution-box" id="incidentSolution">
+              <div class="incident-section" style="margin-top:14px">
+                <h3>Solution sequence</h3>
+                ${(c.solution||[]).map((s,i)=>`<div class="solution-step"><div class="step-num">${i+1}</div><p>${esc(s)}</p></div>`).join("")}
+              </div>
+              <div class="incident-section"><h3>Follow-up variation</h3><div class="scenario-box">${esc(c.followup||"None")}</div></div>
+            </div>
+          </aside>
+        </div>
+      </div>`;
+    $("incidentEditBtn")?.addEventListener("click",()=>openChallengeDialog(c.id));
+    $("incidentCloseBtn")?.addEventListener("click",()=>completeDialog.showModal());
+    $("revealSolutionBtn")?.addEventListener("click",()=>{
+      $("incidentSolution").classList.add("open");
+      $("revealSolutionBtn").style.display="none";
+    });
+  }
+
+  function renderLab(){
+    $("labHypothesis").value=state.lab.hypothesis||"";
+    $("labFalsifier").value=state.lab.falsifier||"";
+    $("labFindings").value=state.lab.findings||"";
+    $("labRootCause").value=state.lab.rootCause||"";
+    $("labRemediation").value=state.lab.remediation||"";
+    $("labVerification").value=state.lab.verification||"";
+    $("deviceTable").innerHTML=`
+      <div class="table-wrap"><table class="device-table">
+      <thead><tr><th>Device</th><th>Role</th><th>Address / VLAN</th><th>Status</th><th></th></tr></thead>
+      <tbody>${state.lab.devices.map(d=>`<tr>
+        <td><b>${esc(d.name)}</b></td><td>${esc(d.role)}</td><td>${esc(d.address)}</td>
+        <td><span class="status-chip ${d.status==="Healthy"?"healthy":d.status==="Suspect"?"suspect":d.status==="Fault confirmed"?"fault":""}">${esc(d.status)}</span></td>
+        <td><button class="icon-btn" data-delete-device="${d.id}" title="Delete device">×</button></td>
+      </tr>`).join("")}</tbody></table></div>`;
+    document.querySelectorAll("[data-delete-device]").forEach(b=>b.addEventListener("click",()=>{
+      state.lab.devices=state.lab.devices.filter(d=>d.id!==b.dataset.deleteDevice); save();
+    }));
+
+    $("commandPlan").innerHTML=`<div class="table-wrap">${state.lab.commands.map((c,i)=>`
+      <div class="command-row">
+        <input class="command-check" type="checkbox" data-command-done="${c.id}" ${c.done?"checked":""} aria-label="Command completed">
+        <input data-command-text="${c.id}" value="${esc(c.command)}" aria-label="Command">
+        <input data-command-purpose="${c.id}" value="${esc(c.purpose)}" aria-label="Purpose">
+        <select data-command-status="${c.id}"><option ${c.status==="Planned"?"selected":""}>Planned</option><option ${c.status==="Evidence captured"?"selected":""}>Evidence captured</option><option ${c.status==="Not useful"?"selected":""}>Not useful</option></select>
+        <button class="icon-btn" data-command-delete="${c.id}" title="Remove">×</button>
+      </div>`).join("")}</div>`;
+    document.querySelectorAll("[data-command-delete]").forEach(b=>b.addEventListener("click",()=>{
+      state.lab.commands=state.lab.commands.filter(c=>c.id!==b.dataset.commandDelete); save();
+    }));
+  }
+
+  function renderLibrary(){
+    const filter=$("libraryDomainFilter")?.value||"all";
+    const list=state.challenges.filter(c=>filter==="all"||(c.domains||[]).includes(filter));
+    $("challengeLibrary").innerHTML=list.map(c=>`
+      <article class="challenge-card">
+        <div class="challenge-meta">
+          <span class="pill">L${c.difficulty}</span>
+          <span class="pill">${esc(c.status)}</span>
+          ${(c.domains||[]).slice(0,3).map(d=>`<span class="domain-chip">${esc(d)}</span>`).join("")}
+        </div>
+        <h3>${esc(c.title)}</h3>
+        <p>${esc(c.scenario.slice(0,210))}${c.scenario.length>210?"…":""}</p>
+        <div class="challenge-actions">
+          <button class="btn small secondary" data-edit-challenge="${c.id}">Edit</button>
+          ${c.status!=="current"&&c.status!=="completed"?`<button class="btn small primary" data-activate-challenge="${c.id}">Set Active</button>`:""}
+          ${c.status==="completed"?`<button class="btn small secondary" data-duplicate-challenge="${c.id}">Duplicate</button>`:""}
+          <button class="btn small danger" data-delete-challenge="${c.id}">Delete</button>
+        </div>
+      </article>`).join("");
+    document.querySelectorAll("[data-edit-challenge]").forEach(b=>b.addEventListener("click",()=>openChallengeDialog(b.dataset.editChallenge)));
+    document.querySelectorAll("[data-activate-challenge]").forEach(b=>b.addEventListener("click",()=>activateChallenge(b.dataset.activateChallenge)));
+    document.querySelectorAll("[data-duplicate-challenge]").forEach(b=>b.addEventListener("click",()=>duplicateChallenge(b.dataset.duplicateChallenge)));
+    document.querySelectorAll("[data-delete-challenge]").forEach(b=>b.addEventListener("click",()=>deleteChallenge(b.dataset.deleteChallenge)));
+  }
+
+  const runbooks = [
+    {title:"Layered Connectivity Isolation",subtitle:"Endpoint → VLAN → gateway → route → policy → service",steps:["Confirm physical/link state and interface status.","Validate IP, mask, gateway, DNS, and DHCP source.","Prove local subnet reachability.","Prove default-gateway reachability.","Inspect route selection and next hop.","Inspect ACL/firewall/NAT behavior.","Test the service directly by IP and by name.","Change only the confirmed fault and retest."]},
+    {title:"DNS Failure Runbook",subtitle:"Resolver selection, reachability, recursion, forwarding, transport",steps:["Prove raw IP connectivity first.","Identify the resolver actually configured on the client.","Test nslookup against the default resolver.","Test nslookup explicitly against the expected resolver.","Verify UDP and TCP 53 path/policy.","Validate local zone data.","Validate recursion/forwarders.","Flush cache/renew lease only after root cause is known."]},
+    {title:"Routing & Path Runbook",subtitle:"Route presence is not enough—prove forward and return paths",steps:["Identify source/destination prefixes.","Check connected and learned routes.","Check route preference/metric.","Trace forward path.","Check return route from destination side.","Inspect ACL/NAT dependencies.","Check interface counters and neighbor stability.","Retest with continuous probes."]},
+    {title:"DHCP & VLAN Runbook",subtitle:"Broadcast domain, relay, scope, option delivery",steps:["Verify access port VLAN membership.","Verify VLAN exists and trunk carries it.","Verify SVI/subinterface is up/up.","Verify helper-address or DHCP location.","Verify DHCP scope network/mask/range.","Verify options: gateway, DNS, lease.","Trace Discover/Offer/Request/Ack.","Renew only after fixing the confirmed control."]}
+  ];
+  function renderRunbooks(){
+    $("runbookGrid").innerHTML=runbooks.map(r=>`
+      <article class="runbook-card">
+        <div class="eyebrow">${esc(r.subtitle)}</div>
+        <h3>${esc(r.title)}</h3>
+        <div class="runbook-steps">${r.steps.map(s=>`<div class="runbook-step">${esc(s)}</div>`).join("")}</div>
+      </article>`).join("");
+  }
+
+  function renderSkills(){
+    const stats=domainStats(), wr=weaknessRank(), comp=completed();
+    $("skillsTable").innerHTML=Object.entries(stats).map(([skill,x])=>{
+      const health=x.attempts?clamp((x.confidence*.45)+(x.quality*.55),0,100):0;
+      return `<div class="skill-row">
+        <b>${esc(skill)}</b>
+        <div class="bar"><span style="width:${health}%"></span></div>
+        <span>${x.attempts} labs</span>
+        <span>${Math.round(x.confidence)}% conf.</span>
+        <span>${Math.round(x.quality)}% qual.</span>
+      </div>`;
+    }).join("");
+    const qual=avg(comp.map(c=>Number(c.result?.quality||0))), conf=avg(comp.map(c=>Number(c.result?.confidence||0))), score=readiness();
+    let gate="Hold Level 2";
+    if(score>=80&&qual>=80) gate="Advance toward Level 5";
+    else if(score>=65&&qual>=72) gate="Advance one level";
+    else if(score>=45) gate="Hold current level";
+    else gate="Reduce complexity / build method";
+    $("progressionGate").innerHTML=`
+      <div class="gate-box">
+        <div class="gate-level">${esc(gate)}</div>
+        <div class="gate-copy">Readiness ${Math.round(score)}/100 • Diagnostic quality ${Math.round(qual)}% • Confidence ${Math.round(conf)}%. Increase difficulty only when evidence quality remains stable.</div>
+      </div>`;
+    const levels=[1,2,3,4,5];
+    $("weakAreaHeatmap").innerHTML=`
+      <div class="heatmap">
+        <div></div>${levels.map(l=>`<div class="cell">L${l}</div>`).join("")}
+        ${wr.slice(0,6).map(w=>{
+          const base=w.score;
+          return `<div><b>${esc(w.skill)}</b></div>`+levels.map(l=>{
+            const score=clamp(base+(l-3)*6,0,100);
+            return `<div class="cell ${score>70?"high":score>45?"med":"low"}">${Math.round(score)}</div>`;
+          }).join("");
+        }).join("")}
+      </div>`;
+  }
+
+  function renderReview(){
+    const comp=completed(), recs=recommendations(), wr=weaknessRank(), score=readiness();
+    const conf=avg(comp.map(c=>Number(c.result?.confidence||0)));
+    const qual=avg(comp.map(c=>Number(c.result?.quality||0)));
+    const mistakes=comp.reduce((n,c)=>n+(c.result?.mistakes||[]).length,0);
+    let verdict="Build baseline evidence";
+    if(comp.length>=8&&score>=80) verdict="Advance to ambiguous multi-fault incidents";
+    else if(comp.length>=4&&score>=65) verdict="Increase difficulty selectively";
+    else if(comp.length>=2) verdict="Consolidate method before raising complexity";
+    $("reviewVerdict").textContent=verdict;
+    $("reviewNarrative").innerHTML=`
+      <div class="scenario-box">
+        Your current readiness score is <b>${Math.round(score)}/100</b>. You have ${comp.length} completed incident${comp.length===1?"":"s"}, average confidence of ${Math.round(conf)}%, and diagnostic quality of ${Math.round(qual)}%.
+        The most persistent weak area is <b>${esc(wr[0]?.skill||"unmeasured")}</b>. The governing rule for next week is simple: increase difficulty only when the evidence chain is stronger than the previous week—not merely because the challenge was completed.
+      </div>`;
+    $("reviewScorecard").innerHTML=`
+      <div class="score-list">
+        <div class="score-line"><span>Readiness</span><b>${Math.round(score)}/100</b></div>
+        <div class="score-line"><span>Confidence</span><b>${Math.round(conf)}%</b></div>
+        <div class="score-line"><span>Diagnostic quality</span><b>${Math.round(qual)}%</b></div>
+        <div class="score-line"><span>Mistakes logged</span><b>${mistakes}</b></div>
+        <div class="score-line"><span>Completed incidents</span><b>${comp.length}</b></div>
+      </div>`;
+    $("reviewActions").innerHTML=recs.map((r,i)=>`
+      <div class="review-action"><div class="rank">PRIORITY ${i+1}</div><h4>${esc(r.title)}</h4><p>${esc(r.body)}</p><p style="margin-top:8px">${esc(r.reason)}</p></div>`).join("");
+    $("weeklyNotes").value=state.weeklyNotes||"";
+  }
+
+  function renderHistory(){
+    const comp=completed().slice().sort((a,b)=>(b.result?.completedAt||0)-(a.result?.completedAt||0));
+    $("historyTable").innerHTML=comp.length?`
+      <div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Date</th><th>Incident</th><th>Level</th><th>Outcome</th><th>Confidence</th><th>Quality</th><th>Time</th><th>Mistakes</th></tr></thead>
+        <tbody>${comp.map(c=>`<tr>
+          <td>${new Date(c.result.completedAt).toLocaleDateString()}</td>
+          <td><b>${esc(c.title)}</b><br><span class="muted">${esc((c.result.diagnosis||"").slice(0,90))}</span></td>
+          <td>L${c.difficulty}</td><td>${esc(c.result.outcome)}</td><td>${c.result.confidence}%</td><td>${c.result.quality}%</td><td>${c.result.timeSpent}m</td><td>${(c.result.mistakes||[]).length}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>`:`<div class="empty">No completed evidence records yet.</div>`;
+  }
+
+  function renderSettings(){ $("targetDifficulty").value=String(state.settings.targetDifficulty||2); }
+  function renderWeek(){
+    const d=new Date();
+    const start=new Date(d); start.setDate(d.getDate()-((d.getDay()+6)%7));
+    $("weekPill").textContent=`Week of ${start.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}`;
+  }
+
+  function renderAll(){
+    renderWeek();renderDashboard();renderIncident();renderLab();renderLibrary();renderRunbooks();renderSkills();renderReview();renderHistory();renderSettings();
+  }
+
+  function openChallengeDialog(id=null){
+    challengeForm.reset();
+    $("challengeId").value=id||"";
+    $("challengeDialogTitle").textContent=id?"Edit challenge":"Create challenge";
+    if(id){
+      const c=state.challenges.find(x=>x.id===id); if(!c)return;
+      $("challengeTitle").value=c.title;$("challengeDate").value=c.date;$("challengeDifficulty").value=String(c.difficulty);
+      $("challengeDomains").value=(c.domains||[]).join(", ");$("challengeScenario").value=c.scenario;$("challengeImpact").value=c.impact||"";
+      $("challengeQuestions").value=(c.questions||[]).join("\n");$("challengeEvidence").value=(c.evidence||[]).join("\n");
+      $("challengeSolution").value=(c.solution||[]).join("\n");$("challengeExercise").value=c.exercise||"";$("challengeFollowup").value=c.followup||"";
+    }else{
+      $("challengeDate").value=today;$("challengeDifficulty").value=String(state.settings.targetDifficulty||2);
+    }
+    challengeDialog.showModal();
+  }
+
+  function activateChallenge(id){
+    state.challenges.forEach(c=>{if(c.status==="current") c.status="planned";});
+    const c=state.challenges.find(x=>x.id===id); if(c)c.status="current";
+    save(); setView("incident");
+  }
+  function duplicateChallenge(id){
+    const src=state.challenges.find(x=>x.id===id); if(!src)return;
+    const c=clone(src); c.id="inc-"+Date.now(); c.title=src.title+" — Repeat"; c.date=today; c.status="planned"; c.result=null;
+    state.challenges.push(c); save();
+  }
+  function deleteChallenge(id){
+    if(confirm("Delete this challenge permanently?")){ state.challenges=state.challenges.filter(c=>c.id!==id); save(); }
+  }
+
+  const challengeDialog=$("challengeDialog"), challengeForm=$("challengeForm");
+  const completeDialog=$("completeDialog"), completeForm=$("completeForm");
+  const deviceDialog=$("deviceDialog"), deviceForm=$("deviceForm");
+
+  document.querySelectorAll(".nav-item").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));
+  $("quickAddBtn").addEventListener("click",()=>openChallengeDialog());
+  $("libraryAddBtn").addEventListener("click",()=>openChallengeDialog());
+  $("libraryDomainFilter").addEventListener("change",renderLibrary);
+  $("startCurrentBtn").addEventListener("click",()=>setView("incident"));
+  $("heroIncidentBtn").addEventListener("click",()=>setView("incident"));
+  $("heroReviewBtn").addEventListener("click",()=>setView("review"));
+  $("closeChallengeDialog").addEventListener("click",()=>challengeDialog.close());
+  $("cancelChallengeDialog").addEventListener("click",()=>challengeDialog.close());
+  $("closeCompleteDialog").addEventListener("click",()=>completeDialog.close());
+  $("cancelCompleteDialog").addEventListener("click",()=>completeDialog.close());
+  $("closeDeviceDialog").addEventListener("click",()=>deviceDialog.close());
+  $("cancelDeviceDialog").addEventListener("click",()=>deviceDialog.close());
+
+  challengeForm.addEventListener("submit",e=>{
+    e.preventDefault();
+    const id=$("challengeId").value;
+    const old=state.challenges.find(c=>c.id===id);
+    const obj={
+      id:id||"inc-"+Date.now(),
+      title:$("challengeTitle").value.trim(),
+      date:$("challengeDate").value,
+      difficulty:Number($("challengeDifficulty").value),
+      domains:$("challengeDomains").value.split(",").map(x=>x.trim()).filter(Boolean),
+      scenario:$("challengeScenario").value.trim(),
+      impact:$("challengeImpact").value.trim(),
+      questions:lines($("challengeQuestions").value),
+      evidence:lines($("challengeEvidence").value),
+      solution:lines($("challengeSolution").value),
+      exercise:$("challengeExercise").value.trim(),
+      followup:$("challengeFollowup").value.trim(),
+      status:old?.status||"planned",
+      result:old?.result||null
+    };
+    if(old)Object.assign(old,obj); else state.challenges.push(obj);
+    challengeDialog.close(); save();
+  });
+
+  completeForm.addEventListener("submit",e=>{
+    e.preventDefault();
+    const c=current(); if(!c)return;
+    c.result={
+      diagnosis:$("resultDiagnosis").value.trim(),
+      evidence:$("resultEvidence").value.trim(),
+      mistakes:lines($("resultMistakes").value),
+      confidence:clamp($("resultConfidence").value,0,100),
+      quality:clamp($("resultQuality").value,0,100),
+      timeSpent:clamp($("resultTime").value,0,1000),
+      outcome:$("resultOutcome").value,
+      followup:$("resultFollowup").value.trim(),
+      completedAt:Date.now()
+    };
+    c.status="completed";
+    const next=state.challenges.find(x=>x.status==="planned"); if(next)next.status="current";
+    completeDialog.close();completeForm.reset();save();setView("review");
+  });
+
+  $("addDeviceBtn").addEventListener("click",()=>deviceDialog.showModal());
+  deviceForm.addEventListener("submit",e=>{
+    e.preventDefault();
+    state.lab.devices.push({id:"d-"+Date.now(),name:$("deviceName").value.trim(),role:$("deviceRole").value.trim(),address:$("deviceAddress").value.trim(),status:$("deviceStatus").value});
+    deviceDialog.close();deviceForm.reset();save();
+  });
+
+  $("addCommandBtn").addEventListener("click",()=>{
+    state.lab.commands.push({id:"cmd-"+Date.now(),done:false,command:"",purpose:"",status:"Planned"}); save();
+  });
+
+  $("saveLabBtn").addEventListener("click",()=>{
+    state.lab.hypothesis=$("labHypothesis").value.trim();
+    state.lab.falsifier=$("labFalsifier").value.trim();
+    state.lab.findings=$("labFindings").value.trim();
+    state.lab.rootCause=$("labRootCause").value.trim();
+    state.lab.remediation=$("labRemediation").value.trim();
+    state.lab.verification=$("labVerification").value.trim();
+    document.querySelectorAll("[data-command-text]").forEach(inp=>{
+      const c=state.lab.commands.find(x=>x.id===inp.dataset.commandText); if(c)c.command=inp.value;
+    });
+    document.querySelectorAll("[data-command-purpose]").forEach(inp=>{
+      const c=state.lab.commands.find(x=>x.id===inp.dataset.commandPurpose); if(c)c.purpose=inp.value;
+    });
+    document.querySelectorAll("[data-command-status]").forEach(sel=>{
+      const c=state.lab.commands.find(x=>x.id===sel.dataset.commandStatus); if(c)c.status=sel.value;
+    });
+    document.querySelectorAll("[data-command-done]").forEach(chk=>{
+      const c=state.lab.commands.find(x=>x.id===chk.dataset.commandDone); if(c)c.done=chk.checked;
+    });
+    save(false); alert("Lab evidence saved.");
+  });
+
+  $("refreshReviewBtn").addEventListener("click",renderReview);
+  $("saveWeeklyNotesBtn").addEventListener("click",()=>{state.weeklyNotes=$("weeklyNotes").value.trim();save(false);alert("Weekly review notes saved.");});
+  $("targetDifficulty").addEventListener("change",()=>{state.settings.targetDifficulty=Number($("targetDifficulty").value);save(false);});
+
+  $("exportBtn").addEventListener("click",()=>{
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download="network-ops-training-workspace.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
+  });
+  $("importFile").addEventListener("change",async e=>{
+    const file=e.target.files?.[0];if(!file)return;
+    try{
+      const data=JSON.parse(await file.text());
+      if(!Array.isArray(data.challenges)||!data.lab)throw new Error("Invalid format");
+      state=data;save();alert("Workspace imported.");
+    }catch(err){alert("Import failed. Use a JSON export from this workspace.");}
+    e.target.value="";
+  });
+  $("resetBtn").addEventListener("click",()=>{
+    if(confirm("Reset this browser workspace to the default training data?")){
+      state=clone(defaultState);save();setView("dashboard");
+    }
+  });
+
+  renderAll();
+})();
+
+</script>
+</body>
+</html>
