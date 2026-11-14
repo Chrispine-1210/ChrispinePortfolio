@@ -623,6 +623,376 @@ describe("public form and CRM compatibility", () => {
 
   });
 
+  it("builds evidence-gated revenue intelligence and deterministic capital allocation", async () => {
+    const api = request(app);
+    const attributionNow = new Date().toISOString();
+
+    const createConsultation = async (
+      email: string,
+      serviceInterest: string,
+      channel: string,
+      source: string,
+      campaign: string,
+    ) => {
+      await api.post("/api/consultation").send({
+        name: `Revenue intelligence ${email}`,
+        email,
+        organization: "Revenue Intelligence Verification Ltd",
+        industry: "Professional Services",
+        serviceInterest,
+        challenge: "We need evidence-backed revenue intelligence and capital allocation without invented commercial assumptions.",
+        currentTech: "CRM and finance evidence fixtures",
+        budgetRange: "MWK 1,000,000 – 5,000,000",
+        expectedTimeline: "1–3 months",
+        consent: true,
+        attribution: {
+          firstTouch: {
+            source,
+            medium: channel,
+            campaign,
+            term: "",
+            content: "",
+            referrer: "",
+            landingPage: "/hire",
+            capturedAt: attributionNow,
+          },
+          lastTouch: {
+            source,
+            medium: channel,
+            campaign,
+            term: "",
+            content: "capital-allocation-test",
+            referrer: "",
+            landingPage: "/hire",
+            capturedAt: attributionNow,
+          },
+        },
+      }).expect(201);
+      const search = await api.get("/api/admin/leads")
+        .set("Cookie", administrator.cookie)
+        .query({ search: email })
+        .expect(200);
+      return search.body[0] as { id: string; stage: string; serviceInterest: string };
+    };
+
+    const notWon = await createConsultation(
+      "revenue-not-won@test.invalid",
+      "business-systems",
+      "paid",
+      "google-ads",
+      "capital-scale",
+    );
+    await api.post("/api/admin/revenue/events")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: notWon.id,
+        serviceInterest: "business-systems",
+        revenueKind: "one_time",
+        currency: "MWK",
+        amount: 100000,
+        occurredAt: new Date().toISOString(),
+        sourceReference: "invoice-not-won",
+      })
+      .expect(409, { message: "Revenue can only be recognized against a won opportunity" });
+
+    const scaleLeads: Array<{ id: string }> = [];
+    for (let index = 0; index < 5; index += 1) {
+      const lead = index === 0
+        ? notWon
+        : await createConsultation(
+            `capital-scale-${index}@test.invalid`,
+            "business-systems",
+            "paid",
+            "google-ads",
+            "capital-scale",
+          );
+      scaleLeads.push(lead);
+      const leadPath = `/api/admin/leads/${lead.id}`;
+      if (index <= 3) {
+        await api.patch(leadPath).set("Cookie", administrator.cookie)
+          .send({ stage: "qualified", qualificationScore: 90 }).expect(200);
+      }
+      if (index <= 2) {
+        await api.patch(leadPath).set("Cookie", administrator.cookie)
+          .send({ stage: "proposal", estimatedValue: 4000000, currency: "MWK", probability: 70 }).expect(200);
+      }
+      if (index <= 1) {
+        await api.patch(leadPath).set("Cookie", administrator.cookie)
+          .send({ stage: "won", probability: 60 }).expect(200);
+      }
+    }
+
+    await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "paid",
+        source: "google-ads",
+        campaign: "capital-scale",
+        serviceInterest: "business-systems",
+        currency: "MWK",
+        amount: 500000,
+        occurredAt: new Date().toISOString(),
+        notes: "Service-tagged scale test spend",
+      })
+      .expect(201);
+
+    for (const lead of scaleLeads.slice(0, 2)) {
+      await api.post("/api/admin/revenue/events")
+        .set("Cookie", administrator.cookie)
+        .send({
+          leadId: lead.id,
+          serviceInterest: "business-systems",
+          revenueKind: "recurring",
+          currency: "MWK",
+          amount: 2000000,
+          occurredAt: new Date().toISOString(),
+          periodStart: new Date(Date.now() - 30 * 86_400_000).toISOString(),
+          periodEnd: new Date().toISOString(),
+          sourceReference: `invoice-${lead.id}`,
+        }).expect(201);
+      await api.post("/api/admin/revenue/costs")
+        .set("Cookie", administrator.cookie)
+        .send({
+          leadId: lead.id,
+          serviceInterest: "business-systems",
+          category: "delivery_labour",
+          costScope: "recurring",
+          currency: "MWK",
+          amount: 1000000,
+          occurredAt: new Date().toISOString(),
+          sourceReference: `cost-ledger-${lead.id}`,
+        }).expect(201);
+      await api.post("/api/admin/revenue/cost-attestations")
+        .set("Cookie", administrator.cookie)
+        .send({
+          leadId: lead.id,
+          serviceInterest: "business-systems",
+          currency: "MWK",
+          throughAt: new Date().toISOString(),
+          sourceReference: `cost-complete-${lead.id}`,
+          notes: "All recurring direct costs through this revenue date are captured.",
+        }).expect(201);
+      await api.post("/api/admin/revenue/agreements")
+        .set("Cookie", administrator.cookie)
+        .send({
+          leadId: lead.id,
+          serviceInterest: "business-systems",
+          currency: "MWK",
+          monthlyRecurringRevenue: 500000,
+          startedAt: new Date(Date.now() - 60 * 86_400_000).toISOString(),
+          sourceReference: `support-agreement-${lead.id}`,
+        }).expect(201);
+    }
+
+    await api.post("/api/admin/revenue/events")
+      .set("Cookie", viewer.cookie)
+      .send({
+        leadId: scaleLeads[0].id,
+        serviceInterest: "business-systems",
+        revenueKind: "one_time",
+        currency: "MWK",
+        amount: 1,
+        occurredAt: new Date().toISOString(),
+        sourceReference: "viewer-denied",
+      })
+      .expect(403);
+
+    for (const lead of scaleLeads.slice(0, 2)) {
+      await database.query(
+        `update lead_activities
+         set created_at = case
+           when metadata->>'stage' = 'qualified' then now() - interval '14 days'
+           when metadata->>'stage' = 'proposal' then now() - interval '10 days'
+           when metadata->>'stage' = 'won' then now() - interval '2 days'
+           else created_at end
+         where lead_id = $1 and type = 'stage_changed'`,
+        [lead.id],
+      );
+    }
+    await database.query(
+      `update lead_activities
+       set created_at = case
+         when metadata->>'stage' = 'qualified' then now() - interval '40 days'
+         when metadata->>'stage' = 'proposal' then now() - interval '30 days'
+         else created_at end
+       where lead_id = $1 and type = 'stage_changed'`,
+      [scaleLeads[2].id],
+    );
+
+    const directLead = async (
+      email: string,
+      stage: string,
+      service: string,
+      channel: string,
+      source: string,
+    ) => {
+      const { rows: [lead] } = await database.query<{ id: string }>(
+        `insert into leads
+          (name, email, lead_type, service_interest, source, stage, estimated_value, currency, probability, consent_status)
+         values ($1, $2, 'consultation_request', $3, 'portfolio_consultation', $4, 2000000, 'MWK', 60, 'granted')
+         returning id`,
+        [email, email, service, stage],
+      );
+      await database.query(
+        `insert into lead_attribution_touches
+          (lead_id, touch_type, channel, source, medium, campaign, landing_page, captured_at)
+         values ($1, 'last', $2, $3, $2, 'allocation-fixture', '/hire', now())`,
+        [lead.id, channel, source],
+      );
+      return lead.id;
+    };
+
+    for (let index = 0; index < 5; index += 1) {
+      await directLead(
+        `capital-cut-${index}@test.invalid`,
+        "proposal",
+        "technology-advisory",
+        "email",
+        "outbound-email",
+      );
+    }
+    await database.query(
+      `insert into acquisition_spend_entries
+        (channel, source, campaign, service_interest, currency, amount, occurred_at)
+       values ('email', 'outbound-email', 'allocation-cut', 'technology-advisory', 'MWK', 200000, now())`,
+    );
+
+    const maintainWon: string[] = [];
+    for (let index = 0; index < 5; index += 1) {
+      const stage = index < 2 ? "won" : index === 2 ? "proposal" : "qualified";
+      const id = await directLead(
+        `capital-maintain-${index}@test.invalid`,
+        stage,
+        "data-analytics",
+        "referral",
+        "partner-referral",
+      );
+      if (stage === "won") maintainWon.push(id);
+    }
+    await database.query(
+      `insert into acquisition_spend_entries
+        (channel, source, campaign, service_interest, currency, amount, occurred_at)
+       values ('referral', 'partner-referral', 'allocation-maintain', 'data-analytics', 'MWK', 1000000, now())`,
+    );
+    for (const id of maintainWon) {
+      await database.query(
+        `insert into revenue_events
+          (lead_id, service_interest, revenue_kind, currency, amount, occurred_at, source_reference)
+         values ($1, 'data-analytics', 'one_time', 'MWK', 1000000, now(), 'maintain-revenue')`,
+        [id],
+      );
+      await database.query(
+        `insert into direct_cost_entries
+          (lead_id, service_interest, category, cost_scope, currency, amount, occurred_at, source_reference)
+         values ($1, 'data-analytics', 'delivery_labour', 'one_time', 'MWK', 250000, now(), 'maintain-cost')`,
+        [id],
+      );
+      await database.query(
+        `insert into cost_evidence_attestations
+          (lead_id, service_interest, currency, through_at, source_reference)
+         values ($1, 'data-analytics', 'MWK', now() + interval '1 second', 'maintain-cost-complete')`,
+        [id],
+      );
+    }
+
+    for (let index = 0; index < 2; index += 1) {
+      await directLead(
+        `capital-unknown-${index}@test.invalid`,
+        "proposal",
+        "managed-it",
+        "organic_search",
+        "google",
+      );
+    }
+
+    await database.query(
+      `insert into acquisition_spend_entries
+        (channel, source, campaign, service_interest, currency, amount, occurred_at)
+       values ('direct', 'field-sales', 'zero-enquiry-cut', 'enterprise-software', 'MWK', 300000,
+               now() - interval '20 days')`,
+    );
+
+    const intelligence = await api.get("/api/admin/revenue/intelligence")
+      .set("Cookie", administrator.cookie)
+      .query({ window: "all" })
+      .expect(200);
+
+    const findDecision = (channel: string, service: string) =>
+      intelligence.body.allocationRecommendations.find(
+        (row: any) => row.channel === channel && row.service === service && row.currency === "MWK",
+      );
+
+    expect(findDecision("paid", "business-systems")).toMatchObject({
+      decision: "scale",
+      confidence: "medium",
+      metrics: {
+        enquiries: 5,
+        proposals: 3,
+        wins: 2,
+        proposalWinRate: 66.7,
+        spend: 500000,
+        recognizedRevenue: 4000000,
+        directCost: 2000000,
+        grossProfit: 2000000,
+        grossMarginPct: 50,
+        grossProfitRoas: 4,
+        mrr: 1000000,
+        arr: 12000000,
+        paybackDays: 30.4,
+        revenueCoveragePct: 100,
+        costCoveragePct: 100,
+        observedRevenueLtv: 2000000,
+        observedGrossProfitLtv: 1000000,
+      },
+    });
+    expect(findDecision("email", "technology-advisory")).toMatchObject({
+      decision: "cut",
+      metrics: { proposals: 5, wins: 0, spend: 200000 },
+    });
+    expect(findDecision("referral", "data-analytics")).toMatchObject({
+      decision: "maintain",
+      metrics: {
+        enquiries: 5,
+        proposals: 3,
+        wins: 2,
+        grossMarginPct: 75,
+        grossProfitRoas: 1.5,
+      },
+    });
+    expect(findDecision("organic_search", "managed-it")).toMatchObject({
+      decision: "insufficient_data",
+      confidence: "low",
+    });
+    expect(findDecision("direct", "enterprise-software")).toMatchObject({
+      decision: "cut",
+      metrics: {
+        enquiries: 0,
+        proposals: 0,
+        wins: 0,
+        spend: 300000,
+        spendAgeDays: expect.any(Number),
+      },
+    });
+
+    expect(intelligence.body.proposalVelocityDays.proposalToWon).toEqual(expect.any(Number));
+    expect(intelligence.body.proposalVelocityDays.proposalToWon).toBeGreaterThan(0);
+    expect(intelligence.body.proposalVelocityDays.samples.won).toBeGreaterThanOrEqual(2);
+    expect(intelligence.body.proposalVelocityDays.samples.open).toBeGreaterThanOrEqual(1);
+    expect(intelligence.body.pipelineAging.stalled).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: scaleLeads[2].id, stage: "proposal", ageDays: expect.any(Number) }),
+    ]));
+    expect(intelligence.body.cohorts[0]).toEqual(expect.objectContaining({
+      cohort: expect.stringMatching(/^\d{4}-\d{2}$/),
+      enquiries: expect.any(Number),
+      proposals: expect.any(Number),
+    }));
+    expect(intelligence.body.recurringRevenue.activeMrrByCurrency).toEqual(expect.arrayContaining([
+      expect.objectContaining({ currency: "MWK", mrr: 1000000, arr: 12000000 }),
+    ]));
+    expect(intelligence.body.recurringRevenue.projectedLtvStatus)
+      .toBe("insufficient_ended_agreements");
+  });
+
   it("preserves newsletter subscription validation and duplicate detection", async () => {
     const api = request(app);
     const url = "/api/newsletter/subscribe";

@@ -94,6 +94,7 @@ const acquisitionSpendInputSchema = z.object({
   channel: z.enum(["email", "paid", "social", "organic_search", "referral", "direct", "other"]),
   source: z.string().trim().min(1).max(160).transform((value) => value.toLowerCase()),
   campaign: z.string().trim().max(180).nullable().optional(),
+  serviceInterest: z.string().trim().max(180).nullable().optional(),
   currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
   amount: z.union([
     z.number().positive(),
@@ -749,6 +750,7 @@ export function createAdminRouter(): Router {
             channel: input.channel,
             source: input.source,
             campaign: input.campaign || null,
+            serviceInterest: input.serviceInterest || null,
             currency: input.currency,
             amount: String(input.amount),
             occurredAt: new Date(input.occurredAt),

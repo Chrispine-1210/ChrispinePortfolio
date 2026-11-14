@@ -15,6 +15,7 @@ import { createEmailRouter } from "./email/routes.js";
 import { createTwilioWebhookRouter } from "./notifications/twilio-webhook-route.js";
 import { createAdminRouter } from "./admin/routes.js";
 import { createPortfolioGovernanceRouter } from "./portfolio/admin-routes.js";
+import { createRevenueIntelligenceRouter } from "./revenue/routes.js";
 
 export function createApp() {
   const app = express();
@@ -64,6 +65,7 @@ export function createApp() {
   app.use(routes);
   app.use(createAdminRouter());
   app.use(createPortfolioGovernanceRouter());
+  app.use(createRevenueIntelligenceRouter());
   app.use(createEmailRouter());
   app.use(createNotificationRouter());
   app.use(createTwilioWebhookRouter());

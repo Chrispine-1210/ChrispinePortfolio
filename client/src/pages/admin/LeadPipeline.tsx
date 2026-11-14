@@ -172,6 +172,7 @@ export default function LeadPipeline() {
     channel: "social",
     source: "linkedin",
     campaign: "",
+    serviceInterest: "",
     currency: "MWK",
     amount: "",
     occurredAt: new Date().toISOString().slice(0, 16),
@@ -233,6 +234,7 @@ export default function LeadPipeline() {
         amount: Number(spendDraft.amount),
         occurredAt: new Date(spendDraft.occurredAt).toISOString(),
         campaign: spendDraft.campaign || null,
+        serviceInterest: spendDraft.serviceInterest || null,
         notes: spendDraft.notes || null,
       }),
     onSuccess: () => {
@@ -362,7 +364,7 @@ export default function LeadPipeline() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold uppercase tracking-wider">Marketing spend ledger</h2>
-                  <p className="mt-1 text-xs text-white/30">Append-only spend evidence used for CAC and ROAS.</p>
+                  <p className="mt-1 text-xs text-white/30">Append-only spend evidence used for CAC, ROAS and channel × service allocation. Tag the intended service whenever it is known.</p>
                 </div>
                 <PlusCircle className="h-5 w-5 text-primary" />
               </div>
@@ -376,6 +378,12 @@ export default function LeadPipeline() {
                   onChange={(event) => setSpendDraft({ ...spendDraft, source: event.target.value })} />
                 <Input placeholder="Campaign" value={spendDraft.campaign}
                   onChange={(event) => setSpendDraft({ ...spendDraft, campaign: event.target.value })} />
+                <select className="h-10 rounded-md border border-input bg-background px-3 text-sm text-white"
+                  value={spendDraft.serviceInterest}
+                  onChange={(event) => setSpendDraft({ ...spendDraft, serviceInterest: event.target.value })}>
+                  <option value="">Unallocated service</option>
+                  {["network-infrastructure","managed-it","enterprise-software","business-systems","data-analytics","technology-advisory"].map((item) => <option key={item} value={item}>{item.replace(/-/g, " ")}</option>)}
+                </select>
                 <Input maxLength={3} placeholder="Currency" value={spendDraft.currency}
                   onChange={(event) => setSpendDraft({ ...spendDraft, currency: event.target.value.toUpperCase() })} />
                 <Input type="number" min="0" step="0.01" placeholder="Spend amount" value={spendDraft.amount}
