@@ -660,7 +660,7 @@ export default function TreasuryRoic() {
                   <label className="text-xs text-white/40 md:col-span-2">Approval rationale<Textarea className="mt-1" rows={2} value={hurdleRationale} onChange={(event)=>setHurdleRationale(event.target.value)} /></label>
                 </>}
 
-                {!["account","balance"].includes(mode) && mode !== "attestation" && mode !== "hurdle" && <label className="text-xs text-white/40">Amount<Input className="mt-1" type="number" min="0" value={amount} onChange={(event)=>setAmount(event.target.value)} /></label>}
+                {!["account","balance","invested-capital"].includes(mode) && mode !== "attestation" && mode !== "hurdle" && <label className="text-xs text-white/40">Amount<Input className="mt-1" type="number" min="0" value={amount} onChange={(event)=>setAmount(event.target.value)} /></label>}
                 {["cash","opex","deployment"].includes(mode) && <label className="text-xs text-white/40">Service<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={serviceInterest} onChange={(event)=>setServiceInterest(event.target.value)}><option value="">Company-wide / none</option>{services.map((item)=><option key={item}>{item}</option>)}</select></label>}
                 {mode !== "account" && <label className="text-xs text-white/40">Evidence date<Input className="mt-1" type="datetime-local" value={occurredAt} onChange={(event)=>setOccurredAt(event.target.value)} /></label>}
                 <label className="text-xs text-white/40">Currency<Input className="mt-1" maxLength={3} value={currency} onChange={(event)=>setCurrency(event.target.value.toUpperCase())} /></label>
