@@ -642,6 +642,85 @@ describe("secure-foundation migration", () => {
     }
   }, 45_000);
 
+  it("applies the treasury and ROIC foundation idempotently with separated approval authority", async () => {
+    const foundation = await readFile("migrations/0000_secure_foundation.sql", "utf8");
+    const emailFoundation = await readFile("migrations/0001_email_delivery_foundation.sql", "utf8");
+    const notifications = await readFile("migrations/0002_notification_platform.sql", "utf8");
+    const crm = await readFile("migrations/0003_crm_pipeline.sql", "utf8");
+    const attribution = await readFile("migrations/0007_acquisition_attribution.sql", "utf8");
+    const revenue = await readFile("migrations/0008_revenue_intelligence_capital_allocation.sql", "utf8");
+    const capital = await readFile("migrations/0009_cash_realization_capital_deployment.sql", "utf8");
+    const treasury = await readFile("migrations/0010_treasury_roic_capital_management.sql", "utf8");
+    const database = new PGlite();
+    try {
+      await database.exec(foundation);
+      await database.exec(emailFoundation);
+      await database.exec(notifications);
+      await database.exec(crm);
+      await database.exec(attribution);
+      await database.exec(revenue);
+      await database.exec(capital);
+      await database.exec(treasury);
+      await database.exec(treasury);
+
+      const tables = await database.query<{ count: number }>(
+        `select count(*)::int as count
+         from information_schema.tables
+         where table_schema='public'
+           and table_name in (
+             'treasury_accounts',
+             'treasury_balance_snapshots',
+             'treasury_cash_disbursements',
+             'operating_expense_entries',
+             'operating_tax_provisions',
+             'invested_capital_snapshots',
+             'capital_deployment_entries',
+             'financial_evidence_attestations',
+             'capital_hurdle_policies'
+           )`,
+      );
+      const financeEvidencePermissions = await database.query<{ key: string }>(
+        `select p.key
+         from role_permissions rp
+         join roles r on r.id=rp.role_id
+         join permissions p on p.id=rp.permission_id
+         where r.key='finance_manager'
+           and p.key in (
+             'treasury.evidence.manage',
+             'roic.evidence.manage',
+             'capital.deployment.manage'
+           )
+         order by p.key`,
+      );
+      const financeHurdleApproval = await database.query<{ count: number }>(
+        `select count(*)::int as count
+         from role_permissions rp
+         join roles r on r.id=rp.role_id
+         join permissions p on p.id=rp.permission_id
+         where r.key='finance_manager' and p.key='capital.hurdle.approve'`,
+      );
+      const adminHurdleApproval = await database.query<{ count: number }>(
+        `select count(*)::int as count
+         from role_permissions rp
+         join roles r on r.id=rp.role_id
+         join permissions p on p.id=rp.permission_id
+         where r.key in ('administrator','super_administrator')
+           and p.key='capital.hurdle.approve'`,
+      );
+
+      expect(tables.rows[0]?.count).toBe(9);
+      expect(financeEvidencePermissions.rows.map((row) => row.key)).toEqual([
+        "capital.deployment.manage",
+        "roic.evidence.manage",
+        "treasury.evidence.manage",
+      ]);
+      expect(financeHurdleApproval.rows[0]?.count).toBe(0);
+      expect(adminHurdleApproval.rows[0]?.count).toBe(2);
+    } finally {
+      await database.close();
+    }
+  }, 45_000);
+
   it("applies the content workflow idempotently and creates a baseline version", async () => {
     const foundation = await readFile("migrations/0000_secure_foundation.sql", "utf8");
     const emailFoundation = await readFile("migrations/0001_email_delivery_foundation.sql", "utf8");

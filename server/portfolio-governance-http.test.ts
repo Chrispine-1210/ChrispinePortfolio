@@ -12,6 +12,7 @@ vi.mock("./db.js", () => ({ db: drizzle(database, { schema }) }));
 let app: Express;
 let administrator: { cookie: string; userId: string; sessionId: string };
 let manager: { cookie: string; userId: string; sessionId: string };
+let finance: { cookie: string; userId: string; sessionId: string };
 let viewer: { cookie: string; userId: string; sessionId: string };
 
 beforeAll(async () => {
@@ -44,6 +45,7 @@ beforeAll(async () => {
 
   administrator = await provision("super_administrator");
   manager = await provision("portfolio_test_manager");
+  finance = await provision("finance_manager");
   viewer = await provision("viewer");
   ({ app } = await import("./app.js"));
 });
@@ -1476,6 +1478,369 @@ describe("public form and CRM compatibility", () => {
         invoiceNumber: "CAP-CASH-001",
       }),
     ]));
+  });
+
+  it("separates treasury liquidity from accounting ROIC and enforces evidence gates", async () => {
+    const api = request(app);
+    const now = Date.now();
+    const dayMs = 86_400_000;
+    const ttmStart = new Date(now - 365 * dayMs);
+    const taxPeriodStart = new Date(ttmStart.getTime() - 30 * dayMs);
+    const nowIso = new Date(now).toISOString();
+
+    const { rows: [lead] } = await database.query<{ id: string }>(
+      `insert into leads
+        (name,email,lead_type,service_interest,source,stage,estimated_value,currency,probability,consent_status,created_at)
+       values
+        ('Treasury ROIC Fixture','treasury-roic@test.invalid','consultation_request','enterprise-software',
+         'portfolio_consultation','won',100000,'USD',100,'granted',now()-interval '100 days')
+       returning id`,
+    );
+
+    await api.post("/api/admin/revenue/events")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        serviceInterest: "enterprise-software",
+        revenueKind: "one_time",
+        currency: "USD",
+        amount: 100000,
+        occurredAt: new Date(now - 20 * dayMs).toISOString(),
+        sourceReference: "roic-revenue-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/revenue/costs")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        serviceInterest: "enterprise-software",
+        category: "delivery_labour",
+        costScope: "one_time",
+        currency: "USD",
+        amount: 30000,
+        occurredAt: new Date(now - 20 * dayMs).toISOString(),
+        sourceReference: "roic-direct-cost-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/revenue/cost-attestations")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        serviceInterest: "enterprise-software",
+        currency: "USD",
+        throughAt: new Date(now - 19 * dayMs).toISOString(),
+        sourceReference: "roic-cost-complete-001",
+        notes: "All direct costs for this recognized revenue are captured.",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "referral",
+        source: "institutional-referral",
+        campaign: "roic-fixture",
+        serviceInterest: "enterprise-software",
+        currency: "USD",
+        amount: 10000,
+        occurredAt: new Date(now - 90 * dayMs).toISOString(),
+        notes: "Acquisition expense used in company EBIT.",
+      })
+      .expect(201);
+
+    const account = await api.post("/api/admin/treasury/accounts")
+      .set("Cookie", finance.cookie)
+      .send({
+        name: "USD Operating Account",
+        institution: "Fixture Bank",
+        accountType: "bank",
+        currency: "USD",
+        status: "active",
+        sourceReference: "bank-account-register-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/balances")
+      .set("Cookie", finance.cookie)
+      .send({
+        accountId: account.body.id,
+        currency: "USD",
+        ledgerBalance: 65000,
+        availableBalance: 60000,
+        restrictedBalance: 10000,
+        capturedAt: nowIso,
+        sourceReference: "bank-statement-current-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/disbursements")
+      .set("Cookie", finance.cookie)
+      .send({
+        accountId: account.body.id,
+        currency: "USD",
+        amount: 30000,
+        cashUseType: "operating",
+        category: "payroll",
+        occurredAt: new Date(now - 30 * dayMs).toISOString(),
+        sourceReference: "bank-payroll-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/disbursements")
+      .set("Cookie", finance.cookie)
+      .send({
+        accountId: account.body.id,
+        currency: "USD",
+        amount: 100,
+        cashUseType: "capital",
+        category: "payroll",
+        occurredAt: new Date(now - 10 * dayMs).toISOString(),
+        sourceReference: "invalid-classification",
+      })
+      .expect(400, {
+        message: "Cash-use category does not match operating/capital/financing classification",
+      });
+
+    await api.post("/api/admin/treasury/operating-expenses")
+      .set("Cookie", finance.cookie)
+      .send({
+        currency: "USD",
+        amount: 20000,
+        category: "payroll_overhead",
+        occurredAt: new Date(now - 40 * dayMs).toISOString(),
+        sourceReference: "management-accounts-opex-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/attestations")
+      .set("Cookie", finance.cookie)
+      .send({
+        currency: "USD",
+        evidenceType: "operating_expenses_complete",
+        throughAt: nowIso,
+        sourceReference: "management-accounts-close-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/attestations")
+      .set("Cookie", finance.cookie)
+      .send({
+        currency: "USD",
+        evidenceType: "cash_disbursements_complete",
+        throughAt: nowIso,
+        sourceReference: "cash-ledger-close-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/tax-provisions")
+      .set("Cookie", finance.cookie)
+      .send({
+        currency: "USD",
+        amount: 8000,
+        periodStart: taxPeriodStart.toISOString(),
+        periodEnd: nowIso,
+        recognizedAt: nowIso,
+        sourceReference: "tax-provision-ttm-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/tax-provisions")
+      .set("Cookie", finance.cookie)
+      .send({
+        currency: "USD",
+        amount: 1,
+        periodStart: new Date(now - 30 * dayMs).toISOString(),
+        periodEnd: nowIso,
+        recognizedAt: nowIso,
+        sourceReference: "overlapping-tax-fixture",
+      })
+      .expect(409, { message: "Operating tax period overlaps existing active evidence" });
+
+    await api.post("/api/admin/treasury/invested-capital")
+      .set("Cookie", finance.cookie)
+      .send({
+        currency: "USD",
+        operatingAssets: 250000,
+        operatingLiabilities: 50000,
+        capturedAt: ttmStart.toISOString(),
+        components: { operatingCash: 50000, receivables: 100000, fixedAssets: 100000, operatingLiabilities: 50000 },
+        sourceReference: "balance-sheet-opening-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/invested-capital")
+      .set("Cookie", finance.cookie)
+      .send({
+        currency: "USD",
+        operatingAssets: 300000,
+        operatingLiabilities: 60000,
+        capturedAt: nowIso,
+        components: { operatingCash: 65000, receivables: 120000, fixedAssets: 115000, operatingLiabilities: 60000 },
+        sourceReference: "balance-sheet-closing-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/hurdle-policies")
+      .set("Cookie", finance.cookie)
+      .send({
+        currency: "USD",
+        annualHurdleRatePct: 10,
+        effectiveFrom: new Date(now - 30 * dayMs).toISOString(),
+        rationale: "Finance cannot unilaterally approve the company hurdle rate.",
+      })
+      .expect(403);
+
+    await api.post("/api/admin/treasury/hurdle-policies")
+      .set("Cookie", administrator.cookie)
+      .send({
+        currency: "USD",
+        annualHurdleRatePct: 10,
+        effectiveFrom: new Date(now - 30 * dayMs).toISOString(),
+        rationale: "Approved management hurdle rate for evidence-backed ROIC decisions.",
+      })
+      .expect(201);
+
+    const budget = await api.post("/api/admin/capital/budgets")
+      .set("Cookie", administrator.cookie)
+      .send({
+        periodStart: new Date(now - 30 * dayMs).toISOString(),
+        periodEnd: new Date(now + 30 * dayMs).toISOString(),
+        currency: "USD",
+        envelopeAmount: 20000,
+        sourceReference: "roic-capital-budget-001",
+      })
+      .expect(201);
+
+    const allocation = await api.post(`/api/admin/capital/budgets/${budget.body.id}/allocations`)
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "referral",
+        serviceInterest: "enterprise-software",
+        recommendationDecision: "maintain",
+        recommendationConfidence: "medium",
+        recommendedAmount: 16000,
+        approvedAmount: 16000,
+        sourceWindow: "365d",
+        recommendationSnapshot: { basis: "roic-fixture" },
+        rationale: "Controlled capital deployment fixture against an approved budget.",
+      })
+      .expect(200);
+
+    await api.post(`/api/admin/capital/budgets/${budget.body.id}/approve`)
+      .set("Cookie", administrator.cookie)
+      .send({})
+      .expect(200);
+
+    await api.post("/api/admin/treasury/deployments")
+      .set("Cookie", finance.cookie)
+      .send({
+        budgetAllocationId: allocation.body.id,
+        currency: "USD",
+        amount: 16000,
+        category: "growth_capex",
+        serviceInterest: "enterprise-software",
+        occurredAt: new Date(now - 10 * dayMs).toISOString(),
+        sourceReference: "growth-capex-ledger-001",
+        approvalReference: "approved-budget-roic-fixture",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/treasury/deployments")
+      .set("Cookie", finance.cookie)
+      .send({
+        budgetAllocationId: allocation.body.id,
+        currency: "USD",
+        amount: 1,
+        category: "growth_capex",
+        serviceInterest: "enterprise-software",
+        occurredAt: new Date(now - 9 * dayMs).toISOString(),
+        sourceReference: "growth-capex-over-allocation-api",
+        approvalReference: "approved-budget-roic-fixture",
+      })
+      .expect(409, {
+        message: "Capital deployment exceeds approved allocation balance",
+        approvedAmount: 16000,
+        alreadyDeployed: 16000,
+        remainingAmount: 0,
+      });
+
+    await expect(database.query(
+      `insert into capital_deployment_entries
+        (budget_allocation_id,currency,amount,category,service_interest,occurred_at,source_reference,approval_reference)
+       values
+        ('${allocation.body.id}','USD',1,'growth_capex','enterprise-software',
+         now()-interval '8 days','growth-capex-over-allocation-db','approved-budget-roic-fixture')`,
+    )).rejects.toThrow(/Capital deployment exceeds approved allocation balance/);
+
+    const intelligence = await api.get("/api/admin/treasury/intelligence")
+      .set("Cookie", finance.cookie)
+      .expect(200);
+
+    const cash = intelligence.body.treasury.cashPositionByCurrency.find((row: any) => row.currency === "USD");
+    expect(cash).toMatchObject({
+      ledgerBalance: 65000,
+      availableBalance: 60000,
+      restrictedBalance: 10000,
+      unrestrictedCash: 50000,
+      accountCount: 1,
+      missingBalanceCount: 0,
+      balanceFresh: true,
+    });
+
+    const runway = intelligence.body.treasury.runwayByCurrency.find((row: any) => row.currency === "USD");
+    expect(runway.cashEvidenceComplete).toBe(true);
+    expect(runway.balanceFresh).toBe(true);
+    expect(runway.ninetyDayOperatingCashOutflow).toBe(30000);
+    expect(runway.monthlyOperatingCashBurn).toBeCloseTo(10146.67, 1);
+    expect(runway.runwayMonths).toBeCloseTo(4.93, 2);
+
+    const roic = intelligence.body.companyRoic.find((row: any) => row.currency === "USD");
+    expect(roic.currentTtm).toMatchObject({
+      revenue: 100000,
+      directCost: 30000,
+      acquisitionSpend: 10000,
+      operatingExpense: 20000,
+      ebit: 40000,
+      beginningInvestedCapital: 200000,
+      endingInvestedCapital: 240000,
+      averageInvestedCapital: 220000,
+      capitalTurnover: 0.45,
+      operatingDeployment: 16000,
+      evidence: expect.objectContaining({
+        directCostCoveragePct: 100,
+        operatingExpenseComplete: true,
+        taxCoveragePct: 100,
+        beginningCapitalSnapshotFresh: true,
+        endingCapitalSnapshotFresh: true,
+        complete: true,
+      }),
+    });
+    const sourceTaxDays = (now - taxPeriodStart.getTime()) / dayMs + 1;
+    const ttmTaxDays = (now - ttmStart.getTime()) / dayMs + 1;
+    const expectedTaxProvision = Math.round(8000 * (ttmTaxDays / sourceTaxDays) * 100) / 100;
+    const expectedNopat = 40000 - expectedTaxProvision;
+    const expectedRoicPct = Math.round(expectedNopat / 220000 * 100 * 100) / 100;
+    const expectedDeploymentRatePct = Math.round(16000 / expectedNopat * 100 * 100) / 100;
+
+    expect(roic.currentTtm.taxProvision).toBeCloseTo(expectedTaxProvision, 2);
+    expect(roic.currentTtm.nopat).toBeCloseTo(expectedNopat, 2);
+    expect(roic.currentTtm.roicPct).toBe(expectedRoicPct);
+    expect(roic.currentTtm.operatingDeploymentRatePct).toBe(expectedDeploymentRatePct);
+    expect(roic.hurdle).toMatchObject({ annualHurdleRatePct: 10 });
+    expect(roic.valueCreationSpreadPct).toBe(Math.round((expectedRoicPct - 10) * 100) / 100);
+    expect(roic.economicProfit).toBe(Math.round(expectedNopat - 220000 * 0.10));
+    expect(roic.incrementalRoicPct).toBeNull();
+    expect(roic.posture).toBe("selective");
+
+    expect(intelligence.body.controls).toMatchObject({
+      currenciesNeverBlended: true,
+      noAssumedTaxRate: true,
+      noAssumedCostOfCapital: true,
+      noAssumedMissingExpenses: true,
+      postureIsAdvisory: true,
+    });
   });
 
   it("preserves newsletter subscription validation and duplicate detection", async () => {
