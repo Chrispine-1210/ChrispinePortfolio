@@ -864,6 +864,7 @@ export const treasuryBalanceSnapshots = pgTable("treasury_balance_snapshots", {
 }, (table) => ({
   accountTimeIdx: index("treasury_balance_account_time_idx").on(table.accountId, table.capturedAt),
   activeTimeIdx: index("treasury_balance_active_time_idx").on(table.voidedAt, table.capturedAt),
+  accountSnapshotIdx: uniqueIndex("treasury_balance_account_snapshot_idx").on(table.accountId, table.capturedAt),
 }));
 
 export const treasuryCashDisbursements = pgTable("treasury_cash_disbursements", {
@@ -951,6 +952,7 @@ export const investedCapitalSnapshots = pgTable("invested_capital_snapshots", {
 }, (table) => ({
   currencyTimeIdx: index("invested_capital_currency_time_idx").on(table.currency, table.capturedAt),
   activeTimeIdx: index("invested_capital_active_time_idx").on(table.voidedAt, table.capturedAt),
+  currencySnapshotIdx: uniqueIndex("invested_capital_currency_snapshot_idx").on(table.currency, table.capturedAt),
 }));
 
 export const capitalDeploymentEntries = pgTable("capital_deployment_entries", {
