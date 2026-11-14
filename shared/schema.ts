@@ -679,6 +679,156 @@ export type RevenueEvent = typeof revenueEvents.$inferSelect;
 export type DirectCostEntry = typeof directCostEntries.$inferSelect;
 export type CostEvidenceAttestation = typeof costEvidenceAttestations.$inferSelect;
 
+export const commercialInvoices = pgTable("commercial_invoices", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  leadId: varchar("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+  revenueEventId: varchar("revenue_event_id").references(() => revenueEvents.id, { onDelete: "set null" }),
+  serviceInterest: varchar("service_interest", { length: 180 }).notNull(),
+  invoiceNumber: varchar("invoice_number", { length: 120 }).notNull().unique(),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  issuedAt: timestamp("issued_at").notNull(),
+  dueAt: timestamp("due_at").notNull(),
+  status: varchar("status", { length: 24 }).notNull().default("issued"),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  leadTimeIdx: index("commercial_invoices_lead_time_idx").on(table.leadId, table.issuedAt),
+  dueStatusIdx: index("commercial_invoices_due_status_idx").on(table.voidedAt, table.status, table.dueAt),
+}));
+
+export const cashCollections = pgTable("cash_collections", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invoiceId: varchar("invoice_id").notNull().references(() => commercialInvoices.id, { onDelete: "cascade" }),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  receivedAt: timestamp("received_at").notNull(),
+  paymentMethod: varchar("payment_method", { length: 32 }).notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  invoiceTimeIdx: index("cash_collections_invoice_time_idx").on(table.invoiceId, table.receivedAt),
+  activeTimeIdx: index("cash_collections_active_time_idx").on(table.voidedAt, table.receivedAt),
+}));
+
+export const recurringRevenueMovements = pgTable("recurring_revenue_movements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  agreementId: varchar("agreement_id").notNull().references(() => recurringRevenueAgreements.id, { onDelete: "cascade" }),
+  leadId: varchar("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+  serviceInterest: varchar("service_interest", { length: 180 }).notNull(),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  movementType: varchar("movement_type", { length: 24 }).notNull(),
+  mrrDelta: numeric("mrr_delta", { precision: 14, scale: 2 }).notNull(),
+  effectiveAt: timestamp("effective_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  agreementTimeIdx: index("recurring_revenue_movements_agreement_time_idx").on(table.agreementId, table.effectiveAt),
+  serviceTimeIdx: index("recurring_revenue_movements_service_time_idx").on(table.serviceInterest, table.currency, table.effectiveAt),
+  activeTimeIdx: index("recurring_revenue_movements_active_time_idx").on(table.voidedAt, table.effectiveAt),
+}));
+
+export const deliveryCapacityRecords = pgTable("delivery_capacity_records", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceInterest: varchar("service_interest", { length: 180 }).notNull(),
+  capacityScope: varchar("capacity_scope", { length: 180 }).notNull(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  availableHours: numeric("available_hours", { precision: 10, scale: 2 }).notNull(),
+  deliveryHours: numeric("delivery_hours", { precision: 10, scale: 2 }).notNull(),
+  billableHours: numeric("billable_hours", { precision: 10, scale: 2 }).notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  servicePeriodIdx: index("delivery_capacity_service_period_idx").on(
+    table.serviceInterest,
+    table.capacityScope,
+    table.periodStart,
+    table.periodEnd,
+  ),
+  activePeriodIdx: index("delivery_capacity_active_period_idx").on(
+    table.voidedAt,
+    table.periodStart,
+    table.periodEnd,
+  ),
+}));
+
+export const capitalBudgetCycles = pgTable("capital_budget_cycles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  envelopeAmount: numeric("envelope_amount", { precision: 14, scale: 2 }).notNull(),
+  status: varchar("status", { length: 24 }).notNull().default("draft"),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  approvedBy: varchar("approved_by").references(() => users.id, { onDelete: "set null" }),
+  approvedAt: timestamp("approved_at"),
+  closedAt: timestamp("closed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  periodCurrencyIdx: uniqueIndex("capital_budget_period_currency_idx").on(
+    table.periodStart,
+    table.periodEnd,
+    table.currency,
+  ),
+  statusPeriodIdx: index("capital_budget_status_period_idx").on(
+    table.status,
+    table.periodStart,
+    table.periodEnd,
+  ),
+}));
+
+export const capitalBudgetAllocations = pgTable("capital_budget_allocations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  budgetId: varchar("budget_id").notNull().references(() => capitalBudgetCycles.id, { onDelete: "cascade" }),
+  channel: varchar("channel", { length: 48 }).notNull(),
+  serviceInterest: varchar("service_interest", { length: 180 }).notNull(),
+  recommendationDecision: varchar("recommendation_decision", { length: 24 }).notNull(),
+  recommendationConfidence: varchar("recommendation_confidence", { length: 16 }).notNull(),
+  recommendedAmount: numeric("recommended_amount", { precision: 14, scale: 2 }).notNull(),
+  approvedAmount: numeric("approved_amount", { precision: 14, scale: 2 }).notNull(),
+  sourceWindow: varchar("source_window", { length: 16 }).notNull(),
+  recommendationSnapshot: jsonb("recommendation_snapshot").notNull().default(sql`'{}'::jsonb`),
+  rationale: text("rationale").notNull(),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  segmentIdx: uniqueIndex("capital_budget_allocation_segment_idx").on(
+    table.budgetId,
+    table.channel,
+    table.serviceInterest,
+  ),
+}));
+
+export type CommercialInvoice = typeof commercialInvoices.$inferSelect;
+export type CashCollection = typeof cashCollections.$inferSelect;
+export type RecurringRevenueMovement = typeof recurringRevenueMovements.$inferSelect;
+export type DeliveryCapacityRecord = typeof deliveryCapacityRecords.$inferSelect;
+export type CapitalBudgetCycle = typeof capitalBudgetCycles.$inferSelect;
+export type CapitalBudgetAllocation = typeof capitalBudgetAllocations.$inferSelect;
+
 // Blog Likes
 export const blogLikes = pgTable("blog_likes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

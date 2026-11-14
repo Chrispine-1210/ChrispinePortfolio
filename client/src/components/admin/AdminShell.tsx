@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  BarChart3, Bell, BookOpen, BriefcaseBusiness, ChevronRight, CircleDollarSign, FileCheck2, FolderKanban, LayoutDashboard,
+  BarChart3, Bell, BookOpen, BriefcaseBusiness, ChevronRight, CircleDollarSign, FileCheck2, FolderKanban, Landmark, LayoutDashboard,
   LogOut, Mail, Menu, MessageSquare, Settings, ShieldCheck, Users, Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ const navigation = [
   { label: "Contacts", path: "/admin/contacts", icon: MessageSquare, permission: "leads.read", live: true },
   { label: "Pipeline", path: "/admin/pipeline", icon: Workflow, permission: "leads.read", live: true },
   { label: "Revenue intelligence", path: "/admin/revenue-intelligence", icon: CircleDollarSign, permission: "pipeline.financial.read", live: true },
+  { label: "Capital operating system", path: "/admin/capital", icon: Landmark, permission: "pipeline.financial.read", live: true },
   { label: "Audience", path: "/admin/audience", icon: Users, permission: "email.delivery.read", live: true },
   { label: "Communications", path: "/admin/communications", icon: Mail, permission: "email.delivery.read", live: true },
   { label: "Notifications", icon: Bell, permission: "notifications.read" },

@@ -993,6 +993,491 @@ describe("public form and CRM compatibility", () => {
       .toBe("insufficient_ended_agreements");
   });
 
+  it("operates cash realization, retention and governed reinvestment from evidence", async () => {
+    const api = request(app);
+    const now = Date.now();
+    const dayMs = 86_400_000;
+    const attributionNow = new Date(now).toISOString();
+
+    const createLead = async (email: string, serviceInterest: string, channel: string) => {
+      await api.post("/api/consultation").send({
+        name: `Capital operating ${email}`,
+        email,
+        organization: "Capital Operating Verification Ltd",
+        industry: "Professional Services",
+        serviceInterest,
+        challenge: "We need invoice-to-cash, retention, utilization and reinvestment controls with auditable evidence.",
+        currentTech: "Capital operating verification",
+        budgetRange: "MWK 1,000,000 – 5,000,000",
+        expectedTimeline: "1–3 months",
+        consent: true,
+        attribution: {
+          firstTouch: {
+            source: channel === "social" ? "linkedin" : "google",
+            medium: channel,
+            campaign: "capital-operating-test",
+            term: "",
+            content: "",
+            referrer: "",
+            landingPage: "/hire",
+            capturedAt: attributionNow,
+          },
+          lastTouch: {
+            source: channel === "social" ? "linkedin" : "google",
+            medium: channel,
+            campaign: "capital-operating-test",
+            term: "",
+            content: "cash-control",
+            referrer: "",
+            landingPage: "/hire",
+            capturedAt: attributionNow,
+          },
+        },
+      }).expect(201);
+      const result = await api.get("/api/admin/leads")
+        .set("Cookie", administrator.cookie)
+        .query({ search: email })
+        .expect(200);
+      return result.body[0] as { id: string; serviceInterest: string; stage: string };
+    };
+
+    const notWon = await createLead("cash-not-won@test.invalid", "managed-it", "social");
+    await api.post("/api/admin/capital/invoices")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: notWon.id,
+        serviceInterest: "managed-it",
+        invoiceNumber: "CAP-NOT-WON-001",
+        currency: "MWK",
+        amount: 100000,
+        issuedAt: new Date(now - dayMs).toISOString(),
+        dueAt: new Date(now + 30 * dayMs).toISOString(),
+        sourceReference: "invoice-not-won",
+      })
+      .expect(409, { message: "Invoices can only be attached to a won opportunity" });
+
+    const lead = await createLead("cash-realization@test.invalid", "managed-it", "social");
+    const leadPath = `/api/admin/leads/${lead.id}`;
+    await api.patch(leadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "qualified", qualificationScore: 90 }).expect(200);
+    await api.patch(leadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "proposal", estimatedValue: 2400000, currency: "MWK", probability: 70 }).expect(200);
+    await api.patch(leadPath).set("Cookie", administrator.cookie)
+      .send({ stage: "won", probability: 70 }).expect(200);
+
+    const revenue = await api.post("/api/admin/revenue/events")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        serviceInterest: "managed-it",
+        revenueKind: "recurring",
+        currency: "MWK",
+        amount: 600000,
+        occurredAt: new Date(now - dayMs).toISOString(),
+        periodStart: new Date(now - 31 * dayMs).toISOString(),
+        periodEnd: new Date(now - dayMs).toISOString(),
+        sourceReference: "cap-revenue-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/revenue/costs")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        serviceInterest: "managed-it",
+        category: "support",
+        costScope: "recurring",
+        currency: "MWK",
+        amount: 300000,
+        occurredAt: new Date(now - dayMs).toISOString(),
+        sourceReference: "cap-cost-001",
+      })
+      .expect(201);
+
+    const agreement = await api.post("/api/admin/revenue/agreements")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        serviceInterest: "managed-it",
+        currency: "MWK",
+        monthlyRecurringRevenue: 500000,
+        startedAt: new Date(now - 120 * dayMs).toISOString(),
+        sourceReference: "cap-agreement-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/capital/retention-movements")
+      .set("Cookie", administrator.cookie)
+      .send({
+        agreementId: agreement.body.id,
+        movementType: "expansion",
+        mrrDelta: 100000,
+        effectiveAt: new Date(now - 20 * dayMs).toISOString(),
+        sourceReference: "cap-expansion-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/capital/retention-movements")
+      .set("Cookie", administrator.cookie)
+      .send({
+        agreementId: agreement.body.id,
+        movementType: "contraction",
+        mrrDelta: -50000,
+        effectiveAt: new Date(now - 10 * dayMs).toISOString(),
+        sourceReference: "cap-contraction-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/capital/retention-movements")
+      .set("Cookie", administrator.cookie)
+      .send({
+        agreementId: agreement.body.id,
+        movementType: "churn",
+        mrrDelta: -100000,
+        effectiveAt: new Date(now - 5 * dayMs).toISOString(),
+        sourceReference: "invalid-partial-churn",
+      })
+      .expect(409);
+
+    const invoice = await api.post("/api/admin/capital/invoices")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        revenueEventId: revenue.body.id,
+        serviceInterest: "managed-it",
+        invoiceNumber: "CAP-CASH-001",
+        currency: "MWK",
+        amount: 600000,
+        issuedAt: new Date(now - 20 * dayMs).toISOString(),
+        dueAt: new Date(now - 5 * dayMs).toISOString(),
+        sourceReference: "cap-invoice-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/capital/collections")
+      .set("Cookie", viewer.cookie)
+      .send({
+        invoiceId: invoice.body.id,
+        amount: 100000,
+        receivedAt: new Date(now - 3 * dayMs).toISOString(),
+        paymentMethod: "bank_transfer",
+        sourceReference: "viewer-denied",
+      })
+      .expect(403);
+
+    await api.post("/api/admin/capital/collections")
+      .set("Cookie", administrator.cookie)
+      .send({
+        invoiceId: invoice.body.id,
+        amount: 200000,
+        receivedAt: new Date(now - 3 * dayMs).toISOString(),
+        paymentMethod: "bank_transfer",
+        sourceReference: "cap-bank-001",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/capital/collections")
+      .set("Cookie", administrator.cookie)
+      .send({
+        invoiceId: invoice.body.id,
+        amount: 400000,
+        receivedAt: new Date(now - 2 * dayMs).toISOString(),
+        paymentMethod: "mobile_money",
+        sourceReference: "cap-mobile-002",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/capital/collections")
+      .set("Cookie", administrator.cookie)
+      .send({
+        invoiceId: invoice.body.id,
+        amount: 1,
+        receivedAt: new Date(now - dayMs).toISOString(),
+        paymentMethod: "cash",
+        sourceReference: "over-collection",
+      })
+      .expect(409);
+
+    await api.post("/api/admin/revenue/cost-attestations")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        serviceInterest: "managed-it",
+        currency: "MWK",
+        throughAt: new Date(now - 4 * dayMs).toISOString(),
+        sourceReference: "cap-cost-complete-001",
+        notes: "All direct costs through the latest collection date are captured.",
+      })
+      .expect(201);
+
+    const staleCostIntelligence = await api.get("/api/admin/capital/intelligence")
+      .set("Cookie", administrator.cookie)
+      .query({ window: "90d" })
+      .expect(200);
+    const staleCash = staleCostIntelligence.body.realizedCapitalReturn.find(
+      (row: any) => row.channel === "social" && row.service === "managed-it" && row.currency === "MWK",
+    );
+    expect(staleCash).toMatchObject({
+      cashCollected: 600000,
+      directCost: 300000,
+      costCoveragePct: 0,
+      cashGrossContribution: null,
+      reinvestmentSignal: "insufficient_data",
+    });
+
+    await api.post("/api/admin/revenue/cost-attestations")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: lead.id,
+        serviceInterest: "managed-it",
+        currency: "MWK",
+        throughAt: new Date(now + 1000).toISOString(),
+        sourceReference: "cap-cost-complete-002",
+        notes: "All direct costs through the latest collection date are captured.",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/acquisition/spend")
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "social",
+        source: "linkedin",
+        campaign: "capital-operating-test",
+        serviceInterest: "managed-it",
+        currency: "MWK",
+        amount: 200000,
+        occurredAt: new Date(now - 30 * dayMs).toISOString(),
+        notes: "Service-tagged acquisition capital",
+      })
+      .expect(201);
+
+    await api.post("/api/admin/capital/capacity")
+      .set("Cookie", administrator.cookie)
+      .send({
+        serviceInterest: "managed-it",
+        capacityScope: "managed-services-team",
+        periodStart: new Date(now - 30 * dayMs).toISOString(),
+        periodEnd: new Date(now).toISOString(),
+        availableHours: 160,
+        deliveryHours: 120,
+        billableHours: 100,
+        sourceReference: "cap-timesheet-001",
+      })
+      .expect(201);
+
+    const overdueLead = await createLead("cash-overdue@test.invalid", "technology-advisory", "referral");
+    const overduePath = `/api/admin/leads/${overdueLead.id}`;
+    await api.patch(overduePath).set("Cookie", administrator.cookie)
+      .send({ stage: "qualified", qualificationScore: 80 }).expect(200);
+    await api.patch(overduePath).set("Cookie", administrator.cookie)
+      .send({ stage: "proposal", estimatedValue: 400000, currency: "MWK", probability: 60 }).expect(200);
+    await api.patch(overduePath).set("Cookie", administrator.cookie)
+      .send({ stage: "won", probability: 60 }).expect(200);
+    await api.post("/api/admin/capital/invoices")
+      .set("Cookie", administrator.cookie)
+      .send({
+        leadId: overdueLead.id,
+        serviceInterest: "technology-advisory",
+        invoiceNumber: "CAP-AGING-001",
+        currency: "MWK",
+        amount: 400000,
+        issuedAt: new Date(now - 60 * dayMs).toISOString(),
+        dueAt: new Date(now - 45 * dayMs).toISOString(),
+        sourceReference: "cap-aging-invoice",
+      })
+      .expect(201);
+
+    const budget = await api.post("/api/admin/capital/budgets")
+      .set("Cookie", administrator.cookie)
+      .send({
+        periodStart: new Date(now - 31 * dayMs).toISOString(),
+        periodEnd: new Date(now + 30 * dayMs).toISOString(),
+        currency: "MWK",
+        envelopeAmount: 500000,
+        sourceReference: "board-capital-envelope-001",
+        notes: "Controlled test capital envelope.",
+      })
+      .expect(201);
+
+    await api.post(`/api/admin/capital/budgets/${budget.body.id}/allocations`)
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "social",
+        serviceInterest: "managed-it",
+        recommendationDecision: "scale",
+        recommendationConfidence: "medium",
+        recommendedAmount: 300000,
+        approvedAmount: 250000,
+        sourceWindow: "90d",
+        recommendationSnapshot: { version: "capital-allocation-v1" },
+        rationale: "Upstream economics are strong; approve less than the recommendation pending realized-cash proof.",
+      })
+      .expect(200);
+
+    await api.post(`/api/admin/capital/budgets/${budget.body.id}/approve`)
+      .set("Cookie", viewer.cookie)
+      .send({})
+      .expect(403);
+
+    await api.post(`/api/admin/capital/budgets/${budget.body.id}/approve`)
+      .set("Cookie", administrator.cookie)
+      .send({})
+      .expect(200);
+
+    const exceptionBudget = await api.post("/api/admin/capital/budgets")
+      .set("Cookie", administrator.cookie)
+      .send({
+        periodStart: new Date(now - 31 * dayMs).toISOString(),
+        periodEnd: new Date(now + 30 * dayMs).toISOString(),
+        currency: "USD",
+        envelopeAmount: 1000,
+        sourceReference: "board-capital-exception-001",
+        notes: "Exception governance fixture.",
+      })
+      .expect(201);
+
+    await api.post(`/api/admin/capital/budgets/${exceptionBudget.body.id}/allocations`)
+      .set("Cookie", administrator.cookie)
+      .send({
+        channel: "email",
+        serviceInterest: "technology-advisory",
+        recommendationDecision: "cut",
+        recommendationConfidence: "medium",
+        recommendedAmount: 0,
+        approvedAmount: 500,
+        sourceWindow: "90d",
+        recommendationSnapshot: { version: "capital-allocation-v1", decision: "cut" },
+        rationale: "Deliberately exercise accountable exception governance.",
+      })
+      .expect(200);
+
+    const blockedExceptionApproval = await api.post(
+      `/api/admin/capital/budgets/${exceptionBudget.body.id}/approve`,
+    )
+      .set("Cookie", administrator.cookie)
+      .send({})
+      .expect(409);
+    expect(blockedExceptionApproval.body).toEqual(expect.objectContaining({
+      message: "Approving capital for CUT or INSUFFICIENT_DATA segments requires an explicit exception reason",
+      segments: expect.arrayContaining([
+        expect.objectContaining({
+          channel: "email",
+          serviceInterest: "technology-advisory",
+          decision: "cut",
+          approvedAmount: "500.00",
+        }),
+      ]),
+    }));
+
+    const exceptionReason = "Executive exception approved for controlled learning with a hard USD 500 ceiling.";
+    await api.post(`/api/admin/capital/budgets/${exceptionBudget.body.id}/approve`)
+      .set("Cookie", administrator.cookie)
+      .send({ exceptionReason })
+      .expect(200);
+
+    const { rows: exceptionAudit } = await database.query<{ justification: string | null }>(
+      `select justification from audit_events
+       where resource_id = $1 and action = 'capital.budget.approve'
+       order by created_at desc limit 1`,
+      [exceptionBudget.body.id],
+    );
+    expect(exceptionAudit[0]?.justification).toBe(exceptionReason);
+
+    const intelligence = await api.get("/api/admin/capital/intelligence")
+      .set("Cookie", administrator.cookie)
+      .query({ window: "90d" })
+      .expect(200);
+
+    expect(intelligence.body.basis).toMatchObject({
+      cashRealization: "invoice_cohort",
+      capitalReturn: "lead_acquisition_cohort",
+      retention: "trailing_period",
+      deliveryUtilization: "activity_window",
+    });
+
+    const managedCash = intelligence.body.realizedCapitalReturn.find(
+      (row: any) => row.channel === "social" && row.service === "managed-it" && row.currency === "MWK",
+    );
+    expect(managedCash).toMatchObject({
+      cashCollected: 600000,
+      directCost: 300000,
+      acquisitionSpend: 200000,
+      costCoveragePct: 100,
+      cashGrossContribution: 300000,
+      netCapitalReturn: 100000,
+      cashReturnMultiple: 1.5,
+      capitalRoiPct: 50,
+      grr: 90,
+      nrr: 110,
+      retentionEvidenceComplete: true,
+      reinvestmentSignal: "increase_candidate",
+    });
+
+    expect(intelligence.body.retention).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        service: "managed-it",
+        currency: "MWK",
+        beginningMrr: 500000,
+        expansionMrr: 100000,
+        contractionMrr: 50000,
+        churnMrr: 0,
+        grrPct: 90,
+        nrrPct: 110,
+        evidenceComplete: true,
+      }),
+    ]));
+
+    expect(intelligence.body.deliveryUtilization).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        service: "managed-it",
+        availableHours: 160,
+        deliveryHours: 120,
+        billableHours: 100,
+        utilizationPct: 75,
+        billableUtilizationPct: 62.5,
+        scopeCount: 1,
+      }),
+    ]));
+
+    expect(intelligence.body.cashRealization.currentReceivablesAging).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "31-60",
+        count: expect.any(Number),
+        valueByCurrency: expect.arrayContaining([
+          expect.objectContaining({ currency: "MWK", value: 400000 }),
+        ]),
+      }),
+    ]));
+
+    const budgetResult = intelligence.body.budgetPerformance.find((row: any) => row.id === budget.body.id);
+    expect(budgetResult).toMatchObject({
+      status: "approved",
+      currency: "MWK",
+      allocations: expect.arrayContaining([
+        expect.objectContaining({
+          channel: "social",
+          serviceInterest: "managed-it",
+          actualSpend: 200000,
+          remainingApproved: 50000,
+          approvedUtilizationPct: 80,
+          recommendedVariance: -100000,
+          approvedVariance: -50000,
+        }),
+      ]),
+    });
+
+    const invoices = await api.get("/api/admin/capital/invoices")
+      .set("Cookie", administrator.cookie)
+      .expect(200);
+    expect(invoices.body).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: invoice.body.id,
+        status: "paid",
+        invoiceNumber: "CAP-CASH-001",
+      }),
+    ]));
+  });
+
   it("preserves newsletter subscription validation and duplicate detection", async () => {
     const api = request(app);
     const url = "/api/newsletter/subscribe";
