@@ -220,6 +220,19 @@ const operatingDeploymentCategories = new Set([
   "growth_capex", "working_capital", "product_development",
 ]);
 
+const cashCategoriesByType: Record<string, Set<string>> = {
+  operating: new Set([
+    "direct_delivery", "payroll", "marketing", "software_infrastructure",
+    "rent_utilities", "professional_fees", "tax", "other_operating",
+  ]),
+  capital: new Set([
+    "growth_capex", "maintenance_capex", "working_capital", "product_development",
+  ]),
+  financing: new Set([
+    "debt_service", "owner_distribution", "other_financing",
+  ]),
+};
+
 export function createTreasuryRoicRouter() {
   const router = Router();
 
@@ -307,6 +320,9 @@ export function createTreasuryRoicRouter() {
       try { assertNotFuture(occurredAt, "Cash disbursement"); } catch (error) {
         return response.status(400).json({ message: (error as Error).message });
       }
+      if (!cashCategoriesByType[input.cashUseType]?.has(input.category)) {
+        return response.status(400).json({ message: "Cash-use category does not match operating/capital/financing classification" });
+      }
       if (input.accountId) {
         const [account] = await db.select().from(treasuryAccounts)
           .where(eq(treasuryAccounts.id, input.accountId)).limit(1);
@@ -370,6 +386,13 @@ export function createTreasuryRoicRouter() {
       try { assertNotFuture(recognizedAt, "Tax recognition"); } catch (error) {
         return response.status(400).json({ message: (error as Error).message });
       }
+      const overlapping = await db.select({ id: operatingTaxProvisions.id }).from(operatingTaxProvisions).where(and(
+        eq(operatingTaxProvisions.currency, input.currency),
+        isNull(operatingTaxProvisions.voidedAt),
+        lte(operatingTaxProvisions.periodStart, periodEnd),
+        gt(operatingTaxProvisions.periodEnd, new Date(periodStart.getTime() - 1)),
+      )).limit(1);
+      if (overlapping.length) return response.status(409).json({ message: "Operating tax period overlaps existing active evidence" });
       const [record] = await db.insert(operatingTaxProvisions).values({
         currency: input.currency,
         amount: String(input.amount),
@@ -656,12 +679,12 @@ export function createTreasuryRoicRouter() {
         restricted: number;
         unrestricted: number;
         accountCount: number;
+        missingBalanceCount: number;
         freshestAt: Date | null;
         stalestAt: Date | null;
       }>();
       for (const account of accounts) {
         const balance = latestBalance.get(account.id);
-        if (!balance) continue;
         const row = cashByCurrency.get(account.currency) ?? {
           currency: account.currency,
           ledger: 0,
@@ -669,14 +692,20 @@ export function createTreasuryRoicRouter() {
           restricted: 0,
           unrestricted: 0,
           accountCount: 0,
+          missingBalanceCount: 0,
           freshestAt: null,
           stalestAt: null,
         };
+        row.accountCount += 1;
+        if (!balance) {
+          row.missingBalanceCount += 1;
+          cashByCurrency.set(account.currency, row);
+          continue;
+        }
         row.ledger += Number(balance.ledgerBalance);
         row.available += Number(balance.availableBalance);
         row.restricted += Number(balance.restrictedBalance);
         row.unrestricted += Math.max(0, Number(balance.availableBalance) - Number(balance.restrictedBalance));
-        row.accountCount += 1;
         if (!row.freshestAt || balance.capturedAt > row.freshestAt) row.freshestAt = balance.capturedAt;
         if (!row.stalestAt || balance.capturedAt < row.stalestAt) row.stalestAt = balance.capturedAt;
         cashByCurrency.set(account.currency, row);
@@ -697,7 +726,11 @@ export function createTreasuryRoicRouter() {
         const monthlyBurn = ninetyDayOutflow > 0 ? ninetyDayOutflow / 90 * 30.44 : null;
         const attestation = latestAttestation(cash.currency, "cash_disbursements_complete");
         const evidenceComplete = Boolean(attestation && attestation.throughAt.getTime() >= now.getTime() - DAY_MS);
-        const balanceFresh = Boolean(cash.stalestAt && now.getTime() - cash.stalestAt.getTime() <= 7 * DAY_MS);
+        const balanceFresh = Boolean(
+          cash.missingBalanceCount === 0 &&
+          cash.stalestAt &&
+          now.getTime() - cash.stalestAt.getTime() <= 7 * DAY_MS
+        );
         return {
           currency: cash.currency,
           unrestrictedCash: cash.unrestricted,
@@ -939,9 +972,14 @@ export function createTreasuryRoicRouter() {
             restrictedBalance: row.restricted,
             unrestrictedCash: row.unrestricted,
             accountCount: row.accountCount,
+            missingBalanceCount: row.missingBalanceCount,
             freshestCapturedAt: row.freshestAt,
             stalestCapturedAt: row.stalestAt,
-            balanceFresh: Boolean(row.stalestAt && now.getTime() - row.stalestAt.getTime() <= 7 * DAY_MS),
+            balanceFresh: Boolean(
+              row.missingBalanceCount === 0 &&
+              row.stalestAt &&
+              now.getTime() - row.stalestAt.getTime() <= 7 * DAY_MS
+            ),
           })),
           runwayByCurrency: runway,
         },
