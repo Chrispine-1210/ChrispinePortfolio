@@ -28,6 +28,15 @@ if (!/^https:\/\//i.test(baseUrl)) {
 }
 if (!/^[A-Z]{3}$/.test(currency)) throw new Error("CERT_CURRENCY must be a three-letter uppercase code.");
 if (!Number.isFinite(deploymentAmount) || deploymentAmount <= 0) throw new Error("CERT_DEPLOYMENT_AMOUNT must be positive.");
+if (!/^[0-9a-f]{40}$/i.test(expectedSha)) throw new Error("CERT_EXPECTED_GIT_SHA must be a full 40-character Git SHA.");
+
+const cliIdentity = spawnSync("vercel", ["whoami"], { encoding: "utf8" });
+if (cliIdentity.error) {
+  throw new Error(`Vercel CLI is required for protected Preview certification: ${cliIdentity.error.message}`);
+}
+if (cliIdentity.status !== 0) {
+  throw new Error("Vercel CLI is not authenticated. Run vercel login in the execution environment before certification.");
+}
 
 function parseJson(text) {
   if (!text.trim()) return null;
@@ -96,28 +105,65 @@ const day = 24 * 60 * 60 * 1000;
 let cookie = "";
 let budgetId = null;
 let deploymentId = null;
+const deploymentIds = new Set();
 let cleanupError = null;
 
 function safeCleanup() {
   if (!cookie) return;
+  const errors = [];
+
   try {
-    if (deploymentId) {
-      const voidResult = runRequest(`/api/admin/treasury/evidence/deployment/${deploymentId}/void`, {
-        method: "POST", cookie, body: { reason: "Preview certification cleanup after controlled runtime verification." },
+    const evidence = runRequest("/api/admin/treasury/evidence", { cookie });
+    if (evidence.status === 200) {
+      for (const row of evidence.json?.deployments || []) {
+        if (
+          row?.id &&
+          !row.voidedAt &&
+          typeof row.sourceReference === "string" &&
+          row.sourceReference.startsWith(marker)
+        ) {
+          deploymentIds.add(row.id);
+        }
+      }
+    }
+  } catch (error) {
+    errors.push(`evidence discovery: ${error.message}`);
+  }
+
+  for (const id of deploymentIds) {
+    try {
+      const voidResult = runRequest(`/api/admin/treasury/evidence/deployment/${id}/void`, {
+        method: "POST",
+        cookie,
+        body: { reason: "Preview certification cleanup after controlled runtime verification." },
       });
       if (![200, 409].includes(voidResult.status)) {
-        throw new Error(`Deployment cleanup returned HTTP ${voidResult.status}`);
+        throw new Error(`HTTP ${voidResult.status}`);
       }
+    } catch (error) {
+      errors.push(`deployment ${id}: ${error.message}`);
     }
-    if (budgetId) {
+  }
+
+  if (budgetId) {
+    try {
       const closeResult = runRequest(`/api/admin/capital/budgets/${budgetId}/close`, { method: "POST", cookie });
       if (![200, 409].includes(closeResult.status)) {
-        throw new Error(`Budget cleanup returned HTTP ${closeResult.status}`);
+        throw new Error(`HTTP ${closeResult.status}`);
       }
+    } catch (error) {
+      errors.push(`budget ${budgetId}: ${error.message}`);
     }
+  }
+
+  try {
     runRequest("/api/auth/logout", { method: "POST", cookie });
   } catch (error) {
-    cleanupError = error;
+    errors.push(`logout: ${error.message}`);
+  }
+
+  if (errors.length) {
+    cleanupError = new Error(errors.join("; "));
   }
 }
 
@@ -187,8 +233,9 @@ try {
   }), 201, "Valid capital deployment");
   deploymentId = accepted.json?.id;
   if (!deploymentId) throw new Error("Accepted capital deployment did not contain an id.");
+  deploymentIds.add(deploymentId);
 
-  const rejected = expectStatus(runRequest("/api/admin/treasury/deployments", {
+  const overAllocation = runRequest("/api/admin/treasury/deployments", {
     method: "POST", cookie,
     body: {
       budgetAllocationId: allocationId,
@@ -200,7 +247,9 @@ try {
       sourceReference: `${marker}-over-allocation`,
       approvalReference: `${marker}-approved-budget`,
     },
-  }), 409, "Deliberate over-allocation");
+  });
+  if (overAllocation.json?.id) deploymentIds.add(overAllocation.json.id);
+  const rejected = expectStatus(overAllocation, 409, "Deliberate over-allocation");
 
   const expectedRejection = {
     message: "Capital deployment exceeds approved allocation balance",
@@ -224,6 +273,7 @@ try {
     body: { reason: "Preview certification cleanup after controlled runtime verification." },
   }), 200, "Deployment cleanup");
   if (!voided.json?.voidedAt) throw new Error("Deployment cleanup did not record voidedAt.");
+  deploymentIds.delete(deploymentId);
   deploymentId = null;
 
   const closed = expectStatus(runRequest(`/api/admin/capital/budgets/${budgetId}/close`, {
