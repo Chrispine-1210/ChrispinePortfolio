@@ -18,6 +18,7 @@ import { createPortfolioGovernanceRouter } from "./portfolio/admin-routes.js";
 import { createRevenueIntelligenceRouter } from "./revenue/routes.js";
 import { createCapitalOperatingRouter } from "./capital/routes.js";
 import { createTreasuryRoicRouter } from "./treasury/routes.js";
+import { getReleaseMetadata } from "./release-metadata.js";
 
 export function createApp() {
   const app = express();
@@ -35,6 +36,11 @@ export function createApp() {
   app.use(securityHeaders);
   app.use(requestLogger);
   app.use(analyticsMiddleware);
+
+  app.get("/api/release", (_request, response) => {
+    response.setHeader("Cache-Control", "no-store");
+    response.json(getReleaseMetadata());
+  });
 
   const customAuthRouter = express.Router();
   if (env.ADMIN_AUTH_MODE === "database") {
