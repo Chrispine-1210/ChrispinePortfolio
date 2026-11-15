@@ -829,6 +829,207 @@ export type DeliveryCapacityRecord = typeof deliveryCapacityRecords.$inferSelect
 export type CapitalBudgetCycle = typeof capitalBudgetCycles.$inferSelect;
 export type CapitalBudgetAllocation = typeof capitalBudgetAllocations.$inferSelect;
 
+export const treasuryAccounts = pgTable("treasury_accounts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 180 }).notNull(),
+  institution: varchar("institution", { length: 180 }),
+  accountType: varchar("account_type", { length: 32 }).notNull(),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  status: varchar("status", { length: 24 }).notNull().default("active"),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  archivedAt: timestamp("archived_at"),
+}, (table) => ({
+  nameCurrencyIdx: uniqueIndex("treasury_accounts_name_currency_idx")
+    .on(table.name, table.currency),
+}));
+
+export const treasuryBalanceSnapshots = pgTable("treasury_balance_snapshots", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  accountId: varchar("account_id").notNull().references(() => treasuryAccounts.id, { onDelete: "cascade" }),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  ledgerBalance: numeric("ledger_balance", { precision: 14, scale: 2 }).notNull(),
+  availableBalance: numeric("available_balance", { precision: 14, scale: 2 }).notNull(),
+  restrictedBalance: numeric("restricted_balance", { precision: 14, scale: 2 }).notNull().default("0"),
+  capturedAt: timestamp("captured_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  accountTimeIdx: index("treasury_balance_account_time_idx").on(table.accountId, table.capturedAt),
+  activeTimeIdx: index("treasury_balance_active_time_idx").on(table.voidedAt, table.capturedAt),
+  accountSnapshotIdx: uniqueIndex("treasury_balance_account_snapshot_idx").on(table.accountId, table.capturedAt),
+}));
+
+export const treasuryCashDisbursements = pgTable("treasury_cash_disbursements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  accountId: varchar("account_id").references(() => treasuryAccounts.id, { onDelete: "set null" }),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  cashUseType: varchar("cash_use_type", { length: 24 }).notNull(),
+  category: varchar("category", { length: 48 }).notNull(),
+  serviceInterest: varchar("service_interest", { length: 180 }),
+  occurredAt: timestamp("occurred_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  currencyTimeIdx: index("treasury_cash_disbursement_time_idx").on(table.currency, table.occurredAt),
+  typeTimeIdx: index("treasury_cash_disbursement_type_time_idx").on(
+    table.cashUseType,
+    table.currency,
+    table.occurredAt,
+  ),
+  activeTimeIdx: index("treasury_cash_disbursement_active_time_idx").on(table.voidedAt, table.occurredAt),
+}));
+
+export const operatingExpenseEntries = pgTable("operating_expense_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  category: varchar("category", { length: 48 }).notNull(),
+  serviceInterest: varchar("service_interest", { length: 180 }),
+  occurredAt: timestamp("occurred_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  currencyTimeIdx: index("operating_expense_currency_time_idx").on(table.currency, table.occurredAt),
+  activeTimeIdx: index("operating_expense_active_time_idx").on(table.voidedAt, table.occurredAt),
+}));
+
+export const operatingTaxProvisions = pgTable("operating_tax_provisions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  recognizedAt: timestamp("recognized_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  currencyPeriodIdx: index("operating_tax_currency_period_idx").on(
+    table.currency,
+    table.periodStart,
+    table.periodEnd,
+  ),
+  activeIdx: index("operating_tax_active_idx").on(table.voidedAt, table.recognizedAt),
+}));
+
+export const investedCapitalSnapshots = pgTable("invested_capital_snapshots", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  operatingAssets: numeric("operating_assets", { precision: 14, scale: 2 }).notNull(),
+  operatingLiabilities: numeric("operating_liabilities", { precision: 14, scale: 2 }).notNull(),
+  capturedAt: timestamp("captured_at").notNull(),
+  components: jsonb("components").notNull().default(sql`'{}'::jsonb`),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  currencyTimeIdx: index("invested_capital_currency_time_idx").on(table.currency, table.capturedAt),
+  activeTimeIdx: index("invested_capital_active_time_idx").on(table.voidedAt, table.capturedAt),
+  currencySnapshotIdx: uniqueIndex("invested_capital_currency_snapshot_idx").on(table.currency, table.capturedAt),
+}));
+
+export const capitalDeploymentEntries = pgTable("capital_deployment_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  budgetAllocationId: varchar("budget_allocation_id").references(() => capitalBudgetAllocations.id, { onDelete: "set null" }),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+  category: varchar("category", { length: 48 }).notNull(),
+  serviceInterest: varchar("service_interest", { length: 180 }),
+  occurredAt: timestamp("occurred_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  approvalReference: text("approval_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  currencyTimeIdx: index("capital_deployment_currency_time_idx").on(table.currency, table.occurredAt),
+  categoryTimeIdx: index("capital_deployment_category_time_idx").on(
+    table.category,
+    table.currency,
+    table.occurredAt,
+  ),
+  activeTimeIdx: index("capital_deployment_active_time_idx").on(table.voidedAt, table.occurredAt),
+}));
+
+export type TreasuryAccount = typeof treasuryAccounts.$inferSelect;
+export type TreasuryBalanceSnapshot = typeof treasuryBalanceSnapshots.$inferSelect;
+export type TreasuryCashDisbursement = typeof treasuryCashDisbursements.$inferSelect;
+export type OperatingExpenseEntry = typeof operatingExpenseEntries.$inferSelect;
+export type OperatingTaxProvision = typeof operatingTaxProvisions.$inferSelect;
+export type InvestedCapitalSnapshot = typeof investedCapitalSnapshots.$inferSelect;
+export const financialEvidenceAttestations = pgTable("financial_evidence_attestations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  evidenceType: varchar("evidence_type", { length: 40 }).notNull(),
+  throughAt: timestamp("through_at").notNull(),
+  sourceReference: text("source_reference").notNull(),
+  notes: text("notes"),
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  voidedAt: timestamp("voided_at"),
+  voidedBy: varchar("voided_by").references(() => users.id, { onDelete: "set null" }),
+  voidReason: text("void_reason"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  typeTimeIdx: index("financial_evidence_attestation_type_time_idx").on(
+    table.evidenceType,
+    table.currency,
+    table.throughAt,
+  ),
+  activeIdx: index("financial_evidence_attestation_active_idx").on(table.voidedAt, table.throughAt),
+}));
+
+export const capitalHurdlePolicies = pgTable("capital_hurdle_policies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  currency: varchar("currency", { length: 3 }).notNull(),
+  annualHurdleRatePct: numeric("annual_hurdle_rate_pct", { precision: 7, scale: 3 }).notNull(),
+  effectiveFrom: timestamp("effective_from").notNull(),
+  effectiveTo: timestamp("effective_to"),
+  rationale: text("rationale").notNull(),
+  approvedBy: varchar("approved_by").notNull().references(() => users.id, { onDelete: "restrict" }),
+  approvedAt: timestamp("approved_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  currencyPeriodIdx: index("capital_hurdle_currency_period_idx").on(
+    table.currency,
+    table.effectiveFrom,
+    table.effectiveTo,
+  ),
+}));
+
+export type CapitalDeploymentEntry = typeof capitalDeploymentEntries.$inferSelect;
+export type FinancialEvidenceAttestation = typeof financialEvidenceAttestations.$inferSelect;
+export type CapitalHurdlePolicy = typeof capitalHurdlePolicies.$inferSelect;
+
 // Blog Likes
 export const blogLikes = pgTable("blog_likes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

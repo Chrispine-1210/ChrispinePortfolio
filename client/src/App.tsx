@@ -41,6 +41,7 @@ const CaseStudyManagement = lazy(() => import("@/pages/admin/CaseStudyManagement
 const LeadPipeline = lazy(() => import("@/pages/admin/LeadPipeline"));
 const RevenueIntelligence = lazy(() => import("@/pages/admin/RevenueIntelligence"));
 const CapitalOperatingSystem = lazy(() => import("@/pages/admin/CapitalOperatingSystem"));
+const TreasuryRoic = lazy(() => import("@/pages/admin/TreasuryRoic"));
 const SecurityManagement = lazy(() => import("@/pages/admin/SecurityManagement"));
 const UserManagement = lazy(() => import("@/pages/admin/UserManagement"));
 
@@ -104,6 +105,7 @@ function Router() {
           <Route path="/admin/pipeline"><AdminProtectedRoute component={LeadPipeline} /></Route>
           <Route path="/admin/revenue-intelligence"><AdminProtectedRoute component={RevenueIntelligence} /></Route>
           <Route path="/admin/capital"><AdminProtectedRoute component={CapitalOperatingSystem} /></Route>
+          <Route path="/admin/treasury"><AdminProtectedRoute component={TreasuryRoic} /></Route>
           <Route path="/admin/security"><AdminProtectedRoute component={SecurityManagement} /></Route>
           <Route path="/admin/users"><AdminProtectedRoute component={UserManagement} /></Route>
           <Route path="/analytics"><AdminProtectedRoute component={Analytics} /></Route>
