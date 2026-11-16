@@ -610,7 +610,7 @@ export function createTreasuryRoicRouter() {
       const now = new Date();
       const values = {
         voidedAt: now,
-        voidedBy: request.securityPrincipal.userId,
+        voidedBy: request.securityPrincipal?.userId ?? null,
         voidReason: parsed.data.reason,
       };
       const config: Record<string, {
