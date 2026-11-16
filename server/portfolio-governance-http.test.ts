@@ -66,6 +66,44 @@ const studyInput = {
 const studies = "/api/admin/case-studies";
 const projects = "/api/admin/projects";
 
+it("closes only the matching draft certification budget in Preview with approval permission", async () => {
+  const api = request(app);
+  const sourceReference = "preview-cert-2026-11-16T12-00-00-000Z-1234abcd-budget";
+  const { body: budget } = await api.post("/api/admin/capital/budgets")
+    .set("Cookie", administrator.cookie)
+    .send({
+      periodStart: "2026-10-18T12:00:00.000Z",
+      periodEnd: "2026-12-17T12:00:00.000Z",
+      currency: "XTS",
+      envelopeAmount: 20000,
+      sourceReference,
+    }).expect(201);
+  const close = (cookie = administrator.cookie) =>
+    api.post(`/api/admin/capital/budgets/${budget.id}/close`).set("Cookie", cookie);
+  const previousEnvironment = process.env.VERCEL_ENV;
+
+  try {
+    process.env.VERCEL_ENV = "production";
+    await close().send({ certificationSourceReference: sourceReference }).expect(409);
+
+    process.env.VERCEL_ENV = "preview";
+    await close().expect(409);
+    await close().send({ certificationSourceReference: sourceReference.replace("1234abcd", "ffffffff") }).expect(409);
+    await close(viewer.cookie).send({ certificationSourceReference: sourceReference }).expect(403);
+    const result = await close().send({ certificationSourceReference: sourceReference }).expect(200);
+    expect(result.body).toMatchObject({ status: "closed", approvedAt: null, approvedBy: null });
+
+    const { rows: [audit] } = await database.query<{ actor_user_id: string }>(
+      "select actor_user_id from audit_events where resource_id = $1 and action = 'capital.budget.close'",
+      [budget.id],
+    );
+    expect(audit?.actor_user_id).toBe(administrator.userId);
+  } finally {
+    if (previousEnvironment === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = previousEnvironment;
+  }
+});
+
 describe("portfolio governance HTTP routes", () => {
   it("requires a session and evaluates database permissions on reads and writes", async () => {
     await request(app).get(projects).expect(401);

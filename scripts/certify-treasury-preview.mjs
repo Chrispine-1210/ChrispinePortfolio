@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { setTimeout as delay } from "node:timers/promises";
 
 const required = [
   "CERT_BASE_URL",
@@ -156,117 +157,126 @@ const overAllocationSourceReference = `${marker}-over-allocation`;
 const now = Date.now();
 const day = 24 * 60 * 60 * 1000;
 let cookie = "";
-let budgetId = null;
-let deploymentId = null;
+const pendingBudgetSources = new Set();
+const pendingDeploymentSources = new Set();
+const budgetIds = new Set();
 const recoveredBudgetIds = new Set();
 const deploymentIds = new Set();
 const recoveredDeploymentIds = new Set();
 let cleanupError = null;
 
+function createTrackedFixture(path, body, pendingSources, ids) {
+  assertReleaseIdentity();
+  pendingSources.add(body.sourceReference);
+  const result = runRequest(path, { method: "POST", cookie, body });
+  if (result.status >= 200 && result.status < 300 && typeof result.json?.id === "string" && result.json.id) {
+    ids.add(result.json.id);
+    pendingSources.delete(body.sourceReference);
+  } else if ([400, 401, 403, 404, 409].includes(result.status)) {
+    pendingSources.delete(body.sourceReference);
+  }
+  return result;
+}
+
 function readBudgets() {
-  return expectStatus(
+  const { json } = expectStatus(
     runRequest("/api/admin/capital/budgets", { cookie }),
     200,
     "Capital budget readback",
-  ).json || [];
+  );
+  if (!Array.isArray(json)) throw new Error("Capital budget readback did not return a list.");
+  return json;
 }
 
-function readTreasuryEvidence() {
-  return expectStatus(
+function readDeployments() {
+  const { json } = expectStatus(
     runRequest("/api/admin/treasury/evidence", { cookie }),
     200,
     "Treasury evidence readback",
-  ).json || {};
+  );
+  if (!Array.isArray(json?.deployments)) throw new Error("Treasury evidence did not return a deployment list.");
+  return json.deployments;
 }
 
-function reconcileMarkerResources() {
+async function recoverCreates(label, readRows, pendingSources, ids, recoveredIds, errors) {
+  let lastError;
+  for (let attempt = 0; attempt < 3 && pendingSources.size; attempt++) {
+    if (attempt > 0) await delay(1_000);
+    try {
+      const foundSources = new Set();
+      for (const row of readRows()) {
+        if (typeof row?.id !== "string" || !row.id || !pendingSources.has(row.sourceReference)) continue;
+        ids.add(row.id);
+        recoveredIds.add(row.id);
+        foundSources.add(row.sourceReference);
+      }
+      for (const source of foundSources) pendingSources.delete(source);
+      lastError = null;
+    } catch (error) {
+      lastError = error.message;
+    }
+  }
+  if (pendingSources.size) {
+    const detail = lastError ? ` (${lastError})` : "";
+    errors.push(`${label} creation could not be reconciled: ${[...pendingSources].join(", ")}${detail}`);
+  }
+}
+
+function confirmCleanup(path, body, readRows, id, isClean, label) {
+  let writeError;
+  try {
+    const result = runFinancialWrite(path, { method: "POST", cookie, body });
+    if (result.status === 200 && result.json?.id === id && isClean(result.json)) return;
+    writeError = new Error(`${label} returned HTTP ${result.status} without confirming cleanup`);
+  } catch (error) {
+    writeError = error;
+  }
+  const row = readRows().find((item) => item.id === id);
+  if (!isClean(row)) throw writeError;
+}
+
+function voidDeployment(id) {
+  confirmCleanup(
+    `/api/admin/treasury/evidence/deployment/${id}/void`,
+    { reason: "Preview certification cleanup after controlled runtime verification." },
+    readDeployments,
+    id,
+    (row) => Boolean(row?.voidedAt),
+    "Deployment cleanup",
+  );
+}
+
+function closeBudget(id) {
+  confirmCleanup(
+    `/api/admin/capital/budgets/${id}/close`,
+    { certificationSourceReference: budgetSourceReference },
+    readBudgets,
+    id,
+    (row) => row?.status === "closed",
+    "Budget cleanup",
+  );
+}
+
+async function safeCleanup() {
   const errors = [];
 
   try {
-    const budgets = readBudgets();
-    for (const budget of budgets) {
-      if (budget?.sourceReference === budgetSourceReference) {
-        if (!budgetId) budgetId = budget.id;
-        recoveredBudgetIds.add(budget.id);
-      }
-    }
-  } catch (error) {
-    errors.push(`budget recovery: ${error.message}`);
-  }
+    await recoverCreates("Budget", readBudgets, pendingBudgetSources, budgetIds, recoveredBudgetIds, errors);
+    await recoverCreates("Deployment", readDeployments, pendingDeploymentSources, deploymentIds, recoveredDeploymentIds, errors);
 
-  try {
-    const evidence = readTreasuryEvidence();
-    for (const row of evidence.deployments || []) {
-      if (
-        row?.id &&
-        typeof row.sourceReference === "string" &&
-        row.sourceReference.startsWith(marker)
-      ) {
-        deploymentIds.add(row.id);
-        recoveredDeploymentIds.add(row.id);
-      }
-    }
-  } catch (error) {
-    errors.push(`deployment recovery: ${error.message}`);
-  }
-
-  return errors;
-}
-
-function deploymentIsVoided(id) {
-  const row = (readTreasuryEvidence().deployments || []).find((item) => item.id === id);
-  return Boolean(row?.voidedAt);
-}
-
-function budgetStatus(id) {
-  const row = readBudgets().find((item) => item.id === id);
-  return row?.status ?? null;
-}
-
-function safeCleanup() {
-  if (!cookie) return;
-  const errors = reconcileMarkerResources();
-
-  try {
     for (const id of deploymentIds) {
       try {
-        if (deploymentIsVoided(id)) continue;
-        const voidResult = runFinancialWrite(`/api/admin/treasury/evidence/deployment/${id}/void`, {
-          method: "POST",
-          cookie,
-          body: { reason: "Preview certification cleanup after controlled runtime verification." },
-        });
-        if (voidResult.status === 409) {
-          if (!deploymentIsVoided(id)) {
-            throw new Error(`HTTP 409 but deployment remains active`);
-          }
-        } else if (voidResult.status !== 200) {
-          throw new Error(`HTTP ${voidResult.status}`);
-        }
+        voidDeployment(id);
       } catch (error) {
         errors.push(`deployment ${id}: ${error.message}`);
       }
     }
 
-    if (budgetId) {
+    for (const id of budgetIds) {
       try {
-        const currentStatus = budgetStatus(budgetId);
-        if (currentStatus !== "closed") {
-          const closeResult = runFinancialWrite(`/api/admin/capital/budgets/${budgetId}/close`, {
-            method: "POST",
-            cookie,
-          });
-          if (closeResult.status === 409) {
-            const confirmedStatus = budgetStatus(budgetId);
-            if (confirmedStatus !== "closed") {
-              throw new Error(`HTTP 409 and budget status is ${confirmedStatus ?? "missing"}`);
-            }
-          } else if (closeResult.status !== 200) {
-            throw new Error(`HTTP ${closeResult.status}`);
-          }
-        }
+        closeBudget(id);
       } catch (error) {
-        errors.push(`budget ${budgetId}: ${error.message}`);
+        errors.push(`budget ${id}: ${error.message}`);
       }
     }
   } finally {
@@ -297,19 +307,20 @@ try {
   const me = expectStatus(runRequest("/api/auth/me", { cookie }), 200, "Authenticated identity");
   if (!me.json) throw new Error("Application authentication did not produce an authenticated principal.");
 
-  const budget = expectStatus(runFinancialWrite("/api/admin/capital/budgets", {
-    method: "POST",
-    cookie,
-    body: {
+  const budget = expectStatus(createTrackedFixture(
+    "/api/admin/capital/budgets",
+    {
       periodStart: new Date(now - 30 * day).toISOString(),
       periodEnd: new Date(now + 30 * day).toISOString(),
       currency,
       envelopeAmount: deploymentAmount + 4000,
       sourceReference: budgetSourceReference,
     },
-  }), 201, "Capital budget creation");
-  budgetId = budget.json?.id;
-  if (!budgetId) throw new Error("Capital budget response did not contain an id.");
+    pendingBudgetSources,
+    budgetIds,
+  ), 201, "Capital budget creation");
+  const budgetId = budget.json?.id;
+  if (!budgetIds.has(budgetId)) throw new Error("Capital budget response did not contain an id.");
 
   const allocation = expectStatus(runFinancialWrite(`/api/admin/capital/budgets/${budgetId}/allocations`, {
     method: "POST",
@@ -335,10 +346,9 @@ try {
     body: {},
   }), 200, "Capital budget approval");
 
-  const accepted = expectStatus(runFinancialWrite("/api/admin/treasury/deployments", {
-    method: "POST",
-    cookie,
-    body: {
+  const accepted = expectStatus(createTrackedFixture(
+    "/api/admin/treasury/deployments",
+    {
       budgetAllocationId: allocationId,
       currency,
       amount: deploymentAmount,
@@ -348,15 +358,15 @@ try {
       sourceReference: acceptedSourceReference,
       approvalReference: `${marker}-approved-budget`,
     },
-  }), 201, "Valid capital deployment");
-  deploymentId = accepted.json?.id;
-  if (!deploymentId) throw new Error("Accepted capital deployment did not contain an id.");
-  deploymentIds.add(deploymentId);
+    pendingDeploymentSources,
+    deploymentIds,
+  ), 201, "Valid capital deployment");
+  const deploymentId = accepted.json?.id;
+  if (!deploymentIds.has(deploymentId)) throw new Error("Accepted capital deployment did not contain an id.");
 
-  const overAllocation = runFinancialWrite("/api/admin/treasury/deployments", {
-    method: "POST",
-    cookie,
-    body: {
+  const overAllocation = createTrackedFixture(
+    "/api/admin/treasury/deployments",
+    {
       budgetAllocationId: allocationId,
       currency,
       amount: 1,
@@ -366,8 +376,9 @@ try {
       sourceReference: overAllocationSourceReference,
       approvalReference: `${marker}-approved-budget`,
     },
-  });
-  if (overAllocation.json?.id) deploymentIds.add(overAllocation.json.id);
+    pendingDeploymentSources,
+    deploymentIds,
+  );
   const rejected = expectStatus(overAllocation, 409, "Deliberate over-allocation");
 
   const expectedRejection = {
@@ -382,8 +393,7 @@ try {
     }
   }
 
-  const evidence = readTreasuryEvidence();
-  const observed = (evidence.deployments || []).find((row) => row.id === deploymentId && !row.voidedAt);
+  const observed = readDeployments().find((row) => row.id === deploymentId && !row.voidedAt);
   if (!observed) throw new Error("Accepted deployment was not present in treasury evidence readback.");
 
   expectStatus(
@@ -392,24 +402,15 @@ try {
     "Treasury/ROIC intelligence readback",
   );
 
-  const voided = expectStatus(runFinancialWrite(`/api/admin/treasury/evidence/deployment/${deploymentId}/void`, {
-    method: "POST",
-    cookie,
-    body: { reason: "Preview certification cleanup after controlled runtime verification." },
-  }), 200, "Deployment cleanup");
-  if (!voided.json?.voidedAt) throw new Error("Deployment cleanup did not record voidedAt.");
+  voidDeployment(deploymentId);
   deploymentIds.delete(deploymentId);
-  deploymentId = null;
 
-  const closed = expectStatus(runFinancialWrite(`/api/admin/capital/budgets/${budgetId}/close`, {
-    method: "POST",
-    cookie,
-  }), 200, "Budget cleanup");
-  if (closed.json?.status !== "closed") throw new Error("Budget cleanup did not close the certification budget.");
-  budgetId = null;
+  closeBudget(budgetId);
+  budgetIds.delete(budgetId);
 
   expectStatus(runRequest("/api/auth/logout", { method: "POST", cookie }), 200, "Logout");
   cookie = "";
+  assertReleaseIdentity();
 
   console.log(JSON.stringify({
     decision: "PASS",
@@ -424,12 +425,13 @@ try {
     marker,
   }, null, 2));
 } catch (error) {
-  if (cookie) safeCleanup();
+  if (cookie) await safeCleanup();
 
   console.error(JSON.stringify({
     decision: "FAIL",
     marker,
-    budgetId,
+    budgetId: [...budgetIds][0] ?? null,
+    budgetIds: [...budgetIds],
     recoveredBudgetIds: [...recoveredBudgetIds],
     deploymentIds: [...deploymentIds],
     recoveredDeploymentIds: [...recoveredDeploymentIds],

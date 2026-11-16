@@ -803,11 +803,25 @@ export function createCapitalOperatingRouter() {
       const [previous] = await db.select().from(capitalBudgetCycles)
         .where(eq(capitalBudgetCycles.id, request.params.id)).limit(1);
       if (!previous) return response.status(404).json({ message: "Capital budget not found" });
-      if (previous.status !== "approved") return response.status(409).json({ message: "Only an approved budget can be closed" });
+      const sourceReference = request.body?.certificationSourceReference;
+      const certificationCleanup = process.env.VERCEL_ENV === "preview" &&
+        typeof sourceReference === "string" &&
+        /^preview-cert-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[0-9a-f]{8}-budget$/.test(sourceReference) &&
+        sourceReference === previous.sourceReference;
+      if (sourceReference !== undefined && !certificationCleanup) {
+        return response.status(409).json({ message: "Preview certification budget reference does not match" });
+      }
+      if (previous.status !== "approved" && !(certificationCleanup && previous.status === "draft")) {
+        return response.status(409).json({ message: "Only an approved budget can be closed" });
+      }
       const [record] = await db.update(capitalBudgetCycles).set({
         status: "closed",
         closedAt: new Date(),
-      }).where(eq(capitalBudgetCycles.id, previous.id)).returning();
+      }).where(and(
+        eq(capitalBudgetCycles.id, previous.id),
+        eq(capitalBudgetCycles.status, previous.status),
+      )).returning();
+      if (!record) return response.status(409).json({ message: "Budget status changed before close" });
       await audit(request, "capital.budget.close", "capital_budget", previous.id, previous, record);
       response.json(record);
     },
