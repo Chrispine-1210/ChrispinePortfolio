@@ -31,6 +31,7 @@ import {
 } from "../../shared/schema.js";
 import { requireAdminPermission } from "../custom-auth.js";
 import { db } from "../db.js";
+import { env } from "../env.js";
 
 const DAY_MS = 86_400_000;
 const TTM_DAYS = 365;
@@ -598,7 +599,11 @@ export function createTreasuryRoicRouter() {
         kind === "balance" || kind === "disbursement" ? "treasury.evidence.manage" :
         kind === "opex" || kind === "tax" || kind === "invested-capital" || kind === "attestation" ? "roic.evidence.manage" :
         kind === "deployment" ? "capital.deployment.manage" : null;
-      if (!permission || !request.securityPrincipal?.permissions.includes(permission)) {
+      const authorized =
+        env.ADMIN_AUTH_MODE === "database"
+          ? Boolean(permission && request.securityPrincipal?.permissions.includes(permission))
+          : Boolean(permission && (request as any).user?.isAdmin);
+      if (!authorized) {
         return response.status(403).json({ message: "Forbidden" });
       }
 
