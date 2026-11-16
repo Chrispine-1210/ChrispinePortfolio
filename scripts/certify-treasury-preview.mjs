@@ -271,7 +271,11 @@ function safeCleanup() {
     }
   } finally {
     try {
-      runRequest("/api/auth/logout", { method: "POST", cookie });
+      expectStatus(
+        runRequest("/api/auth/logout", { method: "POST", cookie }),
+        200,
+        "Logout",
+      );
       cookie = "";
     } catch (error) {
       errors.push(`logout: ${error.message}`);
