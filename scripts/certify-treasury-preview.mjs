@@ -10,7 +10,7 @@ const required = [
   "CERT_ADMIN_EMAIL",
   "CERT_ADMIN_PASSWORD",
   "CERT_EXPECTED_GIT_SHA",
-  "CERT_EXPECTED_DATABASE_IDENTITY",
+  "CERT_EXPECTED_DATABASE_BRANCH_ID",
 ];
 for (const key of required) {
   if (!process.env[key]) throw new Error(`Missing required environment variable: ${key}`);
@@ -18,7 +18,7 @@ for (const key of required) {
 
 const baseUrl = process.env.CERT_BASE_URL.replace(/\/$/, "");
 const expectedSha = process.env.CERT_EXPECTED_GIT_SHA;
-const expectedDatabaseIdentity = process.env.CERT_EXPECTED_DATABASE_IDENTITY;
+const expectedDatabaseBranchId = process.env.CERT_EXPECTED_DATABASE_BRANCH_ID;
 const adminEmail = process.env.CERT_ADMIN_EMAIL;
 const adminPassword = process.env.CERT_ADMIN_PASSWORD;
 const currency = (process.env.CERT_CURRENCY || "XTS").toUpperCase();
@@ -40,8 +40,8 @@ try {
 if (!/^[A-Z]{3}$/.test(currency)) throw new Error("CERT_CURRENCY must be a three-letter uppercase code.");
 if (!Number.isFinite(deploymentAmount) || deploymentAmount <= 0) throw new Error("CERT_DEPLOYMENT_AMOUNT must be positive.");
 if (!/^[0-9a-f]{40}$/i.test(expectedSha)) throw new Error("CERT_EXPECTED_GIT_SHA must be a full 40-character Git SHA.");
-if (!/^[0-9a-f]{24}$/i.test(expectedDatabaseIdentity)) {
-  throw new Error("CERT_EXPECTED_DATABASE_IDENTITY must be a 24-character hexadecimal identity.");
+if (!/^br-[a-z0-9-]+$/i.test(expectedDatabaseBranchId)) {
+  throw new Error("CERT_EXPECTED_DATABASE_BRANCH_ID must be a Neon branch id beginning with br-.");
 }
 
 const cliIdentity = spawnSync("vercel", ["whoami"], {
@@ -136,9 +136,9 @@ function assertReleaseIdentity() {
       `CERT_BASE_URL must identify the immutable deployment itself. Expected host ${release.json?.deploymentUrl ?? "null"}, received ${baseHostname}`,
     );
   }
-  if (release.json.databaseIdentity !== expectedDatabaseIdentity) {
+  if (release.json.databaseBranchId !== expectedDatabaseBranchId) {
     throw new Error(
-      `Database target mismatch. Expected ${expectedDatabaseIdentity}, deployment reports ${release.json?.databaseIdentity ?? "null"}`,
+      `Database target mismatch. Expected ${expectedDatabaseBranchId}, deployment reports ${release.json?.databaseBranchId ?? "null"}`,
     );
   }
   return release;
@@ -410,7 +410,7 @@ try {
   console.log(JSON.stringify({
     decision: "PASS",
     exactHead: expectedSha,
-    databaseIdentity: expectedDatabaseIdentity,
+    databaseBranchId: expectedDatabaseBranchId,
     environment: release.json.environment,
     deploymentUrl: baseUrl,
     validDeploymentStatus: 201,
