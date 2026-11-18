@@ -1,4 +1,11 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
@@ -63,10 +70,16 @@ export function PricingCards() {
     <section className="py-16 sm:py-24 bg-accent/20" id="pricing">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center space-y-4 mb-12">
-          <h2 className="text-4xl sm:text-5xl font-bold text-foreground" data-testid="text-pricing-title">
+          <h2
+            className="text-4xl sm:text-5xl font-bold text-foreground"
+            data-testid="text-pricing-title"
+          >
             Choose Your Plan
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto" data-testid="text-pricing-subtitle">
+          <p
+            className="text-xl text-muted-foreground max-w-3xl mx-auto"
+            data-testid="text-pricing-subtitle"
+          >
             Get access to premium tutorials, templates, and exclusive content
           </p>
         </div>
@@ -88,23 +101,35 @@ export function PricingCards() {
                 </div>
               )}
               <CardHeader className="text-center pb-8 pt-8">
-                <CardTitle className="text-2xl mb-2" data-testid={`text-plan-name-${plan.name.toLowerCase()}`}>
+                <CardTitle
+                  className="text-2xl mb-2"
+                  data-testid={`text-plan-name-${plan.name.toLowerCase()}`}
+                >
                   {plan.name}
                 </CardTitle>
                 <div className="mb-2">
-                  <span className="text-4xl font-bold" data-testid={`text-plan-price-${plan.name.toLowerCase()}`}>
+                  <span
+                    className="text-4xl font-bold"
+                    data-testid={`text-plan-price-${plan.name.toLowerCase()}`}
+                  >
                     {plan.price}
                   </span>
                   <span className="text-muted-foreground">/{plan.period}</span>
                 </div>
-                <CardDescription data-testid={`text-plan-description-${plan.name.toLowerCase()}`}>
+                <CardDescription
+                  data-testid={`text-plan-description-${plan.name.toLowerCase()}`}
+                >
                   {plan.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-1">
                 <ul className="space-y-3">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2" data-testid={`text-feature-${plan.name.toLowerCase()}-${idx}`}>
+                    <li
+                      key={idx}
+                      className="flex items-start gap-2"
+                      data-testid={`text-feature-${plan.name.toLowerCase()}-${idx}`}
+                    >
                       <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                       <span className="text-sm">{feature}</span>
                     </li>
