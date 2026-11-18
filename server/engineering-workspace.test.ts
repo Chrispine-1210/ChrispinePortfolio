@@ -100,6 +100,47 @@ const patch = (
     .send({ record, expectedVersion, requestKey: randomUUID() });
 
 describe("engineering workspace boundaries", () => {
+  it("accepts share-link metadata on reads without relaxing filters, authentication or write bodies", async () => {
+    const metadata = { _vercel_share: "synthetic-preview-link" };
+    const publicList = await request(app)
+      .get("/api/journey")
+      .query(metadata)
+      .expect(200);
+    expect(publicList.body.data).toEqual([]);
+    expect(publicList.text).not.toContain(metadata._vercel_share);
+    await request(app)
+      .get("/api/journey")
+      .query({ ...metadata, limit: 25 })
+      .expect(400);
+    await request(app)
+      .get("/api/journey")
+      .query({ ...metadata, topic: "unknown" })
+      .expect(400);
+    await request(app)
+      .get(base + "/records")
+      .query(metadata)
+      .expect(401);
+    await request(app)
+      .get(base + "/records")
+      .query({ ...metadata, context: "personal" })
+      .set("Cookie", owner.cookie)
+      .expect(200);
+    await request(app)
+      .get(base + "/records")
+      .query({ ...metadata, context: "unknown" })
+      .set("Cookie", owner.cookie)
+      .expect(400);
+    await request(app)
+      .get(base + "/records")
+      .query({ ...metadata, limit: 101 })
+      .set("Cookie", owner.cookie)
+      .expect(400);
+    await post(base + "/records", {
+      record: input(),
+      requestKey: randomUUID(),
+      ...metadata,
+    }).expect(400);
+  });
   it("keeps additive migration replay safe without changing records or history", async () => {
     await database.exec(
       await readFile("migrations/0011_engineering_workspace.sql", "utf8"),

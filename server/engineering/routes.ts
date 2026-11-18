@@ -51,7 +51,9 @@ const listInput = z
     limit: z.coerce.number().int().min(1).max(100).default(60),
     offset: z.coerce.number().int().min(0).max(10000).default(0),
   })
-  .strict();
+  // Read filters ignore transport metadata such as Vercel's share-link query.
+  // Known filters remain validated; mutation bodies above stay strict.
+  .strip();
 const today = () =>
   new Intl.DateTimeFormat("en-CA", {
     timeZone: "Africa/Blantyre",
@@ -363,7 +365,7 @@ export function createEngineeringRouter() {
           limit: z.coerce.number().int().min(1).max(24).default(12),
           offset: z.coerce.number().int().min(0).max(10000).default(0),
         })
-        .strict()
+        .strip()
         .parse(req.query);
       const filter = and(
         isNull(engineeringPublications.withdrawnAt),
