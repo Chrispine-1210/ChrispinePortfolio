@@ -14,4 +14,6 @@ Vercel's deployment fetch attaches `_vercel_share`. Strict read-query parsing re
 
 No database migration, permissions, workflow, package manifest, lockfile or audit exception was changed in this release. The existing build-only advisory acceptance still expires on 25 November 2026 at 02:00 Africa/Blantyre. Production authentication and public disclosure gates remain in place.
 
-The local visual-review browser could not reach the isolated QA server in this environment. Live rendering and control verification must therefore be recorded against the deployed commit; the source checks above do not claim browser certification. Synthetic QA data and temporary review launchers are excluded from Git and production.
+The local visual-review browser could not reach the isolated QA server in this environment. Synthetic QA data and temporary review launchers are excluded from Git and production.
+
+Production commit `c2471a70806c3c724969d8fd609c72c708755708` reached READY. Live API verification returned HTTP 200 for the journal (zero published notes), HTTP 200 for the project collection (16 case studies), HTTP 200 for the empty published blog collection, and HTTP 401 for unauthenticated private engineering records. The browser rendered the new Writing and About content. Its first screenshot exposed white navigation links over the light page surface; the follow-up makes the existing solid green journal header apply to Writing, Work and About as well. Final visual and interaction checks remain to be recorded against that follow-up deployment.

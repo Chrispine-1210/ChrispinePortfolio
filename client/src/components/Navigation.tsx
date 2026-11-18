@@ -22,7 +22,11 @@ export function Navigation() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const journalSurface = location.startsWith("/journey");
+  const solidHeaderSurface = location.startsWith("/journey")
+    || location === "/portfolio"
+    || location === "/about"
+    || location === "/blog"
+    || location.startsWith("/blog/");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -43,7 +47,7 @@ export function Navigation() {
           : "border-b border-transparent py-0"
       }`}
       style={{
-        background: journalSurface ? "#142b24" : scrolled
+        background: solidHeaderSurface ? "#142b24" : scrolled
           ? "rgba(9, 10, 20, 0.85)"
           : "transparent",
         backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
