@@ -1,0 +1,234 @@
+{
+  "passed": true,
+  "sourceSnapshot": "snap-fragrant-dream-bbspabwq",
+  "sourceBranch": "br-misty-wave-bb79bj7l",
+  "exportedAt": "2026-11-18T14:34:01.852Z",
+  "restoredAt": "2026-11-18T14:37:05.246Z",
+  "target": "New isolated PGlite/PostgreSQL-compatible in-memory database; not a Neon snapshot restore",
+  "restoredTables": 43,
+  "restoredRows": 246,
+  "allDataDigestsMatch": true,
+  "foreignKeysValidated": true,
+  "migration0011": {
+    "appliedTwice": true,
+    "tables": 4,
+    "permissions": 3
+  },
+  "tables": [
+    {
+      "table": "acquisition_spend_entries",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "audit_events",
+      "rows": 34,
+      "digest": "1362cd23007c190966bcb1a809070e66"
+    },
+    {
+      "table": "authentication_attempts",
+      "rows": 9,
+      "digest": "f378157ed0ec7f3ff23e37d94be97019"
+    },
+    {
+      "table": "blog_comments",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "blog_likes",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "blog_posts",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "capital_budget_allocations",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "capital_budget_cycles",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "case_studies",
+      "rows": 16,
+      "digest": "7c295d020dfd82456a44154141363c5c"
+    },
+    {
+      "table": "case_study_evidence",
+      "rows": 18,
+      "digest": "fe2729d505ff80a1de2355ca65d2702f"
+    },
+    {
+      "table": "cash_collections",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "channel_outbox",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "commercial_invoices",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "contact_requests",
+      "rows": 1,
+      "digest": "99f7429584431569bbe7d89330b9c69d"
+    },
+    {
+      "table": "content_versions",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "cost_evidence_attestations",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "delivery_capacity_records",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "direct_cost_entries",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "email_delivery_events",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "email_outbox",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "email_suppressions",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "email_templates",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "external_posts",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "lead_activities",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "lead_attribution_touches",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "leads",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "newsletter_subscribers",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "notification_action_tokens",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "notification_campaigns",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "notification_inbox",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "permissions",
+      "rows": 36,
+      "digest": "1515c37e7e69832745d6f1d37ffaa77c"
+    },
+    {
+      "table": "portfolio_projects",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "projects",
+      "rows": 2,
+      "digest": "7af8d3446d7e84b96a63823054485b95"
+    },
+    {
+      "table": "push_subscriptions",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "recurring_revenue_agreements",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "recurring_revenue_movements",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "revenue_events",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "role_permissions",
+      "rows": 104,
+      "digest": "36c52c000baf7b09acb405b2364d6ea4"
+    },
+    {
+      "table": "roles",
+      "rows": 10,
+      "digest": "90bcbd3275257dd932492c8341804882"
+    },
+    {
+      "table": "security_events",
+      "rows": 0,
+      "digest": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table": "sessions",
+      "rows": 6,
+      "digest": "4a5299b56d89b2751822d17157aa615f"
+    },
+    {
+      "table": "user_roles",
+      "rows": 9,
+      "digest": "111b68ca4caa123301cd0f6dda3d7bbb"
+    },
+    {
+      "table": "users",
+      "rows": 1,
+      "digest": "44e7ecb5eaa1d153708371c1252bc3ed"
+    }
+  ]
+}

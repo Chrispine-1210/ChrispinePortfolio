@@ -4,7 +4,7 @@ import { db, database } from "./database.js";
 import { users, roles, userRoles } from "../../../shared/schema.js";
 import { app } from "../../../server/app.js";
 import { getDatabaseAuthRuntime } from "../../../server/security/database-auth-routes.js";
-import { serveStatic } from "../../../server/vite.js";
+import { serveStatic } from "../../../server/static.js";
 
 if (
   process.env.NODE_ENV !== "test" ||

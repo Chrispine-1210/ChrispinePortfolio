@@ -44,3 +44,13 @@ class Logger {
 }
 
 export const logger = new Logger();
+
+export function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "numeric",
+    hour12: true,
+  });
+  console.log(`${formattedTime} [${source}] ${message}`);
+}

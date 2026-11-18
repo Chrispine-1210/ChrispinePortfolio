@@ -1,0 +1,83 @@
+{
+  "sourceParent": "9c6251d92fd15eaf118ea2b18449798219442646",
+  "date": "2026-11-18",
+  "checks": [
+    {
+      "check": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true
+    },
+    {
+      "check": "tests",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true
+    },
+    {
+      "check": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true
+    },
+    {
+      "check": "runtime-imports",
+      "command": [
+        "npm",
+        "run",
+        "verify:runtime"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true
+    },
+    {
+      "check": "strict-production-audit",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--audit-level=high"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true
+    },
+    {
+      "check": "proposed-policy",
+      "command": [
+        "npm",
+        "run",
+        "audit:release"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": true
+    },
+    {
+      "check": "qa-bundle",
+      "command": [
+        "node",
+        "scripts/qa/engineering-preview.mjs",
+        "--build-only"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true
+    }
+  ]
+}

@@ -21,6 +21,7 @@ import {
 } from "../../shared/engineering.js";
 import { db } from "../db.js";
 import { env } from "../env.js";
+import { trustedPreviewOrigin } from "../security/deployment-origin.js";
 import { requireAdminPermission } from "../custom-auth.js";
 import { requirePermission } from "../security/session-middleware.js";
 import { ApiError, asyncHandler } from "../middleware.js";
@@ -63,7 +64,7 @@ function requireOrigin(req: Request) {
     ? new URL(env.APP_BASE_URL).origin
     : env.NODE_ENV !== "production"
       ? `${req.protocol}://${req.get("host")}`
-      : null;
+      : trustedPreviewOrigin(process.env);
   if (!expected)
     throw new ApiError(
       503,
@@ -100,33 +101,29 @@ async function audit(
   previous: Entry | null = null,
   justification?: string,
 ) {
-  await tx
-    .insert(auditEvents)
-    .values({
-      actorUserId: req.securityPrincipal!.userId,
-      actorSessionId: req.securityPrincipal!.sessionId,
-      requestId: req.requestId,
-      action: `engineering.${action}`,
-      resourceType: "engineering_record",
-      resourceId: entry.id,
-      result: "success",
-      justification,
-      previousState: previous
-        ? { version: previous.version, status: previous.status }
-        : null,
-      newState: { version: entry.version, status: entry.status },
-      metadata: { context: entry.context, kind: entry.kind },
-    });
+  await tx.insert(auditEvents).values({
+    actorUserId: req.securityPrincipal!.userId,
+    actorSessionId: req.securityPrincipal!.sessionId,
+    requestId: req.requestId,
+    action: `engineering.${action}`,
+    resourceType: "engineering_record",
+    resourceId: entry.id,
+    result: "success",
+    justification,
+    previousState: previous
+      ? { version: previous.version, status: previous.status }
+      : null,
+    newState: { version: entry.version, status: entry.status },
+    metadata: { context: entry.context, kind: entry.kind },
+  });
 }
 async function version(tx: Transaction, req: Request, entry: Entry) {
-  await tx
-    .insert(engineeringVersions)
-    .values({
-      recordId: entry.id,
-      version: entry.version,
-      snapshot: entry,
-      actorUserId: req.securityPrincipal!.userId,
-    });
+  await tx.insert(engineeringVersions).values({
+    recordId: entry.id,
+    version: entry.version,
+    snapshot: entry,
+    actorUserId: req.securityPrincipal!.userId,
+  });
 }
 async function write(
   req: Request,
@@ -184,14 +181,12 @@ async function write(
         "RATE_LIMITED",
       );
     const response = await handler(tx);
-    await tx
-      .insert(engineeringRequests)
-      .values({
-        actorUserId: actor,
-        requestKey: input.requestKey,
-        fingerprint,
-        response,
-      });
+    await tx.insert(engineeringRequests).values({
+      actorUserId: actor,
+      requestKey: input.requestKey,
+      fingerprint,
+      response,
+    });
     return { ...response, replayed: false };
   });
   res.setHeader("Idempotency-Replayed", String(result.replayed));
@@ -424,11 +419,9 @@ export function createEngineeringRouter() {
       res.setHeader("X-Request-Id", req.requestId);
       res.setHeader("Cache-Control", "no-store");
       if (env.ADMIN_AUTH_MODE !== "database")
-        return res
-          .status(503)
-          .json({
-            message: "Engineering workspace requires database authentication",
-          });
+        return res.status(503).json({
+          message: "Engineering workspace requires database authentication",
+        });
       next();
     },
     requireAdminPermission("engineering.read"),
