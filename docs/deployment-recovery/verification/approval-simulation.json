@@ -1,0 +1,94 @@
+{
+  "simulationOnly": true,
+  "activePolicyStatus": "proposed",
+  "findings": {
+    "info": 0,
+    "low": 0,
+    "moderate": 6,
+    "high": 13,
+    "critical": 0,
+    "total": 19
+  },
+  "passed": true,
+  "blocked": [],
+  "exceptions": [
+    {
+      "package": "@vitejs/plugin-react",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "anymatch",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "chokidar",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "fast-glob",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "fdir",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "micromatch",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "picomatch",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "readdirp",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "sucrase",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "tailwindcss",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "tinyglobby",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "vite",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    },
+    {
+      "package": "vitest",
+      "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+      "scope": "development-only",
+      "expiresAt": "2026-11-25T00:00:00.000Z"
+    }
+  ]
+}
