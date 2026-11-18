@@ -94,7 +94,7 @@ describe("portfolio governance HTTP routes", () => {
       internalSummary: "Internal-only project scope", commercialValue: "42000.00", confidentiality: "restricted",
     }).expect(201);
     const study = await api.post(studies).set("Cookie", manager.cookie)
-      .send({ ...studyInput, projectId: project.body.id }).expect(201);
+      .send({ ...studyInput, projectId: project.body.id, architecture: "Reviewed component boundary", objectives: "Reviewed acceptance criteria" }).expect(201);
     const studyPath = `${studies}/${study.body.id}`;
     const publicPath = `/api/portfolio/${studyInput.slug}`;
     const transition = (action: string, cookie = administrator.cookie, justification?: string) =>
@@ -123,7 +123,7 @@ describe("portfolio governance HTTP routes", () => {
     await api.patch(studyPath).set("Cookie", manager.cookie).send({ outcome: "Unreviewed" }).expect(409);
 
     const detail = await api.get(publicPath).expect("Cache-Control", "no-store").expect(200);
-    expect(detail.body).toMatchObject({ slug: studyInput.slug, outcome: "Approved delivery scope" });
+    expect(detail.body).toMatchObject({ slug: studyInput.slug, outcome: "Approved delivery scope", dossier: { architecture: "Reviewed component boundary", objectives: "Reviewed acceptance criteria" } });
     expect(detail.body.evidence).toEqual([
       expect.objectContaining({
         claim: "Engineering delivery was independently reviewed",

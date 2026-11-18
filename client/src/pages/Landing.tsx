@@ -425,6 +425,7 @@ export default function Landing() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-5 py-12"><div className="flex flex-col gap-6 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.04] p-7 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs uppercase tracking-widest text-emerald-200/60">Engineering field notes</p><h2 className="mt-3 text-2xl font-semibold tracking-tight">Follow the questions, experiments and lessons behind the work.</h2><p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/45">Networks, programming, repairs, servers and deliberate technical practice, connected to the systems I build.</p></div><Link href="/journey" className="inline-flex shrink-0 items-center gap-2 text-sm text-emerald-200">Open the engineering journal<ArrowRight className="h-4 w-4"/></Link></div></section>
       <RegionalFocus />
 
       {/* ═══════════════ LATEST INSIGHTS ═══════════════ */}

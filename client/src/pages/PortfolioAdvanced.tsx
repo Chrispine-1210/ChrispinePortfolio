@@ -1,4 +1,4 @@
-import { EditorialPhoto } from "@/components/EditorialPhoto";
+
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PortfolioShowcase } from "@/components/PortfolioShowcase";
@@ -26,7 +26,7 @@ export default function PortfolioAdvanced() {
   const categories = ["All", ...(categoriesData?.categories ?? [])];
 
   // Fetch filtered projects
-  const { data: searchResults, isLoading } = useQuery<{
+  const { data: searchResults, isLoading, isError, refetch } = useQuery<{
     data: PortfolioProject[];
     pagination: {
       page: number;
@@ -38,7 +38,7 @@ export default function PortfolioAdvanced() {
   }>({
     queryKey: [
       "/api/portfolio/search",
-      { q: searchQuery, category: selectedCategory, featured: showFeatured },
+      { q: searchQuery, category: selectedCategory, featured: showFeatured, page },
     ],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -49,6 +49,7 @@ export default function PortfolioAdvanced() {
         limit: "12",
       });
       const res = await fetch(`/api/portfolio/search?${params}`);
+      if (!res.ok) throw new Error("Case studies are temporarily unavailable");
       return res.json();
     },
   });
@@ -64,9 +65,9 @@ export default function PortfolioAdvanced() {
             Case Studies
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Explore the software delivered, the decisions behind it, and the public evidence for each project.
+            From the original problem to the working system: architecture, development decisions, business procedures, financial controls and evidence from Malawi.
           </p>
-          <EditorialPhoto photo="workspace" className="mx-auto max-w-2xl text-left" eager />
+          <p className="text-sm text-muted-foreground">Each study separates source implementation, public interface evidence and verified operational results.</p>
         </div>
       </div>
 
@@ -83,7 +84,8 @@ export default function PortfolioAdvanced() {
             <Search className="absolute left-4 h-5 w-5 text-primary" />
             <Input
               type="search"
-              placeholder="Search case studies by title, evidence summary, or technology..."
+              aria-label="Search case studies"
+              placeholder="Search a project, problem, sector or technology…"
               className="pl-12 h-12 bg-card/50 border-primary/30 focus:ring-primary/50"
               value={searchQuery}
               onChange={(e) => {
@@ -146,9 +148,12 @@ export default function PortfolioAdvanced() {
           <div className="text-center py-12">
             <div className="inline-block animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
           </div>
+        ) : isError ? (
+          <div className="py-12 text-center" role="alert"><p className="text-muted-foreground">Case studies are temporarily unavailable.</p><Button variant="outline" className="mt-4" onClick={()=>refetch()}>Try again</Button></div>
         ) : projects.length > 0 ? (
           <>
-            <PortfolioShowcase projects={projects} />
+            <p className="text-center text-sm text-muted-foreground" aria-live="polite">Showing {projects.length} of {searchResults?.pagination.total ?? projects.length} matching case studies</p>
+            <PortfolioShowcase projects={projects} showFilters={false} />
 
             {/* Pagination */}
             {searchResults?.pagination && searchResults.pagination.totalPages > 1 && (

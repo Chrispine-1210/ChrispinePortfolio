@@ -1,0 +1,13 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> rest-express@1.0.0 test
+> vitest run --config vitest.config.ts
+
+
+ RUN  v4.1.12 /workspace/scratch/0192717838ca/portfolio
+
+
+ Test Files  8 passed (8)
+      Tests  86 passed (86)
+   Start at  09:49:37
+   Duration  14.58s (transform 2.27s, setup 0ms, import 2.98s, tests 32.12s, environment 1ms)

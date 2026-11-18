@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, Terminal, Github, Briefcase, FileText, User, Home, Phone, BookOpen, X, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { preloadPublicRoute } from "@/lib/routePreload";
 import profileImage from "@assets/portfolio_photos/chrispine-profile-headshot.png";
 
 const navItems = [
   { label: "Home", path: "/", icon: Home },
   { label: "Work", path: "/portfolio", icon: Briefcase },
-  { label: "Writing", path: "/blog", icon: BookOpen },
+  { label: "Journey", path: "/journey", icon: BookOpen },
+  { label: "Writing", path: "/blog", icon: FileText },
   { label: "GitHub", path: "/github", icon: Github },
   { label: "About", path: "/about", icon: User },
   { label: "Services", path: "/hire", icon: FileText },
@@ -20,6 +22,7 @@ export function Navigation() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const journalSurface = location.startsWith("/journey");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -40,7 +43,7 @@ export function Navigation() {
           : "border-b border-transparent py-0"
       }`}
       style={{
-        background: scrolled
+        background: journalSurface ? "#142b24" : scrolled
           ? "rgba(9, 10, 20, 0.85)"
           : "transparent",
         backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
@@ -81,9 +84,9 @@ export function Navigation() {
             {navItems.map((item) => {
               const active = isActive(item.path);
               return (
-                <Link key={item.path} href={item.path}>
+                <Link key={item.path} href={item.path} onPointerEnter={()=>preloadPublicRoute(item.path)} onFocus={()=>preloadPublicRoute(item.path)}>
                   <motion.span
-                    className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium cursor-pointer transition-all duration-200 ${
+                    className={`relative flex items-center gap-1.5 px-2 py-2 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-200 ${
                       active
                         ? "text-white"
                         : "text-white/50 hover:text-white/80"
@@ -185,7 +188,7 @@ export function Navigation() {
                     const active = isActive(item.path);
                     const Icon = item.icon;
                     return (
-                      <Link key={item.path} href={item.path}>
+                      <Link key={item.path} href={item.path} onPointerEnter={()=>preloadPublicRoute(item.path)} onFocus={()=>preloadPublicRoute(item.path)}>
                         <motion.div
                           onClick={() => setMobileMenuOpen(false)}
                           className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${

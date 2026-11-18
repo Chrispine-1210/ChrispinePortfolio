@@ -1,329 +1,64 @@
 import { useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import ReactMarkdown from "react-markdown";
+import { ArrowLeft, ArrowUpRight, Camera, Github, ShieldCheck } from "lucide-react";
 import { setSEO } from "@/lib/seoHelper";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Github, Terminal, Cpu, Zap, Activity, ShieldCheck } from "lucide-react";
-import { motion } from "framer-motion";
 import { CaseStudyCover } from "@/components/CaseStudyCover";
 import type { PublicPortfolioProject } from "@shared/schema";
 
+function Editorial({ text }: { text: string }) {
+  return <div className="prose prose-invert max-w-none prose-headings:tracking-tight prose-h3:text-xl prose-p:leading-relaxed prose-a:text-blue-300 prose-img:rounded-xl prose-pre:whitespace-pre-wrap prose-pre:break-words">
+    <ReactMarkdown components={{
+      a: ({ children, href }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}</a>,
+      img: ({ src, alt }) => <img src={src} alt={alt ?? "Project architecture"} loading="lazy" decoding="async" />,
+    }}>{text}</ReactMarkdown>
+  </div>;
+}
+
 export default function PortfolioDetail() {
   const { slug } = useParams();
-
-  const { data: project, isLoading } = useQuery<PublicPortfolioProject>({
-    queryKey: ["/api/portfolio", slug],
-  });
-
+  const { data: project, isLoading, error } = useQuery<PublicPortfolioProject>({ queryKey: ["/api/portfolio", slug] });
   useEffect(() => {
-    if (project) {
-      setSEO(
-        `${project.title} | Portfolio | Chrispine Mndala`,
-        project.description,
-        `/portfolio/${project.slug}`
-      );
-    }
+    if (project) setSEO(`${project.title} | Chrispine Mndala`, project.description, `/portfolio/${project.slug}`);
   }, [project]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen pt-32 bg-[#0a0c14] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-          <span className="font-mono text-primary animate-pulse text-sm">FETCHING_DATA_NODES...</span>
+  if (isLoading) return <div className="min-h-[65vh] pt-40 text-center" role="status">Loading case study…</div>;
+  if (!project) return <div className="min-h-[65vh] px-6 pt-40 text-center"><h1 className="text-3xl font-semibold">{error ? "Case study unavailable" : "Case study not found"}</h1><p className="mt-4 text-muted-foreground">{error ? "Please try again. Only published, approved records are available." : "This record may be private or under review."}</p><Button asChild variant="outline" className="mt-6"><Link href="/portfolio">Back to portfolio</Link></Button></div>;
+  const d = project.dossier;
+  const sections = [
+    { id: "problem", title: "The problem & why it matters", text: project.challenge },
+    { id: "objectives", title: "Objectives & acceptance criteria", text: d?.objectives },
+    { id: "context", title: "Malawi context & constraints", text: d?.constraints },
+    { id: "delivery", title: "Features, decisions & business operations", text: project.solution },
+    { id: "architecture", title: "Architecture, data & algorithms", text: d?.architecture },
+    { id: "integrations", title: "Integrations & communications", text: d?.integrations },
+    { id: "security", title: "Security & data responsibility", text: d?.securityControls },
+    { id: "process", title: "Development process & challenges", text: d?.timeline },
+    { id: "role", title: "My contribution & collaboration", text: [d?.roleDescription, d?.teamDescription].filter(Boolean).join("\n\n") },
+    { id: "results", title: "Results, financial value & evidence", text: project.outcome },
+    { id: "lessons", title: "Lessons & trade-offs", text: d?.lessons },
+    { id: "next", title: "Open questions & next phase", text: d?.nextPhase },
+  ].filter((section) => Boolean(section.text));
+  return <article className="min-h-screen bg-[#0a0c14] pb-24 pt-28 text-white">
+    <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <Link href="/portfolio" className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white" data-testid="button-back-to-portfolio"><ArrowLeft className="h-4 w-4" /> All case studies</Link>
+      <header className="mb-10 mt-10 grid gap-8 lg:grid-cols-[1fr_280px]">
+        <div><p className="mb-5 text-xs uppercase tracking-[0.22em] text-blue-300">{project.category} / Development case study</p><h1 className="max-w-4xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl" data-testid="text-project-title">{project.title}</h1><p className="mt-6 max-w-3xl text-lg leading-relaxed text-white/60" data-testid="text-project-description">{project.description}</p><div className="mt-7 flex flex-wrap gap-3">
+          {project.liveUrl && <Button asChild data-testid="button-view-live"><a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Open public surface <ArrowUpRight className="ml-2 h-4 w-4" /></a></Button>}
+          {project.githubUrl && <Button asChild variant="outline" data-testid="button-view-github"><a href={project.githubUrl} target="_blank" rel="noopener noreferrer"><Github className="mr-2 h-4 w-4" /> Source repository</a></Button>}
+        </div></div>
+        <aside className="self-start rounded-2xl border border-white/10 bg-white/[0.025] p-6"><h2 className="text-xs uppercase tracking-widest text-white/45">Implementation stack</h2><div className="mt-5 flex flex-wrap gap-2">{(project.techStack ?? []).map(tech => <span key={tech} className="rounded-md border border-white/10 px-2.5 py-1.5 text-xs text-white/80">{tech}</span>)}</div><p className="mt-6 border-t border-white/10 pt-4 text-xs leading-relaxed text-white/45">A public page, source implementation and production operation are different evidence states. Read the results and limitations below.</p></aside>
+      </header>
+      <CaseStudyCover project={project} className="mb-8 rounded-2xl border border-white/10" />
+      {(project.images ?? []).length > 0 && <section aria-labelledby="screenshots-title" className="mb-14 rounded-2xl border border-white/10 p-5 sm:p-7"><h2 id="screenshots-title" className="flex items-center gap-2 text-lg font-semibold"><Camera className="h-5 w-5 text-blue-300" /> Interface evidence</h2><p className="mt-2 text-sm leading-relaxed text-white/50">Actual browser captures, dated in each filename. Click to inspect the original. Sample data and release limitations remain described in the study.</p><div className="mt-5 grid gap-5 sm:grid-cols-2">{project.images?.map((src, i) => <figure key={src}><a href={src} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-300"><img src={src} alt={`${project.title} — interface capture ${i + 1}`} loading="lazy" decoding="async" className="aspect-[16/10] w-full object-cover object-top transition-transform duration-300 hover:scale-[1.02]" /></a><figcaption className="mt-2 break-words text-xs text-white/45">{decodeURIComponent(src.split("/").pop() ?? `Interface ${i + 1}`).replace(/\.jpg$/i, "").replaceAll("-", " ")}</figcaption></figure>)}</div></section>}
+      <div className="grid items-start gap-10 lg:grid-cols-[230px_minmax(0,1fr)]">
+        <nav aria-label="Case study contents" className="lg:sticky lg:top-24"><p className="mb-4 text-xs uppercase tracking-widest text-white/35">Inside this case study</p><ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">{sections.map((s,i)=><li key={s.id}><a href={`#${s.id}`} className="flex gap-3 text-sm leading-relaxed text-white/55 hover:text-blue-300"><span className="font-mono text-xs text-blue-300/60">{String(i+1).padStart(2,"0")}</span>{s.title}</a></li>)}</ol><a href="#evidence" className="mt-5 inline-flex items-center gap-2 text-sm text-emerald-300"><ShieldCheck className="h-4 w-4" /> Verification record</a><button type="button" onClick={()=>window.print()} className="mt-6 block text-xs text-white/45 underline underline-offset-4 print:hidden">Print / save case study as PDF</button></nav>
+        <div className="min-w-0 space-y-12">{sections.map((s,i)=><section key={s.id} id={s.id} className="scroll-mt-24 border-t border-white/10 pt-8"><p className="mb-3 font-mono text-xs text-blue-300/60">{String(i+1).padStart(2,"0")} / THE DEVELOPMENT RECORD</p><h2 className="mb-6 text-2xl font-semibold tracking-tight sm:text-3xl">{s.title}</h2><Editorial text={s.text!}/></section>)}
+          <section id="evidence" className="scroll-mt-24 rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.035] p-6 sm:p-8"><h2 className="flex items-center gap-3 text-2xl font-semibold"><ShieldCheck className="h-6 w-6 text-emerald-300"/> Verification record</h2><p className="mt-3 text-sm leading-relaxed text-white/50">Claims below passed the portfolio’s disclosure gate. Internal review establishes the stated scope; it does not certify client adoption, financial returns or regulatory compliance.</p><div className="mt-6 space-y-4">{project.evidence.map(item=><div key={item.id} className="border-t border-white/10 pt-4"><p className="text-xs uppercase tracking-wider text-emerald-300">{item.verificationStatus==="externally_verified"?"Externally verified":"Internally reviewed"} · {item.sourceType.replaceAll("_"," ")}</p><p className="mt-2 text-sm leading-relaxed text-white/75">{item.claim}</p>{item.verifiedAt&&<p className="mt-2 text-xs text-white/40">Reviewed {new Date(item.verifiedAt).toLocaleDateString("en-GB",{timeZone:"Africa/Blantyre"})}</p>}</div>)}</div></section>
+          <div className="rounded-2xl border border-white/10 p-7 print:hidden"><h2 className="text-xl font-semibold">Have a similar operational problem?</h2><p className="mb-5 mt-2 text-sm text-white/55">Start with the workflow, the commercial constraint and the evidence needed for a useful result.</p><Button asChild><Link href="/hire">Discuss your project <ArrowUpRight className="ml-2 h-4 w-4"/></Link></Button></div>
         </div>
-      </div>
-    );
-  }
-
-  if (!project) {
-    return (
-      <div className="min-h-screen pt-32 bg-[#0a0c14] flex flex-col items-center justify-center">
-        <Terminal className="h-16 w-16 text-primary mb-6 opacity-20" />
-        <h1 className="text-4xl font-black text-white mb-4 uppercase tracking-tighter">ERROR_404: NODE_NOT_FOUND</h1>
-        <Button variant="outline" className="rounded-none border-primary/50 text-primary uppercase font-mono" asChild>
-          <Link href="/portfolio">RETURN_TO_REPOSITORY</Link>
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen pt-24 pb-20 bg-[#0a0c14] relative overflow-hidden">
-      <div className="tech-grid-bg opacity-20" />
-      
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="mb-8"
-        >
-          <Button variant="ghost" asChild className="text-primary hover:text-white hover:bg-primary/10 rounded-none font-mono text-xs uppercase" data-testid="button-back-to-portfolio">
-            <Link href="/portfolio">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Case Studies
-            </Link>
-          </Button>
-        </motion.div>
-
-        {/* Header Section */}
-        <div className="grid lg:grid-cols-5 gap-12 mb-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-3 space-y-6"
-          >
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="bg-primary text-white px-3 py-1 text-[10px] font-mono font-black uppercase shadow-[0_0_10px_rgba(59,130,246,0.5)]">
-                {project.category}
-              </div>
-              {project.featured && (
-                <div className="border border-primary/50 text-primary px-3 py-1 text-[10px] font-mono uppercase">
-                  Featured
-                </div>
-              )}
-            </div>
-            
-            <h1 className="text-5xl sm:text-7xl font-black text-white mb-4 uppercase tracking-tighter leading-none" data-testid="text-project-title">
-              {project.title}
-            </h1>
-
-            <p className="text-xl text-muted-foreground font-mono leading-relaxed opacity-80" data-testid="text-project-description">
-              {project.description}
-            </p>
-
-            <div className="flex flex-wrap gap-4 pt-4">
-              {project.liveUrl && (
-                <Button className="bg-primary text-white rounded-none h-12 px-8 font-mono text-xs uppercase shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all" asChild data-testid="button-view-live">
-                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    VIEW LIVE SYSTEM
-                  </a>
-                </Button>
-              )}
-              {project.githubUrl && (
-                <Button variant="outline" className="border-white/20 text-white rounded-none h-12 px-8 font-mono text-xs uppercase hover:bg-white/5" asChild data-testid="button-view-github">
-                  <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                    <Github className="mr-2 h-4 w-4" />
-                    SOURCE CODE
-                  </a>
-                </Button>
-              )}
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="lg:col-span-2"
-          >
-            <div className="tech-card p-6 border-primary/20">
-              <h3 className="font-mono text-primary text-xs font-bold mb-6 uppercase tracking-widest border-b border-primary/20 pb-2">
-                SYSTEM ARCHITECTURE
-              </h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                  <span className="font-mono text-[10px] text-muted-foreground uppercase">Release state</span>
-                  <span className="font-mono text-[10px] text-white uppercase">{project.liveUrl ? "Public endpoint" : "Draft / controlled"}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-white/5">
-                  <span className="font-mono text-[10px] text-muted-foreground uppercase">Evidence model</span>
-                  <span className="font-mono text-[10px] text-white uppercase text-right">Inspectable scope</span>
-                </div>
-                <div>
-                  <span className="font-mono text-[10px] text-muted-foreground uppercase block mb-3">Technology Stack</span>
-                  <div className="flex flex-wrap gap-2">
-                    {(project.techStack || []).map((tech, idx) => (
-                      <div key={idx} className="bg-white/5 border border-white/10 px-2 py-1 text-[9px] font-mono text-primary/70 uppercase">
-                        {tech}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        <CaseStudyCover project={project} className="mb-16 rounded-2xl border border-white/10" />
-
-        {/* Executive Case Study Format */}
-        <div className="space-y-16 mb-16">
-          {/* 1. Business Challenge */}
-          {project.challenge && (
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="tech-card p-8 lg:p-12 bg-card/30"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-red-500/10 flex items-center justify-center">
-                  <Cpu className="text-red-400 w-6 h-6" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono text-red-400 uppercase tracking-widest">01 // Problem Definition</span>
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Business Challenge</h3>
-                </div>
-              </div>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground leading-relaxed text-lg">{project.challenge}</p>
-              </div>
-            </motion.section>
-          )}
-
-          {/* 2. Strategic Solution */}
-          {project.solution && (
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="tech-card p-8 lg:p-12 bg-card/30"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-primary/10 flex items-center justify-center">
-                  <Zap className="text-primary w-6 h-6" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono text-primary uppercase tracking-widest">02 // Strategic Response</span>
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Strategic Solution</h3>
-                </div>
-              </div>
-              <div className="prose prose-invert max-w-none">
-                <div className="text-muted-foreground leading-relaxed whitespace-pre-line">{project.solution}</div>
-              </div>
-            </motion.section>
-          )}
-
-          {/* 3. Published Technology Evidence */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="tech-card p-8 lg:p-12 bg-card/30"
-          >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 bg-emerald-500/10 flex items-center justify-center">
-                <Terminal className="text-emerald-400 w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">03 // Published Evidence</span>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Technology Scope</h3>
-              </div>
-            </div>
-            <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
-              Only technologies included in the approved case-study record are shown here. Architecture,
-              security, operational, and performance claims are not inferred from the technology list.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(project.techStack || []).map((technology) => (
-                <span key={technology} className="border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs font-mono text-emerald-300">
-                  {technology}
-                </span>
-              ))}
-            </div>
-          </motion.section>
-
-          {/* 4. Approved Evidence */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="tech-card p-8 lg:p-12 bg-emerald-500/[0.04] border-emerald-500/20"
-          >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 bg-emerald-500/10 flex items-center justify-center">
-                <ShieldCheck className="text-emerald-400 w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">04 // Verification Record</span>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Approved Public Evidence</h3>
-              </div>
-            </div>
-            {project.evidence.length > 0 ? (
-              <div className="space-y-4">
-                {project.evidence.map((item) => (
-                  <div key={item.id} className="rounded-xl border border-white/10 bg-black/20 p-5">
-                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="border-emerald-500/30 text-emerald-300">
-                        {item.verificationStatus === "externally_verified" ? "Externally verified" : "Internally verified"}
-                      </Badge>
-                      <span className="text-[10px] font-mono uppercase text-white/40">{item.sourceType.replace(/_/g, " ")}</span>
-                      <span className="text-[10px] font-mono uppercase text-white/40">{item.claimType.replace(/_/g, " ")}</span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-white/75">{item.claim}</p>
-                    {item.verifiedAt && (
-                      <p className="mt-3 text-[10px] font-mono uppercase text-white/35">
-                        Verified {new Date(item.verifiedAt).toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "2-digit" })}
-                      </p>
-                    )}
-                  </div>
-                ))}
-                <p className="text-xs leading-relaxed text-white/40">
-                  Only evidence explicitly approved for public disclosure is shown. Private references, internal notes, rejected evidence, and withdrawn evidence remain excluded.
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                This published case study has passed its evidence gate, but no individual evidence item is exposed in the public projection.
-              </p>
-            )}
-          </motion.section>
-
-          {/* 5. Business Impact */}
-          {project.outcome && (
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="tech-card p-8 lg:p-12 bg-primary/5 border-primary/20"
-            >
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 bg-primary/20 flex items-center justify-center">
-                  <Activity className="text-primary w-6 h-6" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono text-primary uppercase tracking-widest">05 // Evidence Status</span>
-                  <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Release and Evidence Boundary</h3>
-                </div>
-              </div>
-              <div className="prose prose-invert max-w-none">
-                <p className="text-muted-foreground leading-relaxed text-lg">{project.outcome}</p>
-              </div>
-            </motion.section>
-          )}
-
-        </div>
-
-        {/* Gallery Grid */}
-        {project.images && project.images.length > 0 && (
-          <div className="space-y-8">
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
-              <span className="text-primary mr-4">{"//"}</span>
-              VISUAL_DOCUMENTATION
-            </h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {project.images.map((image, idx) => (
-                <motion.div
-                  key={idx}
-                  whileHover={{ scale: 1.02 }}
-                  className="tech-card aspect-video border-white/5 overflow-hidden"
-                >
-                  <img
-                    src={image}
-                    alt={`${project.title} - Node ${idx + 1}`}
-                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                    data-testid={`img-gallery-${idx}`}
-                  />
-                  <div className="scanline" style={{ animationDelay: `${idx * 0.5}s` }} />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
-  );
+  </article>;
 }

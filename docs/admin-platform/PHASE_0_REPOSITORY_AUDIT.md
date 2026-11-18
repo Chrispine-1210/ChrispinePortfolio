@@ -21,7 +21,7 @@ Phase 1 must begin with authorization, session security, schema migrations, audi
 | TypeScript | Fail | 45 compiler errors across client models, query results, null handling, target configuration and services |
 | Automated tests | Missing | No `test`, integration, E2E, accessibility or security test script exists |
 | Dependency audit | Fail | 13 vulnerable dependency entries: 9 high and 4 moderate |
-| Replit removal | Pass | No Replit reference found in tracked application files or configuration |
+| Hosting independence | Pass | No legacy host-specific reference found in tracked application files or configuration |
 | Local runtime environment | Not reproducible as invoked | Required database/auth/Stripe variables are not present in this shell; production variables are managed separately in Vercel |
 
 Build warnings are also material: the primary JavaScript bundle is about 1.59 MB before gzip (about 505 KB gzip), two PNG assets are roughly 1.39 MB and 1.49 MB, and browser compatibility data is stale.

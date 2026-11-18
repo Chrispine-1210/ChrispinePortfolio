@@ -8,3 +8,8 @@ vite.config.ts.*
 .env
 .env.*
 !.env.example
+
+# Local-only generated QA bundles; source fixtures are tracked under scripts/qa.
+.qa-preview/
+__pycache__/
+*.pyc

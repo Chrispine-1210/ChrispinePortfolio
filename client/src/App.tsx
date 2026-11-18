@@ -16,6 +16,8 @@ const Login = lazy(() => import("@/pages/Login"));
 const Portfolio = lazy(() => import("@/pages/Portfolio"));
 const PortfolioAdvanced = lazy(() => import("@/pages/PortfolioAdvanced"));
 const PortfolioDetail = lazy(() => import("@/pages/PortfolioDetail"));
+const EngineeringJourney = lazy(() => import("@/pages/EngineeringJourney"));
+const EngineeringWorkspace = lazy(() => import("@/pages/admin/EngineeringWorkspace"));
 const Blog = lazy(() => import("@/pages/Blog"));
 const BlogPost = lazy(() => import("@/pages/BlogPost"));
 const About = lazy(() => import("@/pages/About"));
@@ -82,6 +84,8 @@ function Router() {
         <Switch>
           <Route path="/" component={Landing} />
           <Route path="/portfolio" component={PortfolioAdvanced} />
+          <Route path="/journey/:slug" component={EngineeringJourney} />
+          <Route path="/journey" component={EngineeringJourney} />
           <Route path="/portfolio/:slug" component={PortfolioDetail} />
           <Route path="/blog" component={Blog} />
           <Route path="/blog/:slug" component={BlogPost} />
@@ -100,6 +104,7 @@ function Router() {
           <Route path="/admin/audience"><AdminProtectedRoute component={AudienceManagement} /></Route>
           <Route path="/admin/content"><AdminProtectedRoute component={ContentManagement} /></Route>
           <Route path="/admin/portfolio"><AdminProtectedRoute component={CaseStudyManagement} /></Route>
+          <Route path="/admin/workspace"><AdminProtectedRoute component={EngineeringWorkspace} /></Route>
           <Route path="/admin/projects"><AdminProtectedRoute component={ProjectManagement} /></Route>
           <Route path="/admin/case-studies"><AdminProtectedRoute component={CaseStudyManagement} /></Route>
           <Route path="/admin/pipeline"><AdminProtectedRoute component={LeadPipeline} /></Route>

@@ -1,4 +1,4 @@
-import express, { type Request, type Response, type NextFunction } from "express";
+import express from "express";
 import { setupAuthRoutes } from "./custom-auth.js";
 import { analyticsMiddleware } from "./analytics.js";
 import { setupAnalyticsRoutes } from "./api-analytics.js";
@@ -19,8 +19,14 @@ import { createRevenueIntelligenceRouter } from "./revenue/routes.js";
 import { createCapitalOperatingRouter } from "./capital/routes.js";
 import { createTreasuryRoicRouter } from "./treasury/routes.js";
 
+import { createEngineeringRouter } from "./engineering/routes.js";
+import { requestContext, safeApiError } from "./security/http-boundary.js";
+
 export function createApp() {
   const app = express();
+  app.disable("x-powered-by");
+  app.use(requestContext);
+  app.use(securityHeaders);
 
   app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
   setupPostmarkWebhookRoute(app);
@@ -32,7 +38,6 @@ export function createApp() {
   }));
   app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 
-  app.use(securityHeaders);
   app.use(requestLogger);
   app.use(analyticsMiddleware);
 
@@ -70,16 +75,13 @@ export function createApp() {
   app.use(createRevenueIntelligenceRouter());
   app.use(createCapitalOperatingRouter());
   app.use(createTreasuryRoicRouter());
+  app.use(createEngineeringRouter());
   app.use(createEmailRouter());
   app.use(createNotificationRouter());
   app.use(createTwilioWebhookRouter());
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    console.error("Server error:", err);
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-    res.status(status).json({ message });
-  });
+  app.use("/api", (_req, res) => res.status(404).json({ message: "API route not found" }));
+  app.use(safeApiError);
 
   return app;
 }

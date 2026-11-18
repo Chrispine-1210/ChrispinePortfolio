@@ -1,5 +1,5 @@
 {
-  "name": "rest-express",
+  "name": "chrispine-portfolio",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -14,7 +14,8 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:push": "drizzle-kit push",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
-    "verify:release": "npm run check && npm test && npm run build && npm audit --omit=dev --audit-level=high && npm audit --audit-level=high"
+    "verify:release": "npm run check && npm test && npm run build && npm audit --omit=dev --audit-level=high && npm audit --audit-level=high",
+    "preview:engineering:qa": "node scripts/qa/engineering-preview.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.2",
@@ -115,5 +116,15 @@
   "overrides": {
     "lodash": "4.18.1",
     "path-to-regexp": "0.1.13"
-  }
+  },
+  "private": true,
+  "author": {
+    "name": "Chrispine Mndala",
+    "url": "https://chrispine-portfolio.vercel.app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Chrispine-1210/ChrispinePortfolio.git"
+  },
+  "homepage": "https://chrispine-portfolio.vercel.app"
 }
