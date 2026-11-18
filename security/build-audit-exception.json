@@ -1,10 +1,10 @@
 {
-  "status": "proposed",
+  "status": "approved",
   "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
   "scope": "development-only dependencies; no production exception",
-  "reason": "The CSS plugin has been reclassified as build tooling and development-server imports removed from the production server. The remaining advisory is not patched upstream. Acceptance is a separate owner decision.",
+  "reason": "Explicit owner approval in ChatGPT on 18 November 2026 for the bounded development-only exception. Production findings and other high/critical advisories remain blocking.",
   "lockSha256": "cbdc38dc64a7db6fb43ab56fbca918c18caaf0f09677e7cae75ab5531ab7abcd",
-  "approvedBy": null,
-  "approvedAt": null,
+  "approvedBy": "Chrispine Mndala — portfolio owner",
+  "approvedAt": "2026-11-18T14:30:12Z",
   "expiresAt": "2026-11-25T00:00:00.000Z"
 }

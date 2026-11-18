@@ -1,4 +1,4 @@
-# Deployment audit recovery — proposed release decision
+# Deployment audit recovery — owner-approved bounded exception
 
 18 November 2026, Africa/Blantyre. Base production-source commit: `9c6251d92fd15eaf118ea2b18449798219442646`.
 
@@ -17,12 +17,12 @@ The supplied Vercel log shows TypeScript PASS, 86 tests PASS and bundle generati
 | Check | Result |
 | --- | --- |
 | TypeScript | PASS |
-| Tests | PASS: 94 tests, 9 files |
+| Tests | PASS: 97 tests, 10 files |
 | Frontend/server build | PASS |
 | Production runtime import graph | PASS; no development-only external packages |
 | Strict `npm audit --omit=dev --audit-level=high` | PASS; zero vulnerabilities |
 | Full audit | 13 high and 6 moderate, all development-only after reclassification |
-| Proposed policy with no approval | FAIL as intended; release remains blocked |
+| Unapproved-policy negative tests | PASS: unapproved, expired and altered-lock decisions are rejected |
 | In-memory approval simulation | PASS for the one advisory's 13 development-package paths; no active policy file changed |
 | Isolated QA bundle | PASS |
 
@@ -30,15 +30,19 @@ The high findings all trace to [GHSA-fc5q-39xc-vjpf](https://github.com/advisori
 
 Audit findings describe known dependency reports, not a penetration-test certification. Reclassifying a build tool does not patch the library. Build-time exposure remains: a malicious or untrusted glob processed by tooling could deny service to the build/test process. Keep repository write access controlled, run tests/builds from reviewed source, and do not process request-supplied glob patterns through development tooling.
 
-## Concrete approval requested
+## Owner approval recorded
 
-The proposal is in `security/build-audit-exception.json`, currently **`status: proposed`**, with `approvedBy` and `approvedAt` unset. It applies only to the specific advisory and the exact SHA-256 of the reviewed lockfile. Its fixed expiry is **25 November 2026 at 02:00 Africa/Blantyre**. Runtime high/critical findings and every other high/critical advisory remain blocking. Moderate findings retain the prior high-threshold treatment and remain visible in the audit report.
+The owner explicitly approved the bounded exception in ChatGPT on 18 November 2026. `security/build-audit-exception.json` now records `status: approved`, the owner's name and the acceptance time. The fixed expiry remains **25 November 2026 at 02:00 Africa/Blantyre**. The advisory, strictly development-only scope and lockfile digest are unchanged. Runtime findings and every other high/critical advisory remain blocking. GitHub workflows have not been modified or manually rerun.
 
-Owner approval is required because this would accept a known residual build-time security risk; it is not a patched release or a clean full audit. Approval would authorize recording the owner's acceptance, integrating this bounded release-policy change and continuing the deployment-readiness work. It does not authorize deleting data, changing GitHub workflows, waiving database recovery requirements or activating unverified financial operations.
+The earlier proposed-policy evidence and synthetic approval simulation record the pre-approval boundary. The current complete release check is captured separately in `verification/approved-release.log`.
 
-Until explicit approval, this branch must remain unmerged and the exception must remain inactive. The strict production-dependency classification fix is valid independently, but the full release gate cannot pass with the proposed exception unapproved. The real production domain remains on its previous READY deployment.
+A production snapshot was created before migration: `snap-fragrant-dream-bbspabwq`. A non-finalizing Neon snapshot restore was refused by the branch limit; no branch was deleted, reset or replaced. A separate consistent export of all 43 public tables was saved privately and restored into a fresh PGlite/PostgreSQL-compatible target. All 246 row counts and data digests matched, foreign keys validated, and migration 0011 passed twice there. This is an independent data restore test, not a successful Neon-native snapshot restore. See `verification/production-restore.json`.
 
-After approval, recheck the exact lock, repeat affected gates, confirm an independently recoverable production migration path for engineering schema 0011, deploy the exact reviewed source and verify public and authenticated journeys. An expired exception blocks the next build; it cannot recall a deployment already serving traffic. Remove the exception and return to an entirely clean audit as soon as an upstream patch or otherwise reviewed remediation is available.
+After that proof, the additive migration 0011 was applied to the production branch. Postconditions: four engineering tables, three permissions, four history/identity triggers and zero seeded engineering records. Existing operational and financial records were not rewritten. The application's public case ID was matched to the intended database before migration.
+
+The production write origin is configured explicitly as `https://chrispine-portfolio.vercel.app`. Preview uses a separate review database, database authentication and an independent throttle pepper. A narrowly validated origin fallback accepts only the Preview hostname supplied by Vercel's server environment; production still requires an explicit origin, and request headers cannot provide this fallback. See the official [system-environment reference](https://vercel.com/docs/environment-variables/system-environment-variables).
+
+For activation, recheck the exact lock, repeat affected gates, confirm an independently recoverable production migration path for engineering schema 0011, deploy the exact reviewed source and verify public and authenticated journeys. An expired exception blocks the next build; it cannot recall a deployment already serving traffic. Remove the exception and return to an entirely clean audit as soon as an upstream patch or otherwise reviewed remediation is available.
 
 Evidence is in `verification/`, including the provider-log excerpt, production import graph, tests, strict production audit, unchanged package-version evidence, full report and the explicitly synthetic approval simulation. Original logs remain the user's supplied attachment; no credentials or client financial records are copied into this evidence.
 
