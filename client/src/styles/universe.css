@@ -1,0 +1,250 @@
+/* One identity: paper for the story, forest for the controls, clay and gold for emphasis.
+   Public and private surfaces share type, spacing, borders and interaction states.
+   Functional status colours retain their meaning. */
+:root {
+  --background: 156 24% 7%;
+  --foreground: 70 21% 92%;
+  --surface-1: 157 22% 10%;
+  --surface-2: 156 20% 13%;
+  --surface-3: 156 18% 17%;
+  --card: 157 22% 10%;
+  --card-foreground: 70 21% 92%;
+  --card-border: 152 13% 23%;
+  --popover: 157 22% 10%;
+  --popover-foreground: 70 21% 92%;
+  --popover-border: 152 13% 23%;
+  --primary: 44 48% 64%;
+  --primary-foreground: 154 30% 12%;
+  --primary-border: #b6a15c;
+  --muted: 156 17% 15%;
+  --muted-foreground: 100 10% 67%;
+  --secondary: 155 18% 16%;
+  --secondary-foreground: 70 21% 92%;
+  --secondary-border: #40584b;
+  --accent: 153 18% 19%;
+  --accent-foreground: 70 21% 92%;
+  --accent-border: #40584b;
+  --border: 153 12% 24%;
+  --input: 153 12% 29%;
+  --ring: 44 48% 64%;
+  --radius: 0.65rem;
+  --sidebar: 156 24% 9%;
+  --sidebar-foreground: 70 21% 92%;
+  --sidebar-border: 153 12% 24%;
+  --sidebar-primary: 44 48% 64%;
+  --sidebar-primary-foreground: 154 30% 12%;
+  --sidebar-accent: 153 18% 19%;
+  --sidebar-accent-foreground: 70 21% 92%;
+  --sidebar-ring: 44 48% 64%;
+}
+.public-universe {
+  --background: 43 28% 95%;
+  --foreground: 163 23% 15%;
+  --surface-1: 45 60% 99%;
+  --surface-2: 80 20% 92%;
+  --surface-3: 80 14% 86%;
+  --card: 45 60% 99%;
+  --card-foreground: 163 23% 15%;
+  --card-border: 85 12% 81%;
+  --popover: 45 60% 99%;
+  --popover-foreground: 163 23% 15%;
+  --primary: 155 28% 27%;
+  --primary-foreground: 50 50% 97%;
+  --primary-border: #355d4c;
+  --muted: 80 20% 92%;
+  --muted-foreground: 158 9% 35%;
+  --secondary: 80 20% 92%;
+  --secondary-foreground: 163 23% 15%;
+  --secondary-border: #d6dcd1;
+  --accent: 80 20% 92%;
+  --accent-foreground: 163 23% 15%;
+  --accent-border: #d6dcd1;
+  --border: 85 12% 81%;
+  --input: 115 10% 67%;
+  --ring: 155 28% 27%;
+  --button-outline: #bdc9bf;
+  --badge-outline: #d6dcd1;
+  --elevate-1: rgba(28, 50, 40, 0.04);
+  --elevate-2: rgba(28, 50, 40, 0.09);
+  background: #f6f4ef;
+  color: #1e302c;
+}
+.public-universe main {
+  background: #f6f4ef;
+}
+.public-universe main :is(h1, h2, h3) {
+  text-transform: none;
+  letter-spacing: -0.035em;
+  font-weight: 550;
+}
+.public-universe main :is(.tech-grid-bg, .grid-bg, .mesh-bg, .orb, .scanline) {
+  display: none;
+}
+.public-universe .tech-card {
+  background: #fffefb;
+  border: 1px solid #d6dcd1;
+  border-radius: 12px;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.public-universe .tech-card::before {
+  display: none;
+}
+.public-universe .gradient-text-primary {
+  background: none;
+  color: #355d4c;
+  -webkit-text-fill-color: currentColor;
+}
+.public-universe .prose-invert {
+  --tw-prose-body: #53635e;
+  --tw-prose-headings: #1e302c;
+  --tw-prose-links: #355d4c;
+  --tw-prose-bold: #1e302c;
+  --tw-prose-code: #355d4c;
+  --tw-prose-counters: #53635e;
+  --tw-prose-bullets: #8e9d8b;
+  --tw-prose-quotes: #355d4c;
+  --tw-prose-quote-borders: #b16635;
+  --tw-prose-hr: #d6dcd1;
+}
+.public-universe main > div:not(.editorial-page),
+.public-universe main > article {
+  background-color: #f6f4ef;
+}
+.public-universe main :is(input, textarea, select) {
+  border-radius: 8px;
+}
+.public-universe main :is(h1, h2, h3, p) {
+  overflow-wrap: break-word;
+}
+.public-universe main [id] {
+  scroll-margin-top: 90px;
+}
+.public-universe main :is(button, a):focus-visible {
+  outline: 3px solid #a96034;
+  outline-offset: 4px;
+}
+.universe-header {
+  --primary: 44 48% 64%;
+  --primary-foreground: 154 30% 12%;
+  --foreground: 70 21% 92%;
+}
+.universe-footer {
+  background: #142b24;
+  color: #eef0e8;
+  border-top: 1px solid #40584b;
+  padding: 54px 24px 24px;
+}
+.universe-footer-inner {
+  max-width: 1200px;
+  margin: auto;
+}
+.universe-footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 50px;
+}
+.universe-footer h2 {
+  font-size: 30px;
+  letter-spacing: -0.04em;
+  margin-bottom: 14px;
+}
+.universe-footer p {
+  font-size: 14px;
+  color: #c0cebd;
+  line-height: 1.8;
+  max-width: 420px;
+}
+.universe-footer h3 {
+  color: #d3be7b;
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 17px;
+}
+.universe-footer a {
+  font-size: 14px;
+  color: #e0e7dc;
+  text-underline-offset: 4px;
+}
+.universe-footer a:hover {
+  text-decoration: underline;
+}
+.universe-footer li {
+  margin-bottom: 9px;
+}
+.universe-footer-bottom {
+  border-top: 1px solid #40584b;
+  margin-top: 38px;
+  padding-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: space-between;
+  color: #c0cebd;
+  font-size: 12px;
+}
+.universe-principles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px;
+}
+.universe-principles article {
+  border-top: 2px solid #a96034;
+  padding-top: 20px;
+}
+.universe-principles h3 {
+  font-size: 22px;
+  margin: 15px 0 12px;
+}
+.universe-path {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+.universe-path a {
+  padding: 25px;
+  background: #e9ede4;
+  border-radius: 12px;
+  border: 1px solid #d6dcd1;
+}
+.universe-path h3 {
+  font-size: 22px;
+  margin: 12px 0;
+}
+.private-universe {
+  background: #0e1713;
+}
+.private-universe [data-admin-shell] {
+  background: #0e1713;
+}
+.private-universe [data-admin-sidebar] {
+  background: #142b24;
+}
+.private-universe [data-admin-header] {
+  background: rgba(14, 23, 19, 0.95);
+}
+@media (max-width: 640px) {
+  .universe-footer-grid,
+  .universe-principles,
+  .universe-path {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .universe-footer {
+    padding: 38px 20px 22px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-universe *,
+  .portfolio-universe *::before,
+  .portfolio-universe *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+.public-universe .prose-invert {
+  --tw-prose-pre-bg: #1e302c;
+  --tw-prose-pre-code: #e9eddf;
+}

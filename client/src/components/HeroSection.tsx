@@ -32,7 +32,9 @@ export function HeroSection({
       <div className="absolute inset-0 tech-grid-bg opacity-10" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
-        <div className={`grid ${image ? "lg:grid-cols-2" : "lg:grid-cols-1"} gap-12 items-center`}>
+        <div
+          className={`grid ${image ? "lg:grid-cols-2" : "lg:grid-cols-1"} gap-12 items-center`}
+        >
           {/* Content */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -42,11 +44,13 @@ export function HeroSection({
           >
             {subtitle && (
               <div className="inline-flex lg:inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/30 rounded-full w-fit mx-auto lg:mx-0">
-                <span className="text-sm font-mono text-primary font-bold">{subtitle}</span>
+                <span className="text-sm text-primary font-bold">
+                  {subtitle}
+                </span>
               </div>
             )}
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-white leading-tight tracking-tighter uppercase">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-foreground leading-tight tracking-tighter uppercase">
               {title}
             </h1>
 
@@ -56,7 +60,11 @@ export function HeroSection({
               </div>
             )}
 
-            {cta && <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">{cta}</div>}
+            {cta && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                {cta}
+              </div>
+            )}
 
             {children}
           </motion.div>
@@ -70,7 +78,11 @@ export function HeroSection({
               className="relative hidden lg:block"
             >
               <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 to-blue-600/20 rounded-2xl blur-3xl" />
-              <img src={image} alt="Hero" className="relative rounded-2xl border border-primary/30" />
+              <img
+                src={image}
+                alt="Hero"
+                className="relative rounded-2xl border border-primary/30"
+              />
             </motion.div>
           )}
         </div>

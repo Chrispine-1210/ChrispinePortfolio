@@ -4,16 +4,22 @@ import { cn } from "@/lib/utils";
 import type { PortfolioProject } from "@shared/schema";
 
 const editorialCovers = new Map([
-  ["mtendere-education-platform", {
-    src: educationCover,
-    alt: "Illustration of two colleagues reviewing a laptop in an education workspace",
-    isIllustration: true,
-  }],
-  ["aothothe-enterprise-os-commercial-foundation", {
-    src: operationsCover,
-    alt: "Illustration of a laptop and notebook on an operations workspace desk",
-    isIllustration: true,
-  }],
+  [
+    "mtendere-education-platform",
+    {
+      src: educationCover,
+      alt: "Illustration of two colleagues reviewing a laptop in an education workspace",
+      isIllustration: true,
+    },
+  ],
+  [
+    "aothothe-enterprise-os-commercial-foundation",
+    {
+      src: operationsCover,
+      alt: "Illustration of a laptop and notebook on an operations workspace desk",
+      isIllustration: true,
+    },
+  ],
 ]);
 
 interface CaseStudyCoverProps {
@@ -32,17 +38,21 @@ export function CaseStudyCover({ project, className }: CaseStudyCoverProps) {
   if (!cover) return null;
 
   return (
-    <figure className={cn("relative aspect-[8/5] overflow-hidden bg-card", className)}>
+    <figure
+      className={cn("relative aspect-[8/5] overflow-hidden bg-card", className)}
+    >
       <img
         src={cover.src}
         alt={cover.alt}
         loading="lazy"
         decoding="async"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-contain"
       />
       {(cover.isIllustration || cover.src.endsWith("-architecture.svg")) && (
         <figcaption className="absolute bottom-3 left-3 rounded-md bg-black/80 px-2.5 py-1 text-xs text-white">
-          {cover.isIllustration ? "AI-generated illustration" : "Architecture diagram · source review"}
+          {cover.isIllustration
+            ? "AI-generated illustration"
+            : "Architecture diagram · source review"}
         </figcaption>
       )}
     </figure>

@@ -189,7 +189,7 @@ function postureClass(value: Posture) {
   if (value === "selective") return "border-blue-500/30 bg-blue-500/10 text-blue-300";
   if (value === "preserve_liquidity") return "border-amber-500/30 bg-amber-500/10 text-amber-300";
   if (value === "preserve_capital") return "border-red-500/30 bg-red-500/10 text-red-300";
-  return "border-white/10 bg-white/[0.03] text-white/45";
+  return "border-white/10 bg-white/[0.03] text-white/60";
 }
 
 export default function TreasuryRoic() {
@@ -394,7 +394,7 @@ export default function TreasuryRoic() {
               <h2 className="mt-2 max-w-4xl text-2xl font-black tracking-tight">
                 Cash liquidity → NOPAT → invested capital → ROIC → value-creation spread → governed deployment
               </h2>
-              <p className="mt-2 max-w-4xl text-xs leading-5 text-white/35">
+              <p className="mt-2 max-w-4xl text-xs leading-5 text-white/60">
                 Treasury cash, accounting profitability and invested capital remain separate evidence systems.
                 No currency conversion, tax rate, cost of capital or missing expense is assumed.
               </p>
@@ -432,7 +432,7 @@ export default function TreasuryRoic() {
                   ? "—"
                   : `${primaryRunway.runwayMonths.toFixed(2)} mo`}
               </p>
-              <p className="mt-1 text-xs text-white/35">{primaryRunway?.currency ?? "No complete cash evidence"}</p>
+              <p className="mt-1 text-xs text-white/60">{primaryRunway?.currency ?? "No complete cash evidence"}</p>
             </CardContent>
           </Card>
 
@@ -443,7 +443,7 @@ export default function TreasuryRoic() {
                 <span className="text-[10px] uppercase tracking-wider text-white/30">TTM ROIC</span>
               </div>
               <p className="mt-4 text-2xl font-black">{pct(primaryRoic?.currentTtm.roicPct ?? null)}</p>
-              <p className="mt-1 text-xs text-white/35">
+              <p className="mt-1 text-xs text-white/60">
                 hurdle {pct(primaryRoic?.hurdle?.annualHurdleRatePct ?? null)}
               </p>
             </CardContent>
@@ -456,7 +456,7 @@ export default function TreasuryRoic() {
                 <span className="text-[10px] uppercase tracking-wider text-white/30">value spread</span>
               </div>
               <p className="mt-4 text-2xl font-black">{pct(primaryRoic?.valueCreationSpreadPct ?? null)}</p>
-              <p className="mt-1 text-xs text-white/35">
+              <p className="mt-1 text-xs text-white/60">
                 economic profit {primaryRoic ? money(primaryRoic.economicProfit, primaryRoic.currency) : "—"}
               </p>
             </CardContent>
@@ -479,7 +479,7 @@ export default function TreasuryRoic() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1400px] text-left text-xs">
-                  <thead className="border-b border-white/[0.07] text-white/35">
+                  <thead className="border-b border-white/[0.07] text-white/60">
                     <tr>
                       <th className="px-5 py-3">Posture</th>
                       <th className="px-3 py-3">Currency</th>
@@ -580,7 +580,7 @@ export default function TreasuryRoic() {
                         {row.currentTtm.evidence.complete ? "complete" : "incomplete"}
                       </Badge>
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] text-white/40">
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] text-white/60">
                       <p>Direct cost coverage: {pct(row.currentTtm.evidence.directCostCoveragePct)}</p>
                       <p>Tax coverage: {pct(row.currentTtm.evidence.taxCoveragePct)}</p>
                       <p>Operating expenses: {row.currentTtm.evidence.operatingExpenseComplete ? "attested" : "missing attestation"}</p>
@@ -616,55 +616,55 @@ export default function TreasuryRoic() {
 
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 {mode === "account" && <>
-                  <label className="text-xs text-white/40">Account name<Input className="mt-1" value={accountName} onChange={(event)=>setAccountName(event.target.value)} /></label>
-                  <label className="text-xs text-white/40">Institution<Input className="mt-1" value={institution} onChange={(event)=>setInstitution(event.target.value)} /></label>
-                  <label className="text-xs text-white/40">Account type<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={accountType} onChange={(event)=>setAccountType(event.target.value)}>{["bank","mobile_money","cash","money_market","other"].map((item)=><option key={item}>{item}</option>)}</select></label>
+                  <label className="text-xs text-white/60">Account name<Input className="mt-1" value={accountName} onChange={(event)=>setAccountName(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Institution<Input className="mt-1" value={institution} onChange={(event)=>setInstitution(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Account type<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={accountType} onChange={(event)=>setAccountType(event.target.value)}>{["bank","mobile_money","cash","money_market","other"].map((item)=><option key={item}>{item}</option>)}</select></label>
                 </>}
 
                 {mode === "balance" && <>
-                  <label className="text-xs text-white/40">Treasury account<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={accountId} onChange={(event)=>{setAccountId(event.target.value); const account=evidence.data?.accounts.find((row)=>row.id===event.target.value); if(account)setCurrency(account.currency);}}><option value="">Select</option>{(evidence.data?.accounts ?? []).filter((row)=>!row.archivedAt).map((row)=><option key={row.id} value={row.id}>{row.name} · {row.currency}</option>)}</select></label>
-                  <label className="text-xs text-white/40">Ledger balance<Input className="mt-1" type="number" min="0" value={ledgerBalance} onChange={(event)=>setLedgerBalance(event.target.value)} /></label>
-                  <label className="text-xs text-white/40">Available balance<Input className="mt-1" type="number" min="0" value={availableBalance} onChange={(event)=>setAvailableBalance(event.target.value)} /></label>
-                  <label className="text-xs text-white/40">Restricted balance<Input className="mt-1" type="number" min="0" value={restrictedBalance} onChange={(event)=>setRestrictedBalance(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Treasury account<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={accountId} onChange={(event)=>{setAccountId(event.target.value); const account=evidence.data?.accounts.find((row)=>row.id===event.target.value); if(account)setCurrency(account.currency);}}><option value="">Select</option>{(evidence.data?.accounts ?? []).filter((row)=>!row.archivedAt).map((row)=><option key={row.id} value={row.id}>{row.name} · {row.currency}</option>)}</select></label>
+                  <label className="text-xs text-white/60">Ledger balance<Input className="mt-1" type="number" min="0" value={ledgerBalance} onChange={(event)=>setLedgerBalance(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Available balance<Input className="mt-1" type="number" min="0" value={availableBalance} onChange={(event)=>setAvailableBalance(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Restricted balance<Input className="mt-1" type="number" min="0" value={restrictedBalance} onChange={(event)=>setRestrictedBalance(event.target.value)} /></label>
                 </>}
 
                 {mode === "cash" && <>
-                  <label className="text-xs text-white/40">Treasury account<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={accountId} onChange={(event)=>{setAccountId(event.target.value); const account=evidence.data?.accounts.find((row)=>row.id===event.target.value); if(account)setCurrency(account.currency);}}><option value="">Optional account</option>{(evidence.data?.accounts ?? []).filter((row)=>!row.archivedAt).map((row)=><option key={row.id} value={row.id}>{row.name} · {row.currency}</option>)}</select></label>
-                  <label className="text-xs text-white/40">Cash-use type<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={cashUseType} onChange={(event)=>setCashUseType(event.target.value)}>{["operating","capital","financing"].map((item)=><option key={item}>{item}</option>)}</select></label>
-                  <label className="text-xs text-white/40">Category<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={cashCategory} onChange={(event)=>setCashCategory(event.target.value)}>{["direct_delivery","payroll","marketing","software_infrastructure","rent_utilities","professional_fees","tax","other_operating","growth_capex","maintenance_capex","working_capital","product_development","debt_service","owner_distribution","other_financing"].map((item)=><option key={item}>{item}</option>)}</select></label>
+                  <label className="text-xs text-white/60">Treasury account<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={accountId} onChange={(event)=>{setAccountId(event.target.value); const account=evidence.data?.accounts.find((row)=>row.id===event.target.value); if(account)setCurrency(account.currency);}}><option value="">Optional account</option>{(evidence.data?.accounts ?? []).filter((row)=>!row.archivedAt).map((row)=><option key={row.id} value={row.id}>{row.name} · {row.currency}</option>)}</select></label>
+                  <label className="text-xs text-white/60">Cash-use type<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={cashUseType} onChange={(event)=>setCashUseType(event.target.value)}>{["operating","capital","financing"].map((item)=><option key={item}>{item}</option>)}</select></label>
+                  <label className="text-xs text-white/60">Category<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={cashCategory} onChange={(event)=>setCashCategory(event.target.value)}>{["direct_delivery","payroll","marketing","software_infrastructure","rent_utilities","professional_fees","tax","other_operating","growth_capex","maintenance_capex","working_capital","product_development","debt_service","owner_distribution","other_financing"].map((item)=><option key={item}>{item}</option>)}</select></label>
                 </>}
 
-                {mode === "opex" && <label className="text-xs text-white/40">Operating expense category<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={opexCategory} onChange={(event)=>setOpexCategory(event.target.value)}>{["payroll_overhead","rent_utilities","software_tools","professional_fees","insurance","travel_admin","governance","depreciation_amortization","other"].map((item)=><option key={item}>{item}</option>)}</select></label>}
+                {mode === "opex" && <label className="text-xs text-white/60">Operating expense category<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={opexCategory} onChange={(event)=>setOpexCategory(event.target.value)}>{["payroll_overhead","rent_utilities","software_tools","professional_fees","insurance","travel_admin","governance","depreciation_amortization","other"].map((item)=><option key={item}>{item}</option>)}</select></label>}
 
                 {mode === "tax" && <>
-                  <label className="text-xs text-white/40">Tax period start<Input className="mt-1" type="datetime-local" value={periodStart} onChange={(event)=>setPeriodStart(event.target.value)} /></label>
-                  <label className="text-xs text-white/40">Tax period end<Input className="mt-1" type="datetime-local" value={periodEnd} onChange={(event)=>setPeriodEnd(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Tax period start<Input className="mt-1" type="datetime-local" value={periodStart} onChange={(event)=>setPeriodStart(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Tax period end<Input className="mt-1" type="datetime-local" value={periodEnd} onChange={(event)=>setPeriodEnd(event.target.value)} /></label>
                 </>}
 
                 {mode === "invested-capital" && <>
-                  <label className="text-xs text-white/40">Operating assets<Input className="mt-1" type="number" min="0" value={operatingAssets} onChange={(event)=>setOperatingAssets(event.target.value)} /></label>
-                  <label className="text-xs text-white/40">Operating liabilities<Input className="mt-1" type="number" min="0" value={operatingLiabilities} onChange={(event)=>setOperatingLiabilities(event.target.value)} /></label>
-                  <label className="text-xs text-white/40 md:col-span-2">Component evidence JSON<Textarea className="mt-1 font-mono text-xs" rows={2} value={components} onChange={(event)=>setComponents(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Operating assets<Input className="mt-1" type="number" min="0" value={operatingAssets} onChange={(event)=>setOperatingAssets(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Operating liabilities<Input className="mt-1" type="number" min="0" value={operatingLiabilities} onChange={(event)=>setOperatingLiabilities(event.target.value)} /></label>
+                  <label className="text-xs text-white/60 md:col-span-2">Component evidence JSON<Textarea className="mt-1 font-mono text-xs" rows={2} value={components} onChange={(event)=>setComponents(event.target.value)} /></label>
                 </>}
 
                 {mode === "deployment" && <>
-                  <label className="text-xs text-white/40">Approved budget allocation<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={budgetAllocationId} onChange={(event)=>{setBudgetAllocationId(event.target.value);const row=approvedAllocations.find((item)=>item.id===event.target.value);if(row){setCurrency(row.currency);setServiceInterest(row.serviceInterest);}}}><option value="">Select when required</option>{approvedAllocations.map((row)=><option key={row.id} value={row.id}>{row.channel} → {row.serviceInterest} · {row.currency} · approved {row.approvedAmount}</option>)}</select></label>
-                  <label className="text-xs text-white/40">Deployment category<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={deploymentCategory} onChange={(event)=>setDeploymentCategory(event.target.value)}>{["growth_capex","maintenance_capex","working_capital","product_development","strategic_investment","debt_repayment","owner_distribution"].map((item)=><option key={item}>{item}</option>)}</select></label>
-                  <label className="text-xs text-white/40">Approval reference<Input className="mt-1" value={approvalReference} onChange={(event)=>setApprovalReference(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Approved budget allocation<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={budgetAllocationId} onChange={(event)=>{setBudgetAllocationId(event.target.value);const row=approvedAllocations.find((item)=>item.id===event.target.value);if(row){setCurrency(row.currency);setServiceInterest(row.serviceInterest);}}}><option value="">Select when required</option>{approvedAllocations.map((row)=><option key={row.id} value={row.id}>{row.channel} → {row.serviceInterest} · {row.currency} · approved {row.approvedAmount}</option>)}</select></label>
+                  <label className="text-xs text-white/60">Deployment category<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={deploymentCategory} onChange={(event)=>setDeploymentCategory(event.target.value)}>{["growth_capex","maintenance_capex","working_capital","product_development","strategic_investment","debt_repayment","owner_distribution"].map((item)=><option key={item}>{item}</option>)}</select></label>
+                  <label className="text-xs text-white/60">Approval reference<Input className="mt-1" value={approvalReference} onChange={(event)=>setApprovalReference(event.target.value)} /></label>
                 </>}
 
-                {mode === "attestation" && <label className="text-xs text-white/40">Completeness attestation<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={evidenceType} onChange={(event)=>setEvidenceType(event.target.value)}><option value="operating_expenses_complete">operating expenses complete</option><option value="cash_disbursements_complete">cash disbursements complete</option></select></label>}
+                {mode === "attestation" && <label className="text-xs text-white/60">Completeness attestation<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={evidenceType} onChange={(event)=>setEvidenceType(event.target.value)}><option value="operating_expenses_complete">operating expenses complete</option><option value="cash_disbursements_complete">cash disbursements complete</option></select></label>}
 
                 {mode === "hurdle" && <>
-                  <label className="text-xs text-white/40">Annual hurdle rate %<Input className="mt-1" type="number" min="0" step="0.01" value={hurdleRate} onChange={(event)=>setHurdleRate(event.target.value)} /></label>
-                  <label className="text-xs text-white/40 md:col-span-2">Approval rationale<Textarea className="mt-1" rows={2} value={hurdleRationale} onChange={(event)=>setHurdleRationale(event.target.value)} /></label>
+                  <label className="text-xs text-white/60">Annual hurdle rate %<Input className="mt-1" type="number" min="0" step="0.01" value={hurdleRate} onChange={(event)=>setHurdleRate(event.target.value)} /></label>
+                  <label className="text-xs text-white/60 md:col-span-2">Approval rationale<Textarea className="mt-1" rows={2} value={hurdleRationale} onChange={(event)=>setHurdleRationale(event.target.value)} /></label>
                 </>}
 
-                {!["account","balance","invested-capital"].includes(mode) && mode !== "attestation" && mode !== "hurdle" && <label className="text-xs text-white/40">Amount<Input className="mt-1" type="number" min="0" value={amount} onChange={(event)=>setAmount(event.target.value)} /></label>}
-                {["cash","opex","deployment"].includes(mode) && <label className="text-xs text-white/40">Service<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={serviceInterest} onChange={(event)=>setServiceInterest(event.target.value)}><option value="">Company-wide / none</option>{services.map((item)=><option key={item}>{item}</option>)}</select></label>}
-                {mode !== "account" && <label className="text-xs text-white/40">Evidence date<Input className="mt-1" type="datetime-local" value={occurredAt} onChange={(event)=>setOccurredAt(event.target.value)} /></label>}
-                <label className="text-xs text-white/40">Currency<Input className="mt-1" maxLength={3} value={currency} onChange={(event)=>setCurrency(event.target.value.toUpperCase())} /></label>
-                {mode !== "hurdle" && <label className="text-xs text-white/40 md:col-span-2">Source reference<Input className="mt-1" placeholder="Bank statement, management accounts, tax working, balance sheet, board approval…" value={sourceReference} onChange={(event)=>setSourceReference(event.target.value)} /></label>}
+                {!["account","balance","invested-capital"].includes(mode) && mode !== "attestation" && mode !== "hurdle" && <label className="text-xs text-white/60">Amount<Input className="mt-1" type="number" min="0" value={amount} onChange={(event)=>setAmount(event.target.value)} /></label>}
+                {["cash","opex","deployment"].includes(mode) && <label className="text-xs text-white/60">Service<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={serviceInterest} onChange={(event)=>setServiceInterest(event.target.value)}><option value="">Company-wide / none</option>{services.map((item)=><option key={item}>{item}</option>)}</select></label>}
+                {mode !== "account" && <label className="text-xs text-white/60">Evidence date<Input className="mt-1" type="datetime-local" value={occurredAt} onChange={(event)=>setOccurredAt(event.target.value)} /></label>}
+                <label className="text-xs text-white/60">Currency<Input className="mt-1" maxLength={3} value={currency} onChange={(event)=>setCurrency(event.target.value.toUpperCase())} /></label>
+                {mode !== "hurdle" && <label className="text-xs text-white/60 md:col-span-2">Source reference<Input className="mt-1" placeholder="Bank statement, management accounts, tax working, balance sheet, board approval…" value={sourceReference} onChange={(event)=>setSourceReference(event.target.value)} /></label>}
               </div>
 
               {mode !== "hurdle" && <Textarea className="mt-3" rows={2} placeholder="Evidence notes" value={notes} onChange={(event)=>setNotes(event.target.value)} />}
@@ -681,10 +681,10 @@ export default function TreasuryRoic() {
             <Landmark className="mt-0.5 h-5 w-5 text-primary" />
             <div>
               <h2 className="text-sm font-bold uppercase tracking-wider">Capital doctrine</h2>
-              <p className="mt-2 max-w-5xl text-xs leading-5 text-white/35">
+              <p className="mt-2 max-w-5xl text-xs leading-5 text-white/60">
                 {intelligence.data?.controls.note ?? "Treasury and ROIC evidence is advisory until governed capital authorization exists."}
               </p>
-              <p className="mt-2 text-xs text-white/35">
+              <p className="mt-2 text-xs text-white/60">
                 A large cash balance does not prove profitability. Positive NOPAT does not prove capital efficiency.
                 ROIC above a hurdle does not authorize deployment. Each statement is independently evidenced.
               </p>

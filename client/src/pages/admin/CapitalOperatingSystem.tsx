@@ -255,7 +255,7 @@ function postureClass(value: ReturnType<typeof posture>) {
   if (value === "increase") return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
   if (value === "reduce") return "border-red-500/30 bg-red-500/10 text-red-300";
   if (value === "hold") return "border-amber-500/30 bg-amber-500/10 text-amber-300";
-  return "border-white/10 bg-white/[0.03] text-white/45";
+  return "border-white/10 bg-white/[0.03] text-white/60";
 }
 
 export default function CapitalOperatingSystem() {
@@ -479,7 +479,7 @@ export default function CapitalOperatingSystem() {
             <div className="flex items-center justify-between"><Banknote className="h-5 w-5 text-emerald-400" /><span className="text-xs text-white/30">cash realization</span></div>
             <div className="mt-4 space-y-1">
               {capital.data?.cashRealization.invoiceCohortByCurrency.map((row) => (
-                <p key={row.currency} className="text-xl font-black">{money(row.collected, row.currency)} <span className="text-xs font-normal text-white/35">collected</span></p>
+                <p key={row.currency} className="text-xl font-black">{money(row.collected, row.currency)} <span className="text-xs font-normal text-white/60">collected</span></p>
               ))}
               {!capital.data?.cashRealization.invoiceCohortByCurrency.length && <p className="text-xl font-black">—</p>}
             </div>
@@ -493,7 +493,7 @@ export default function CapitalOperatingSystem() {
               ))}
               {!receivablesByCurrency.length && <p className="text-2xl font-black">—</p>}
             </div>
-            <p className="mt-1 text-xs text-white/35">
+            <p className="mt-1 text-xs text-white/60">
               {overdueByCurrency.length
                 ? `Overdue: ${overdueByCurrency.map((row) => money(row.value, row.currency)).join(" · ")}`
                 : "No overdue receivables"}
@@ -516,7 +516,7 @@ export default function CapitalOperatingSystem() {
               <Badge className="bg-emerald-500/10 text-emerald-300">{increaseCount} increase</Badge>
               <Badge className="bg-red-500/10 text-red-300">{reduceCount} reduce</Badge>
             </div>
-            <p className="mt-2 text-xs text-white/35">Requires both upstream economics and realized-cash evidence</p>
+            <p className="mt-2 text-xs text-white/60">Requires both upstream economics and realized-cash evidence</p>
           </CardContent></Card>
         </section>
 
@@ -528,7 +528,7 @@ export default function CapitalOperatingSystem() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-xs">
-                <thead className="border-b border-white/[0.07] text-white/35"><tr>
+                <thead className="border-b border-white/[0.07] text-white/60"><tr>
                   <th className="px-5 py-3">Currency</th><th className="px-3 py-3">Invoiced</th><th className="px-3 py-3">Collected</th><th className="px-3 py-3">Outstanding</th><th className="px-3 py-3">Realization</th><th className="px-3 py-3">Weighted collection days</th>
                 </tr></thead>
                 <tbody>
@@ -553,7 +553,7 @@ export default function CapitalOperatingSystem() {
               {capital.data?.cashRealization.currentReceivablesAging.map((bucket) => (
                 <div key={bucket.key} className="rounded-lg border border-white/[0.06] p-3">
                   <div className="flex justify-between"><span className="text-xs font-semibold">{bucket.key}</span><Badge variant="outline">{bucket.count}</Badge></div>
-                  <p className="mt-2 text-[10px] text-white/35">{bucket.valueByCurrency.map((row) => money(row.value, row.currency)).join(" · ") || "—"}</p>
+                  <p className="mt-2 text-[10px] text-white/60">{bucket.valueByCurrency.map((row) => money(row.value, row.currency)).join(" · ") || "—"}</p>
                 </div>
               ))}
             </div>
@@ -570,7 +570,7 @@ export default function CapitalOperatingSystem() {
             </div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1350px] text-left text-xs">
-                <thead className="border-b border-white/[0.07] text-white/35"><tr>
+                <thead className="border-b border-white/[0.07] text-white/60"><tr>
                   <th className="px-5 py-3">Posture</th><th className="px-3 py-3">Channel</th><th className="px-3 py-3">Service</th><th className="px-3 py-3">Upstream</th><th className="px-3 py-3">Cash signal</th><th className="px-3 py-3">Cash collected</th><th className="px-3 py-3">Cash GP</th><th className="px-3 py-3">Spend</th><th className="px-3 py-3">Cash return</th><th className="px-3 py-3">ROI</th><th className="px-3 py-3">GRR</th><th className="px-3 py-3">NRR</th><th className="px-3 py-3">Cost evidence</th>
                 </tr></thead>
                 <tbody>
@@ -606,7 +606,7 @@ export default function CapitalOperatingSystem() {
             <div className="border-b border-white/[0.07] p-5"><h2 className="text-sm font-bold uppercase tracking-wider">Retention / MRR bridge</h2></div>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[760px] text-left text-xs">
-                <thead className="border-b border-white/[0.07] text-white/35"><tr><th className="px-5 py-3">Service</th><th className="px-3 py-3">Beginning MRR</th><th className="px-3 py-3">Expansion</th><th className="px-3 py-3">Contraction</th><th className="px-3 py-3">Churn</th><th className="px-3 py-3">GRR</th><th className="px-3 py-3">NRR</th></tr></thead>
+                <thead className="border-b border-white/[0.07] text-white/60"><tr><th className="px-5 py-3">Service</th><th className="px-3 py-3">Beginning MRR</th><th className="px-3 py-3">Expansion</th><th className="px-3 py-3">Contraction</th><th className="px-3 py-3">Churn</th><th className="px-3 py-3">GRR</th><th className="px-3 py-3">NRR</th></tr></thead>
                 <tbody>{capital.data?.retention.map((row) => (
                   <tr key={row.key} className="border-b border-white/[0.05] last:border-0">
                     <td className="px-5 py-3">{row.service.replace(/-/g, " ")}</td>
@@ -627,9 +627,9 @@ export default function CapitalOperatingSystem() {
             <div className="divide-y divide-white/[0.06]">
               {capital.data?.deliveryUtilization.map((row) => (
                 <div key={row.service} className="grid gap-2 p-4 sm:grid-cols-[1.4fr_.7fr_.7fr]">
-                  <div><p className="text-xs font-semibold">{row.service.replace(/-/g, " ")}</p><p className="mt-1 text-[10px] text-white/35">{row.scopeCount} capacity scopes · {row.availableHours.toFixed(1)} available hours</p></div>
-                  <div className="text-xs"><span className="text-white/35">Delivery </span>{pct(row.utilizationPct)}</div>
-                  <div className="text-xs"><span className="text-white/35">Billable </span>{pct(row.billableUtilizationPct)}</div>
+                  <div><p className="text-xs font-semibold">{row.service.replace(/-/g, " ")}</p><p className="mt-1 text-[10px] text-white/60">{row.scopeCount} capacity scopes · {row.availableHours.toFixed(1)} available hours</p></div>
+                  <div className="text-xs"><span className="text-white/60">Delivery </span>{pct(row.utilizationPct)}</div>
+                  <div className="text-xs"><span className="text-white/60">Billable </span>{pct(row.billableUtilizationPct)}</div>
                 </div>
               ))}
               {!capital.data?.deliveryUtilization.length && <p className="p-5 text-xs text-white/25">No capacity evidence yet.</p>}
@@ -649,7 +649,7 @@ export default function CapitalOperatingSystem() {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold">{money(Number(budget.envelopeAmount), budget.currency)} envelope · {budget.status}</p>
-                      <p className="mt-1 text-[10px] text-white/35">{new Date(budget.periodStart).toLocaleDateString()} → {new Date(budget.periodEnd).toLocaleDateString()}</p>
+                      <p className="mt-1 text-[10px] text-white/60">{new Date(budget.periodStart).toLocaleDateString()} → {new Date(budget.periodEnd).toLocaleDateString()}</p>
                     </div>
                     {budget.status === "draft" && <Button
                       size="sm"
@@ -675,8 +675,8 @@ export default function CapitalOperatingSystem() {
                     {budget.allocations.map((allocation) => (
                       <div key={allocation.id} className="rounded-lg border border-white/[0.06] p-3">
                         <div className="flex justify-between gap-3"><p className="text-xs font-semibold">{allocation.channel} → {allocation.serviceInterest.replace(/-/g, " ")}</p><Badge variant="outline">{allocation.recommendationDecision}</Badge></div>
-                        <p className="mt-2 text-[10px] text-white/35">recommended {money(Number(allocation.recommendedAmount), budget.currency)} · approved {money(Number(allocation.approvedAmount), budget.currency)} · actual {money(allocation.actualSpend ?? 0, budget.currency)}</p>
-                        <p className="mt-1 text-[10px] text-white/35">approved utilization {pct(allocation.approvedUtilizationPct ?? null)}</p>
+                        <p className="mt-2 text-[10px] text-white/60">recommended {money(Number(allocation.recommendedAmount), budget.currency)} · approved {money(Number(allocation.approvedAmount), budget.currency)} · actual {money(allocation.actualSpend ?? 0, budget.currency)}</p>
+                        <p className="mt-1 text-[10px] text-white/60">approved utilization {pct(allocation.approvedUtilizationPct ?? null)}</p>
                       </div>
                     ))}
                   </div>
@@ -700,56 +700,56 @@ export default function CapitalOperatingSystem() {
 
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {mode === "invoice" && <>
-                <label className="text-xs text-white/40">Won opportunity<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={leadId} onChange={(event) => { setLeadId(event.target.value); const lead=wonLeads.find((row)=>row.id===event.target.value); if(lead?.currency) setCurrency(lead.currency); }}>
+                <label className="text-xs text-white/60">Won opportunity<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={leadId} onChange={(event) => { setLeadId(event.target.value); const lead=wonLeads.find((row)=>row.id===event.target.value); if(lead?.currency) setCurrency(lead.currency); }}>
                   <option value="">Select</option>{wonLeads.map((lead)=><option key={lead.id} value={lead.id}>{lead.organization || lead.name} · {lead.serviceInterest}</option>)}
                 </select></label>
-                <label className="text-xs text-white/40">Invoice number<Input className="mt-1" value={invoiceNumber} onChange={(event)=>setInvoiceNumber(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Currency<Input className="mt-1" maxLength={3} value={currency} onChange={(event)=>setCurrency(event.target.value.toUpperCase())} /></label>
-                <label className="text-xs text-white/40">Amount<Input className="mt-1" type="number" min="0.01" value={amount} onChange={(event)=>setAmount(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Issued<Input className="mt-1" type="datetime-local" value={issuedAt} onChange={(event)=>setIssuedAt(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Due<Input className="mt-1" type="datetime-local" value={dueAt} onChange={(event)=>setDueAt(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Invoice number<Input className="mt-1" value={invoiceNumber} onChange={(event)=>setInvoiceNumber(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Currency<Input className="mt-1" maxLength={3} value={currency} onChange={(event)=>setCurrency(event.target.value.toUpperCase())} /></label>
+                <label className="text-xs text-white/60">Amount<Input className="mt-1" type="number" min="0.01" value={amount} onChange={(event)=>setAmount(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Issued<Input className="mt-1" type="datetime-local" value={issuedAt} onChange={(event)=>setIssuedAt(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Due<Input className="mt-1" type="datetime-local" value={dueAt} onChange={(event)=>setDueAt(event.target.value)} /></label>
               </>}
 
               {mode === "collection" && <>
-                <label className="text-xs text-white/40">Invoice<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={invoiceId} onChange={(event)=>setInvoiceId(event.target.value)}>
+                <label className="text-xs text-white/60">Invoice<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={invoiceId} onChange={(event)=>setInvoiceId(event.target.value)}>
                   <option value="">Select</option>{(invoices.data ?? []).filter((invoice)=>!invoice.voidedAt && invoice.status !== "paid").map((invoice)=><option key={invoice.id} value={invoice.id}>{invoice.invoiceNumber} · {money(Number(invoice.amount), invoice.currency)}</option>)}
                 </select></label>
-                <label className="text-xs text-white/40">Amount received<Input className="mt-1" type="number" min="0.01" value={amount} onChange={(event)=>setAmount(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Method<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={paymentMethod} onChange={(event)=>setPaymentMethod(event.target.value)}>{["bank_transfer","mobile_money","cash","card","cheque","other"].map((item)=><option key={item}>{item}</option>)}</select></label>
-                <label className="text-xs text-white/40">Received<Input className="mt-1" type="datetime-local" value={receivedAt} onChange={(event)=>setReceivedAt(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Amount received<Input className="mt-1" type="number" min="0.01" value={amount} onChange={(event)=>setAmount(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Method<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={paymentMethod} onChange={(event)=>setPaymentMethod(event.target.value)}>{["bank_transfer","mobile_money","cash","card","cheque","other"].map((item)=><option key={item}>{item}</option>)}</select></label>
+                <label className="text-xs text-white/60">Received<Input className="mt-1" type="datetime-local" value={receivedAt} onChange={(event)=>setReceivedAt(event.target.value)} /></label>
               </>}
 
               {mode === "retention" && <>
-                <label className="text-xs text-white/40">Recurring agreement<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={agreementId} onChange={(event)=>setAgreementId(event.target.value)}>
+                <label className="text-xs text-white/60">Recurring agreement<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={agreementId} onChange={(event)=>setAgreementId(event.target.value)}>
                   <option value="">Select</option>{(agreements.data ?? []).filter((row)=>!row.voidedAt).map((row)=><option key={row.id} value={row.id}>{row.serviceInterest.replace(/-/g," ")} · {money(Number(row.monthlyRecurringRevenue), row.currency)} · {row.status}</option>)}
                 </select></label>
-                <label className="text-xs text-white/40">Movement<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={movementType} onChange={(event)=>setMovementType(event.target.value as typeof movementType)}>{["expansion","contraction","churn","reactivation"].map((item)=><option key={item}>{item}</option>)}</select></label>
-                <label className="text-xs text-white/40">MRR change<Input className="mt-1" type="number" min="0.01" value={mrrDelta} onChange={(event)=>setMrrDelta(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Effective<Input className="mt-1" type="datetime-local" value={effectiveAt} onChange={(event)=>setEffectiveAt(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Movement<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={movementType} onChange={(event)=>setMovementType(event.target.value as typeof movementType)}>{["expansion","contraction","churn","reactivation"].map((item)=><option key={item}>{item}</option>)}</select></label>
+                <label className="text-xs text-white/60">MRR change<Input className="mt-1" type="number" min="0.01" value={mrrDelta} onChange={(event)=>setMrrDelta(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Effective<Input className="mt-1" type="datetime-local" value={effectiveAt} onChange={(event)=>setEffectiveAt(event.target.value)} /></label>
               </>}
 
               {mode === "capacity" && <>
-                <label className="text-xs text-white/40">Service<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={capacityService} onChange={(event)=>setCapacityService(event.target.value)}>{services.map((item)=><option key={item}>{item}</option>)}</select></label>
-                <label className="text-xs text-white/40">Capacity scope<Input className="mt-1" placeholder="e.g. Network operations team" value={capacityScope} onChange={(event)=>setCapacityScope(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Period start<Input className="mt-1" type="datetime-local" value={periodStart} onChange={(event)=>setPeriodStart(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Period end<Input className="mt-1" type="datetime-local" value={periodEnd} onChange={(event)=>setPeriodEnd(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Available hours<Input className="mt-1" type="number" min="0" value={availableHours} onChange={(event)=>setAvailableHours(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Delivery hours<Input className="mt-1" type="number" min="0" value={deliveryHours} onChange={(event)=>setDeliveryHours(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Billable hours<Input className="mt-1" type="number" min="0" value={billableHours} onChange={(event)=>setBillableHours(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Service<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={capacityService} onChange={(event)=>setCapacityService(event.target.value)}>{services.map((item)=><option key={item}>{item}</option>)}</select></label>
+                <label className="text-xs text-white/60">Capacity scope<Input className="mt-1" placeholder="e.g. Network operations team" value={capacityScope} onChange={(event)=>setCapacityScope(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Period start<Input className="mt-1" type="datetime-local" value={periodStart} onChange={(event)=>setPeriodStart(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Period end<Input className="mt-1" type="datetime-local" value={periodEnd} onChange={(event)=>setPeriodEnd(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Available hours<Input className="mt-1" type="number" min="0" value={availableHours} onChange={(event)=>setAvailableHours(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Delivery hours<Input className="mt-1" type="number" min="0" value={deliveryHours} onChange={(event)=>setDeliveryHours(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Billable hours<Input className="mt-1" type="number" min="0" value={billableHours} onChange={(event)=>setBillableHours(event.target.value)} /></label>
               </>}
 
               {mode === "budget" && <>
-                <label className="text-xs text-white/40">Period start<Input className="mt-1" type="datetime-local" value={budgetPeriodStart} onChange={(event)=>setBudgetPeriodStart(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Period end<Input className="mt-1" type="datetime-local" value={budgetPeriodEnd} onChange={(event)=>setBudgetPeriodEnd(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Currency<Input className="mt-1" maxLength={3} value={currency} onChange={(event)=>setCurrency(event.target.value.toUpperCase())} /></label>
-                <label className="text-xs text-white/40">Capital envelope<Input className="mt-1" type="number" min="0.01" value={envelopeAmount} onChange={(event)=>setEnvelopeAmount(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Period start<Input className="mt-1" type="datetime-local" value={budgetPeriodStart} onChange={(event)=>setBudgetPeriodStart(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Period end<Input className="mt-1" type="datetime-local" value={budgetPeriodEnd} onChange={(event)=>setBudgetPeriodEnd(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Currency<Input className="mt-1" maxLength={3} value={currency} onChange={(event)=>setCurrency(event.target.value.toUpperCase())} /></label>
+                <label className="text-xs text-white/60">Capital envelope<Input className="mt-1" type="number" min="0.01" value={envelopeAmount} onChange={(event)=>setEnvelopeAmount(event.target.value)} /></label>
               </>}
 
               {mode === "allocation" && <>
-                <label className="text-xs text-white/40">Draft budget<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={budgetId} onChange={(event)=>setBudgetId(event.target.value)}>
+                <label className="text-xs text-white/60">Draft budget<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={budgetId} onChange={(event)=>setBudgetId(event.target.value)}>
                   <option value="">Select</option>{(budgets.data ?? []).filter((budget)=>budget.status==="draft").map((budget)=><option key={budget.id} value={budget.id}>{money(Number(budget.envelopeAmount), budget.currency)} · {new Date(budget.periodStart).toLocaleDateString()}</option>)}
                 </select></label>
-                <label className="text-xs text-white/40">Upstream recommendation<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={recommendationKey} onChange={(event)=>{
+                <label className="text-xs text-white/60">Upstream recommendation<select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={recommendationKey} onChange={(event)=>{
                   const key=event.target.value;
                   setRecommendationKey(key);
                   setRecommendedAmount("");
@@ -757,12 +757,12 @@ export default function CapitalOperatingSystem() {
                 }}>
                   <option value="">Select</option>{(revenue.data?.allocationRecommendations ?? []).map((row)=><option key={row.key} value={row.key}>{row.decision} · {row.channel} → {row.service.replace(/-/g," ")} · {row.currency}</option>)}
                 </select></label>
-                <label className="text-xs text-white/40">Recommended amount<Input className="mt-1" type="number" min="0" placeholder="Finance recommendation; no automatic multiplier" value={recommendedAmount} onChange={(event)=>setRecommendedAmount(event.target.value)} /></label>
-                <label className="text-xs text-white/40">Approved amount<Input className="mt-1" type="number" min="0" value={approvedAmount} onChange={(event)=>setApprovedAmount(event.target.value)} /></label>
-                <label className="text-xs text-white/40 md:col-span-2">Approval rationale<Textarea className="mt-1" rows={2} value={allocationRationale} onChange={(event)=>setAllocationRationale(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Recommended amount<Input className="mt-1" type="number" min="0" placeholder="Finance recommendation; no automatic multiplier" value={recommendedAmount} onChange={(event)=>setRecommendedAmount(event.target.value)} /></label>
+                <label className="text-xs text-white/60">Approved amount<Input className="mt-1" type="number" min="0" value={approvedAmount} onChange={(event)=>setApprovedAmount(event.target.value)} /></label>
+                <label className="text-xs text-white/60 md:col-span-2">Approval rationale<Textarea className="mt-1" rows={2} value={allocationRationale} onChange={(event)=>setAllocationRationale(event.target.value)} /></label>
               </>}
 
-              {mode !== "allocation" && <label className="text-xs text-white/40 md:col-span-2">Source reference<Input className="mt-1" placeholder="Invoice, receipt, bank reference, contract, timesheet or budget memo" value={sourceReference} onChange={(event)=>setSourceReference(event.target.value)} /></label>}
+              {mode !== "allocation" && <label className="text-xs text-white/60 md:col-span-2">Source reference<Input className="mt-1" placeholder="Invoice, receipt, bank reference, contract, timesheet or budget memo" value={sourceReference} onChange={(event)=>setSourceReference(event.target.value)} /></label>}
             </div>
             {mode !== "allocation" && <Textarea className="mt-3" rows={2} placeholder="Evidence notes" value={notes} onChange={(event)=>setNotes(event.target.value)} />}
             <Button className="mt-3" disabled={submit.isPending} onClick={() => submit.mutate()}>
@@ -775,8 +775,8 @@ export default function CapitalOperatingSystem() {
         <section className="rounded-xl border border-white/[0.07] bg-white/[0.018] p-5">
           <div className="flex gap-3"><Landmark className="mt-0.5 h-5 w-5 text-primary" /><div>
             <h2 className="text-sm font-bold uppercase tracking-wider">Capital governance boundary</h2>
-            <p className="mt-2 max-w-4xl text-xs leading-5 text-white/35">{capital.data?.controls.note ?? "Reinvestment signals remain advisory until an approved budget exists."}</p>
-            <p className="mt-2 text-xs text-white/35">The operating chain is now explicit: gross profit → recurring revenue → cash realized → retention → realized capital return → approved reinvestment.</p>
+            <p className="mt-2 max-w-4xl text-xs leading-5 text-white/60">{capital.data?.controls.note ?? "Reinvestment signals remain advisory until an approved budget exists."}</p>
+            <p className="mt-2 text-xs text-white/60">The operating chain is now explicit: gross profit → recurring revenue → cash realized → retention → realized capital return → approved reinvestment.</p>
           </div></div>
         </section>
       </div>

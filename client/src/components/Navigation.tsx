@@ -1,8 +1,25 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, Terminal, Github, Briefcase, FileText, User, Home, Phone, BookOpen, X, ChevronRight } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Menu,
+  Terminal,
+  Github,
+  Briefcase,
+  FileText,
+  User,
+  Home,
+  Phone,
+  BookOpen,
+  X,
+  ChevronRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { preloadPublicRoute } from "@/lib/routePreload";
 import profileImage from "@assets/portfolio_photos/chrispine-profile-headshot.png";
@@ -22,11 +39,6 @@ export function Navigation() {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const solidHeaderSurface = location.startsWith("/journey")
-    || location === "/portfolio"
-    || location === "/about"
-    || location === "/blog"
-    || location.startsWith("/blog/");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -41,22 +53,19 @@ export function Navigation() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      className={`universe-header fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
           ? "border-b border-white/[0.06] py-0"
           : "border-b border-transparent py-0"
       }`}
       style={{
-        background: solidHeaderSurface ? "#142b24" : scrolled
-          ? "rgba(9, 10, 20, 0.85)"
-          : "transparent",
+        background: "#142b24",
         backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
         WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
-
           {/* Logo */}
           <Link href="/">
             <motion.div
@@ -64,12 +73,24 @@ export function Navigation() {
               whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="relative w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
-                style={{ background: "linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 91% 65%) 100%)" }}
+              <div
+                className="relative w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
+                style={{
+                  background:
+                    "linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 91% 65%) 100%)",
+                }}
               >
-                <img src={profileImage} alt="Chrispine Mndala" className="h-full w-full object-cover" />
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.15), transparent)" }}
+                <img
+                  src={profileImage}
+                  alt="Chrispine Mndala"
+                  className="h-full w-full object-cover"
+                />
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(255,255,255,0.15), transparent)",
+                  }}
                 />
               </div>
               <div className="flex flex-col">
@@ -77,18 +98,27 @@ export function Navigation() {
                   Chrispine
                 </span>
                 <span className="text-[10px] font-mono text-primary/80 leading-none mt-0.5 tracking-wider">
-                  SYSTEMS ARCHITECT
+                  ENGINEER · OPERATOR
                 </span>
               </div>
             </motion.div>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav
+            aria-label="Primary navigation"
+            className="hidden lg:flex items-center gap-1"
+          >
             {navItems.map((item) => {
               const active = isActive(item.path);
               return (
-                <Link key={item.path} href={item.path} onPointerEnter={()=>preloadPublicRoute(item.path)} onFocus={()=>preloadPublicRoute(item.path)}>
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  aria-current={active ? "page" : undefined}
+                  onPointerEnter={() => preloadPublicRoute(item.path)}
+                  onFocus={() => preloadPublicRoute(item.path)}
+                >
                   <motion.span
                     className={`relative flex items-center gap-1.5 px-2 py-2 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-200 ${
                       active
@@ -96,10 +126,14 @@ export function Navigation() {
                         : "text-white/50 hover:text-white/80"
                     }`}
                     style={{
-                      background: active ? "rgba(255,255,255,0.08)" : "transparent",
+                      background: active
+                        ? "rgba(255,255,255,0.08)"
+                        : "transparent",
                     }}
                     whileHover={{
-                      background: active ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                      background: active
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(255,255,255,0.04)",
                     }}
                   >
                     {active && (
@@ -107,15 +141,14 @@ export function Navigation() {
                         layoutId="nav-indicator"
                         className="absolute inset-0 rounded-lg"
                         style={{ background: "rgba(255,255,255,0.08)" }}
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                        transition={{
+                          type: "spring",
+                          bounce: 0.2,
+                          duration: 0.4,
+                        }}
                       />
                     )}
                     <span className="relative z-10">{item.label}</span>
-                    {item.path === "/github" && (
-                      <span className="relative z-10 flex items-center gap-0.5 text-[9px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1 py-0.5 rounded">
-                        LIVE
-                      </span>
-                    )}
                   </motion.span>
                 </Link>
               );
@@ -138,8 +171,9 @@ export function Navigation() {
               asChild
               className="h-9 px-4 text-[13px] font-semibold rounded-lg"
               style={{
-                background: "linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 50%) 100%)",
-                boxShadow: "0 0 20px rgba(59,130,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15)",
+                background: "#d3be7b",
+                color: "#142b24",
+                boxShadow: "none",
               }}
               data-testid="button-book-call-nav"
             >
@@ -155,14 +189,29 @@ export function Navigation() {
                 size="icon"
                 className="h-9 w-9 text-white/70 hover:text-white"
                 data-testid="button-mobile-menu"
+                aria-label={
+                  mobileMenuOpen ? "Close navigation" : "Open navigation"
+                }
               >
                 <AnimatePresence mode="wait">
                   {mobileMenuOpen ? (
-                    <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                    <motion.div
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
                       <X className="h-5 w-5" />
                     </motion.div>
                   ) : (
-                    <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                    <motion.div
+                      key="open"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
                       <Menu className="h-5 w-5" />
                     </motion.div>
                   )}
@@ -172,17 +221,26 @@ export function Navigation() {
             <SheetContent
               side="right"
               className="w-[300px] border-l border-white/[0.06] p-0"
-              style={{ background: "rgba(9, 10, 20, 0.98)", backdropFilter: "blur(20px)" }}
+              style={{ background: "#142b24" }}
             >
+              <SheetTitle className="sr-only">Portfolio navigation</SheetTitle>
               <div className="flex flex-col h-full">
                 {/* Mobile header */}
                 <div className="flex items-center gap-3 p-6 border-b border-white/[0.06]">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden border border-white/10">
-                    <img src={profileImage} alt="Chrispine Mndala" className="h-full w-full object-cover" />
+                    <img
+                      src={profileImage}
+                      alt="Chrispine Mndala"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-white">Chrispine</div>
-                    <div className="text-[10px] font-mono text-primary/70 tracking-wider">SYSTEMS ARCHITECT</div>
+                    <div className="text-sm font-bold text-white">
+                      Chrispine
+                    </div>
+                    <div className="text-[10px] font-mono text-primary/70 tracking-wider">
+                      ENGINEER · OPERATOR
+                    </div>
                   </div>
                 </div>
 
@@ -192,7 +250,12 @@ export function Navigation() {
                     const active = isActive(item.path);
                     const Icon = item.icon;
                     return (
-                      <Link key={item.path} href={item.path} onPointerEnter={()=>preloadPublicRoute(item.path)} onFocus={()=>preloadPublicRoute(item.path)}>
+                      <Link
+                        key={item.path}
+                        href={item.path}
+                        onPointerEnter={() => preloadPublicRoute(item.path)}
+                        onFocus={() => preloadPublicRoute(item.path)}
+                      >
                         <motion.div
                           onClick={() => setMobileMenuOpen(false)}
                           className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${
@@ -202,8 +265,12 @@ export function Navigation() {
                           }`}
                           whileTap={{ scale: 0.98 }}
                         >
-                          <Icon className={`w-4 h-4 flex-shrink-0 ${active ? "text-primary" : ""}`} />
-                          <span className="flex-1 text-sm font-medium">{item.label}</span>
+                          <Icon
+                            className={`w-4 h-4 flex-shrink-0 ${active ? "text-primary" : ""}`}
+                          />
+                          <span className="flex-1 text-sm font-medium">
+                            {item.label}
+                          </span>
                           {active ? (
                             <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                           ) : (
@@ -223,18 +290,26 @@ export function Navigation() {
                     asChild
                     data-testid="button-subscribe-mobile"
                   >
-                    <Link href="/subscribe" onClick={() => setMobileMenuOpen(false)}>Subscribe to Newsletter</Link>
+                    <Link
+                      href="/subscribe"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Subscribe to Newsletter
+                    </Link>
                   </Button>
                   <Button
                     className="w-full h-11 text-sm font-semibold"
                     style={{
-                      background: "linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 50%))",
-                      boxShadow: "0 0 20px rgba(59,130,246,0.3)",
+                      background: "#d3be7b",
+                      color: "#142b24",
+                      boxShadow: "none",
                     }}
                     asChild
                     data-testid="button-book-call-mobile"
                   >
-                    <Link href="/hire" onClick={() => setMobileMenuOpen(false)}>Book a Discovery Call</Link>
+                    <Link href="/hire" onClick={() => setMobileMenuOpen(false)}>
+                      Book a Discovery Call
+                    </Link>
                   </Button>
                 </div>
               </div>
