@@ -2,8 +2,11 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    const payload = await res.json().catch(() => null);
+    const requestId = res.headers.get("X-Request-Id") ?? payload?.requestId;
+    const fields = Array.isArray(payload?.fields) ? payload.fields.map((v: {message?:string}) => v.message).filter(Boolean).slice(0,3).join(". ") : "";
+    const message = res.status >= 500 ? "Service temporarily unavailable. Please retry." : fields || payload?.message || payload?.error?.message || `Request failed (${res.status})`;
+    throw new Error(`${message}${requestId ? ` Reference: ${requestId}` : ""}`);
   }
 }
 

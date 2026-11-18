@@ -11,6 +11,7 @@ import { useCustomAuth } from "@/hooks/useCustomAuth";
 
 const navigation = [
   { label: "Overview", path: "/admin", icon: LayoutDashboard, permission: "analytics.read", live: true },
+  { label: "Engineering workspace", path: "/admin/workspace", icon: Workflow, permission: "engineering.read", live: true },
   { label: "Content", path: "/admin/content", icon: BookOpen, permission: "content.read", live: true },
   { label: "Projects", path: "/admin/projects", icon: FolderKanban, permission: "portfolio.read", live: true },
   { label: "Case studies", path: "/admin/case-studies", icon: FileCheck2, permission: "portfolio.read", live: true },
@@ -76,7 +77,7 @@ export function AdminShell({ children, title, description }: { children: ReactNo
         <Sheet><SheetTrigger asChild><Button variant="ghost" size="icon" className="lg:hidden"><Menu className="h-5 w-5" /></Button></SheetTrigger>
           <SheetContent side="left" className="w-72 border-white/[0.07] bg-[#0b0e18] p-0"><div className="border-b border-white/[0.07] p-5 font-black">ADMIN <span className="text-primary">COMMAND</span></div><AdminNavigation /></SheetContent></Sheet>
         <div className="min-w-0 flex-1"><h1 className="truncate text-lg font-bold sm:text-xl">{title}</h1>{description && <p className="hidden truncate text-xs text-white/35 sm:block">{description}</p>}</div>
-        <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-[10px] font-mono text-emerald-400"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />SYSTEM ONLINE</div>
+        <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-[10px] font-mono text-emerald-400"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />PROTECTED WORKSPACE</div>
       </header>
       <main className="p-4 sm:p-6 lg:p-8">{children}</main>
     </div>

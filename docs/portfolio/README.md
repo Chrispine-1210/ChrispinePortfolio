@@ -37,7 +37,8 @@ Each case covers objectives, problem selection, Malawi context, features, compon
 | vite-react / vercel-with-neon-postgres | Template/infrastructure repositories; no separate client-delivery claim |
 | Chrispine-1210 | Profile repository; no software-delivery case |
 | 6f97fc4c6c87 | Hosting record with no deployment; no implementation inferred |
-| Revenue execution / operating control / release control workspaces | Prior requests/artifact history are not enough to certify a current hosted implementation; canonical source/deployment evidence remains a gap |
+| Revenue execution / operating control workspaces | Owner-restricted Sites verified on 18 November 2026; launch links preserved in the private engineering workspace. Private records are not exposed as public portfolio cases. |
+| Release control workspace | Prior artifact history does not certify its current hosted implementation; current source/deployment evidence remains a gap |
 
 ## Publication and maintenance
 
@@ -64,3 +65,5 @@ No project is assigned invented savings or return on investment. Each case ident
 `monthly net benefit = time released × loaded labour cost + verified avoided rework − incremental hosting/provider/support cost`
 
 Time released is capacity unless it reduces an actual expense. Revenue requires attributable collected cash and direct-cost evidence. A price, invoice, target, sample ledger or pipeline amount is not a collection.
+
+The subsequent [engineering-workspace foundation](../engineering-workspace/README.md) adds the public journal, private daily operations and cross-workspace map without changing the already published casebook revision.
