@@ -40,9 +40,9 @@ export function CaseStudyCover({ project, className }: CaseStudyCoverProps) {
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover"
       />
-      {cover.isIllustration && (
+      {(cover.isIllustration || cover.src.endsWith("-architecture.svg")) && (
         <figcaption className="absolute bottom-3 left-3 rounded-md bg-black/80 px-2.5 py-1 text-xs text-white">
-          AI-generated illustration
+          {cover.isIllustration ? "AI-generated illustration" : "Architecture diagram · source review"}
         </figcaption>
       )}
     </figure>

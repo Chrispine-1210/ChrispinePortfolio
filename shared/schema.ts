@@ -437,6 +437,11 @@ export type PublicCaseStudyEvidence = Pick<
 >;
 export type PublicPortfolioProject = PortfolioProject & {
   evidence: PublicCaseStudyEvidence[];
+  dossier?: Pick<CaseStudy,
+    "constraints" | "objectives" | "architecture" | "securityControls" |
+    "integrations" | "roleDescription" | "teamDescription" | "timeline" |
+    "lessons" | "nextPhase"
+  >;
 };
 
 // Newsletter subscribers
