@@ -1,161 +1,203 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useRoute } from "wouter";
-import { BlogPost as BlogPostType } from "@shared/schema";
-import { setSEO } from "@/lib/seoHelper";
-import { EditorialPhoto, articlePhoto } from "@/components/EditorialPhoto";
-import { motion } from "framer-motion";
-import { Terminal, Calendar, Tag, Clock, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Link, useRoute } from "wouter";
 import ReactMarkdown from "react-markdown";
+import { ArrowLeft, ArrowUpRight, Share2 } from "lucide-react";
+import type { BlogPost as Article } from "@shared/schema";
+import { EditorialPage } from "@/components/editorial/EditorialPage";
+import {
+  articlePhoto,
+  editorialPhotoSource,
+  PhotoCredit,
+} from "@/components/EditorialPhoto";
+import { setSEO } from "@/lib/seoHelper";
 
 export default function BlogPost() {
   const [, params] = useRoute("/blog/:slug");
-  const slug = params?.slug;
-
-  const { data: post, isLoading } = useQuery<BlogPostType>({
-    queryKey: ["/api/blog", slug],
+  const [shareStatus, setShareStatus] = useState("");
+  const post = useQuery<Article>({
+    queryKey: ["/api/blog", params?.slug],
+    enabled: !!params?.slug,
   });
-
   useEffect(() => {
-    if (post) {
+    if (post.data)
       setSEO(
-        `${post.title} | TECH_LOGS | Chrispine Mndala`,
-        post.excerpt,
-        `/blog/${post.slug}`
+        `${post.data.title} | Chrispine Mndala`,
+        post.data.excerpt,
+        `/blog/${post.data.slug}`,
       );
+  }, [post.data]);
+  useEffect(() => {
+    setShareStatus("");
+  }, [params?.slug]);
+  async function share() {
+    if (!post.data) return;
+    const url = new URL(`/blog/${post.data.slug}`, window.location.origin).href;
+    try {
+      if (navigator.share)
+        await navigator.share({ title: post.data.title, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        setShareStatus("Article link copied.");
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError"))
+        setShareStatus(
+          "The link could not be shared. You can copy the address from your browser.",
+        );
     }
-  }, [post]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen pt-24 bg-[#0a0c14] flex items-center justify-center">
-        <div className="text-primary font-mono animate-pulse">DECRYPTING_POST...</div>
-      </div>
-    );
   }
-
-  if (!post) {
-    return (
-      <div className="min-h-screen pt-24 bg-[#0a0c14] flex items-center justify-center">
-        <div className="text-destructive font-mono">POST_NOT_FOUND</div>
-      </div>
-    );
-  }
-
+  const article = post.data;
   return (
-    <div className="min-h-screen pt-24 pb-20 bg-[#0a0c14] relative overflow-hidden">
-      <div className="tech-grid-bg opacity-10" />
-      
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-8"
-        >
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary text-white font-mono text-[10px] font-black uppercase">
-              <Terminal size={12} />
-              LOG_ENTRY // {post.category}
-            </div>
-            <h1 className="text-4xl sm:text-6xl font-black text-white uppercase tracking-tighter leading-tight">
-              {post.title}
-            </h1>
-            <div className="flex flex-wrap gap-6 text-muted-foreground font-mono text-[10px] uppercase">
-              <div className="flex items-center gap-2">
-                <Calendar size={12} className="text-primary" />
-                {new Date(post.publishedAt || "").toLocaleDateString()}
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock size={12} className="text-primary" />
-                {post.readTimeMinutes} min read
-              </div>
-              <div className="flex items-center gap-2">
-                <Tag size={12} className="text-primary" />
-                {post.tags?.join(", ")}
-              </div>
-            </div>
-            
-            {/* Share Buttons */}
-            <div className="flex flex-wrap gap-2 pt-4">
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-xs"
-                onClick={() => {
-                  const url = `${window.location.href}`;
-                  if (navigator.share) {
-                    navigator.share({ title: post.title, url });
-                  } else {
-                    navigator.clipboard.writeText(url);
-                  }
-                }}
-                data-testid="button-share-post"
-              >
-                <Share2 className="w-3 h-3 mr-1" />
-                SHARE
-              </Button>
-            </div>
-          </div>
-
-          {post.featuredImage ? (
-            <div className="relative aspect-video overflow-hidden tech-card border-none rounded-none">
-              <img
-                src={post.featuredImage}
-                alt={post.title}
-                className="w-full h-full object-cover grayscale opacity-80"
-              />
-              <div className="scanline" />
-            </div>
-          ) : (
-            <EditorialPhoto photo={articlePhoto(post.category)} />
-          )}
-
-          <div className="space-y-8 text-sm leading-relaxed opacity-90">
-            <ReactMarkdown
-              components={{
-                code({ node, inline, className, children, ...props }: any) {
-                  const match = /language-(\w+)/.exec(className || "");
-                  return !inline ? (
-                    <div className="my-6 tech-card rounded-none overflow-hidden border-primary/20">
-                      <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 flex justify-between items-center">
-                        <span className="text-[10px] font-black text-primary uppercase">
-                          CODE_SNIPPET // {match?.[1] || "plain"}
-                        </span>
-                      </div>
-                      <pre className="m-0 overflow-x-auto bg-black/50 p-4 text-xs leading-6 text-slate-200">
-                        <code className={className} {...props}>
-                          {String(children).replace(/\n$/, "")}
-                        </code>
-                      </pre>
-                    </div>
-                  ) : (
-                    <code className="bg-primary/10 text-primary px-1 py-0.5 rounded" {...props}>
-                      {children}
-                    </code>
-                  );
-                },
-                img: (props) => (
-                  <div className="my-10 relative group inline-block w-full">
-                    <img
-                      {...props}
-                      className="w-full tech-card border-primary/10 rounded-none grayscale group-hover:grayscale-0 transition-all duration-700"
-                    />
-                    <div className="absolute top-4 left-4 font-mono text-[8px] bg-black/80 px-2 py-1 text-primary border border-primary/30 uppercase opacity-0 group-hover:opacity-100 transition-opacity">
-                      IMG_ASSET // {props.alt || "image"}
-                    </div>
-                  </div>
-                ),
-                p: (props) => <p className="text-muted-foreground leading-relaxed" {...props} />,
-                h2: (props) => <h2 className="text-2xl font-bold mt-8 mb-4 text-foreground" {...props} />,
-                h3: (props) => <h3 className="text-xl font-bold mt-6 mb-3 text-foreground" {...props} />,
-              }}
+    <EditorialPage>
+      <article className="editorial-reading">
+        <Link href="/blog" className="editorial-text-link">
+          <ArrowLeft size={16} /> All writing
+        </Link>
+        {post.isLoading ? (
+          <p className="editorial-copy" role="status" style={{ marginTop: 35 }}>
+            Loading the article…
+          </p>
+        ) : !article ? (
+          <div
+            className="editorial-empty"
+            role="alert"
+            style={{ marginTop: 35 }}
+          >
+            <h1 style={{ fontSize: 32 }}>This article is unavailable.</h1>
+            <p className="editorial-copy">
+              It may be unpublished, or the connection may have failed.
+            </p>
+            <button
+              className="editorial-button secondary"
+              style={{ marginTop: 20 }}
+              onClick={() => post.refetch()}
             >
-              {post.content}
-            </ReactMarkdown>
+              Try again
+            </button>
           </div>
-        </motion.div>
+        ) : (
+          <>
+            <header style={{ paddingTop: 30 }}>
+              <span className="editorial-kicker">
+                {article.category}
+                {article.isPremium ? " · Premium" : ""}
+              </span>
+              <h1 style={{ fontSize: "clamp(38px, 5vw, 62px)" }}>
+                {article.title}
+              </h1>
+              <p className="editorial-lead">{article.excerpt}</p>
+              <div className="editorial-count">
+                <span>
+                  Chrispine Mndala · {article.readTimeMinutes ?? 5} min read
+                  {article.publishedAt && (
+                    <>
+                      {" "}
+                      ·{" "}
+                      <time
+                        dateTime={new Date(article.publishedAt).toISOString()}
+                      >
+                        {new Date(article.publishedAt).toLocaleDateString(
+                          "en-GB",
+                          {
+                            timeZone: "Africa/Blantyre",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
+                      </time>
+                    </>
+                  )}
+                </span>
+                <button
+                  className="editorial-text-link"
+                  onClick={share}
+                  data-testid="button-share-post"
+                >
+                  <Share2 size={15} /> Share article
+                </button>
+              </div>
+              <p role="status" className="editorial-copy">
+                {shareStatus}
+              </p>
+            </header>
+            <figure className="editorial-article-image">
+              <img
+                src={
+                  article.featuredImage ||
+                  editorialPhotoSource(articlePhoto(article.category))
+                }
+                alt={article.title}
+              />
+              {!article.featuredImage && (
+                <figcaption>
+                  <PhotoCredit photo={articlePhoto(article.category)} />
+                </figcaption>
+              )}
+            </figure>
+            {article.content ? (
+              <div className="editorial-prose">
+                <ReactMarkdown
+                  skipHtml
+                  components={{
+                    a: ({ href, children }) => (
+                      <a href={href} target="_blank" rel="noopener noreferrer">
+                        {children}
+                      </a>
+                    ),
+                  }}
+                >
+                  {article.content}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <div className="editorial-empty">
+                <h2>
+                  {article.isPremium
+                    ? "This is a premium article."
+                    : "The article content is unavailable."}
+                </h2>
+                <p className="editorial-copy">
+                  {article.isPremium
+                    ? "The public preview includes the summary. Membership access is required for the full article."
+                    : "Please check back for the complete article."}
+                </p>
+                {article.isPremium && (
+                  <Link
+                    href="/subscribe"
+                    className="editorial-text-link"
+                    style={{ marginTop: 18 }}
+                  >
+                    View membership information <ArrowUpRight size={16} />
+                  </Link>
+                )}
+              </div>
+            )}
+            <ul
+              className="editorial-tags"
+              aria-label="Article tags"
+              style={{ marginTop: 35 }}
+            >
+              {(article.tags ?? []).map((tag) => (
+                <li key={tag}>{tag}</li>
+              ))}
+            </ul>
+            <section className="editorial-bridge">
+              <div>
+                <h2>Go from the explanation to the system.</h2>
+                <p>
+                  Explore the project casebooks for architecture, development
+                  decisions and recorded interface evidence.
+                </p>
+              </div>
+              <Link href="/portfolio" className="editorial-button">
+                Explore the work <ArrowUpRight size={16} />
+              </Link>
+            </section>
+          </>
+        )}
       </article>
-    </div>
+    </EditorialPage>
   );
 }
