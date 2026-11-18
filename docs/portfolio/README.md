@@ -67,3 +67,5 @@ No project is assigned invented savings or return on investment. Each case ident
 Time released is capacity unless it reduces an actual expense. Revenue requires attributable collected cash and direct-cost evidence. A price, invoice, target, sample ledger or pipeline amount is not a collection.
 
 The subsequent [engineering-workspace foundation](../engineering-workspace/README.md) adds the public journal, private daily operations and cross-workspace map without changing the already published casebook revision.
+
+The current editorial source revision is `portfolio-casebooks-20261118-v2`, which uses provider-neutral historical identity wording. Version 1 was published earlier; version 2 is not silently imported by source synchronization. `scripts/build-portfolio-casebooks.py` and `source-review-index-2026-11-18.json` reproduce the reviewed authoring output without raw private source responses.

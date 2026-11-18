@@ -1,6 +1,6 @@
 # Release and migration boundaries
 
-This slice is stacked on `agent/project-casebooks-20261118`. It is not merged or deployed to production by these instructions.
+This slice was developed on top of `agent/project-casebooks-20261118`. Current source consolidation is recorded in [workspace synchronization](../workspace-sync/README.md). Source integration does not activate production or waive the migration and dependency-audit gates below.
 
 ## Current evidence
 

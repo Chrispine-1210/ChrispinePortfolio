@@ -32,7 +32,7 @@ Subscriber entities are audience records. No active premium payment, subscriptio
 
 ![Component architecture diagram; conceptual source model](https://raw.githubusercontent.com/Chrispine-1210/ChrispinePortfolio/agent/project-casebooks-20261118/client/public/project-evidence/2026-11-18/leadersspark-publishing-platform-architecture.svg)
 
-React interface → Express routes and Replit-auth integration → storage abstraction with PostgreSQL/Drizzle schema. Entities include sessions, users, subscribers, posts, comments, likes, reactions and bookmarks. The upload code writes local image/video directories.
+React interface → Express routes and hosted OpenID Connect identity integration → storage abstraction with PostgreSQL/Drizzle schema. Entities include sessions, users, subscribers, posts, comments, likes, reactions and bookmarks. The upload code writes local image/video directories.
 
 ### Algorithms and decision rules
 
