@@ -171,8 +171,9 @@ async function audit(
   previousState: unknown,
   newState: unknown,
   justification?: string,
+  writer: Pick<typeof db, "insert"> = db,
 ) {
-  await db.insert(auditEvents).values({
+  await writer.insert(auditEvents).values({
     actorUserId: request.securityPrincipal?.userId ?? null,
     actorSessionId: request.securityPrincipal?.sessionId ?? null,
     action,
@@ -799,31 +800,44 @@ export function createCapitalOperatingRouter() {
   router.post(
     "/api/admin/capital/budgets/:id/close",
     requireAdminPermission("capital.budget.approve"),
-    async (request, response) => {
-      const [previous] = await db.select().from(capitalBudgetCycles)
-        .where(eq(capitalBudgetCycles.id, request.params.id)).limit(1);
-      if (!previous) return response.status(404).json({ message: "Capital budget not found" });
-      const sourceReference = request.body?.certificationSourceReference;
-      const certificationCleanup = process.env.VERCEL_ENV === "preview" &&
-        typeof sourceReference === "string" &&
-        /^preview-cert-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[0-9a-f]{8}-budget$/.test(sourceReference) &&
-        sourceReference === previous.sourceReference;
-      if (sourceReference !== undefined && !certificationCleanup) {
-        return response.status(409).json({ message: "Preview certification budget reference does not match" });
+    async (request, response, next) => {
+      try {
+        const result = await db.transaction(async (transaction) => {
+          // Approval takes this same row lock: cleanup sees its committed state.
+          await transaction.execute(sql`select id from capital_budget_cycles where id = ${request.params.id} for update`);
+          const [previous] = await transaction.select().from(capitalBudgetCycles)
+            .where(eq(capitalBudgetCycles.id, request.params.id)).limit(1);
+          if (!previous) return { outcome: "missing" as const };
+          const sourceReference = request.body?.certificationSourceReference;
+          const certificationCleanup = process.env.VERCEL_ENV === "preview" &&
+            typeof sourceReference === "string" &&
+            /^preview-cert-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[0-9a-f]{8}-budget$/.test(sourceReference) &&
+            sourceReference === previous.sourceReference;
+          if (sourceReference !== undefined && !certificationCleanup) {
+            return { outcome: "reference" as const };
+          }
+          if (previous.status !== "approved" && !(certificationCleanup && previous.status === "draft")) {
+            return { outcome: "locked" as const };
+          }
+          const [record] = await transaction.update(capitalBudgetCycles).set({
+            status: "closed",
+            closedAt: new Date(),
+          }).where(and(
+            eq(capitalBudgetCycles.id, previous.id),
+            eq(capitalBudgetCycles.status, previous.status),
+          )).returning();
+          if (!record) return { outcome: "changed" as const };
+          await audit(request, "capital.budget.close", "capital_budget", previous.id, previous, record, undefined, transaction);
+          return { outcome: "ok" as const, record };
+        });
+        if (result.outcome === "missing") return response.status(404).json({ message: "Capital budget not found" });
+        if (result.outcome === "reference") return response.status(409).json({ message: "Preview certification budget reference does not match" });
+        if (result.outcome === "locked") return response.status(409).json({ message: "Only an approved budget can be closed" });
+        if (result.outcome === "changed") return response.status(409).json({ message: "Budget status changed before close" });
+        response.json(result.record);
+      } catch (error) {
+        next(error);
       }
-      if (previous.status !== "approved" && !(certificationCleanup && previous.status === "draft")) {
-        return response.status(409).json({ message: "Only an approved budget can be closed" });
-      }
-      const [record] = await db.update(capitalBudgetCycles).set({
-        status: "closed",
-        closedAt: new Date(),
-      }).where(and(
-        eq(capitalBudgetCycles.id, previous.id),
-        eq(capitalBudgetCycles.status, previous.status),
-      )).returning();
-      if (!record) return response.status(409).json({ message: "Budget status changed before close" });
-      await audit(request, "capital.budget.close", "capital_budget", previous.id, previous, record);
-      response.json(record);
     },
   );
 

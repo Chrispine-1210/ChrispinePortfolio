@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("node:child_process", async (importOriginal) => ({
@@ -27,6 +27,7 @@ function mockVercel(scenario: Scenario) {
   const requests: string[] = [];
   const budgets: Array<{ id: string; sourceReference: string; status: string }> = [];
   const deployments: Array<{ id: string; sourceReference: string; voidedAt: string | null }> = [];
+  const requestFiles: string[] = [];
   let budgetReads = 0;
   let deploymentReads = 0;
   let loggedOut = false;
@@ -38,7 +39,15 @@ function mockVercel(scenario: Scenario) {
     if (argv[0] === "whoami") return exit(0);
     const path = argv[1];
     const method = argv.includes("-X") ? argv[argv.indexOf("-X") + 1] : "GET";
-    const body = argv.includes("--data") ? JSON.parse(argv[argv.indexOf("--data") + 1]) : undefined;
+    expect(argv.join(" ")).not.toContain("synthetic-fixture-password");
+    expect(argv.join(" ")).not.toContain("admin_session=fixture");
+    const privateFiles = argv.filter((arg) => arg.startsWith("@")).map((arg) => arg.slice(1));
+    for (const file of privateFiles) {
+      expect(statSync(file).mode & 0o777).toBe(0o600);
+      requestFiles.push(file);
+    }
+    const bodyFile = argv.includes("--data-binary") ? argv[argv.indexOf("--data-binary") + 1] : undefined;
+    const body = bodyFile ? JSON.parse(readFileSync(bodyFile.slice(1), "utf8")) : undefined;
     const request = `${method} ${path}`;
     requests.push(request);
     const reply = (status: number, json: unknown, headers = "") => {
@@ -112,7 +121,7 @@ function mockVercel(scenario: Scenario) {
     }
   });
 
-  return { requests, budgets, deployments };
+  return { requests, budgets, deployments, requestFiles };
 }
 
 describe("treasury Preview certification cleanup", () => {
@@ -134,10 +143,11 @@ describe("treasury Preview certification cleanup", () => {
     { scenario: "lost-over-allocation", recoveredBudgetIds: [], recoveredDeploymentIds: ["excess-deployment"], voided: ["valid-deployment", "excess-deployment"] },
   ] as const)("cleans up after $scenario and preserves the failing exit", async ({ scenario, recoveredBudgetIds, recoveredDeploymentIds, voided }) => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    const { requests, budgets, deployments } = mockVercel(scenario);
+    const { requests, budgets, deployments, requestFiles } = mockVercel(scenario);
 
     await expect(import("../scripts/certify-treasury-preview.mjs")).rejects.toThrow("Simulated response loss");
 
+    expect(requestFiles.every((file) => !existsSync(file))).toBe(true);
     expect(budgets[0].status).toBe("closed");
     expect(deployments.filter((row) => row.voidedAt).map((row) => row.id)).toEqual(voided);
     expect(requests.filter((request) => request === closeRequest || request === logoutRequest || request.endsWith("/void")))
@@ -166,11 +176,13 @@ describe("treasury Preview certification cleanup", () => {
 
   it("rechecks deployment identity after cleanup and logout before reporting PASS", async () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
-    const { requests } = mockVercel("success");
+    const { requests, requestFiles } = mockVercel("success");
 
     await import("../scripts/certify-treasury-preview.mjs");
 
     expect(requests.slice(-2)).toEqual([logoutRequest, "GET /api/release"]);
+    expect(requestFiles.length).toBeGreaterThan(0);
+    expect(requestFiles.every((file) => !existsSync(file))).toBe(true);
     expect(JSON.parse(log.mock.calls[0][0])).toMatchObject({ decision: "PASS", validDeploymentStatus: 201, overAllocationStatus: 409 });
   });
 

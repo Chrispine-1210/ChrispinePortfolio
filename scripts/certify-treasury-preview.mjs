@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { randomUUID } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -79,10 +79,19 @@ function runRequest(path, { method = "GET", body, cookie } = {}) {
       "-H", "Accept: application/json",
     ];
     if (method !== "GET") args.push("-X", method);
-    if (cookie) args.push("-H", `Cookie: ${cookie}`);
-    if (body !== undefined) {
-      args.push("-H", "Content-Type: application/json", "--data", JSON.stringify(body));
+    // Request secrets must never appear in process arguments on a shared host.
+    if (cookie) {
+      const cookieFile = join(dir, "request-cookie.txt");
+      writeFileSync(cookieFile, `Cookie: ${cookie}\n`, { mode: 0o600 });
+      args.push("-H", `@${cookieFile}`);
     }
+    if (body !== undefined) {
+      const requestFile = join(dir, "request.json");
+      writeFileSync(requestFile, JSON.stringify(body), { mode: 0o600 });
+      args.push("-H", "Content-Type: application/json", "--data-binary", `@${requestFile}`);
+    }
+    writeFileSync(headerFile, "", { mode: 0o600 });
+    writeFileSync(bodyFile, "", { mode: 0o600 });
 
     const result = spawnSync("vercel", args, {
       encoding: "utf8",

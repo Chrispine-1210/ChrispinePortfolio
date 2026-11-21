@@ -1,5 +1,7 @@
 # PR #27 reconciliation and independent release verification
 
+This initial record is supplemented by [review hardening](review-hardening.md). The PR body records the final commit-addressed verification and live certification.
+
 PR #27 is reconciled with production/main `6948033ae66cb8138ac856f9fecca4c23b88be78`. The previous PR head was `60e5ffd7a7e6e7ec22a8de0bbd965d4e33d5d779`.
 
 ## Change
