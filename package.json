@@ -1,5 +1,5 @@
 {
-  "name": "rest-express",
+  "name": "chrispine-portfolio",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -14,7 +14,12 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:push": "drizzle-kit push",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
-    "verify:release": "npm run check && npm test && npm run build && npm audit --omit=dev --audit-level=high && npm audit --audit-level=high"
+    "verify:release": "npm run check && npm run check:certification && npm test && npm run build && npm run verify:runtime && npm run audit:release",
+    "certify:treasury-preview": "node scripts/certify-treasury-preview.mjs",
+    "check:certification": "node --check scripts/certify-treasury-preview.mjs",
+    "preview:engineering:qa": "node scripts/qa/engineering-preview.mjs",
+    "audit:release": "node scripts/audit-release.mjs",
+    "verify:runtime": "node scripts/verify-production-imports.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.2",
@@ -78,7 +83,6 @@
     "recharts": "^2.15.2",
     "stripe": "^19.3.0",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss-animate": "^1.0.7",
     "tw-animate-css": "^1.2.5",
     "twilio": "^6.0.2",
     "vaul": "^1.1.2",
@@ -108,7 +112,8 @@
     "tsx": "^4.20.5",
     "typescript": "5.6.3",
     "vite": "^8.1.5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "tailwindcss-animate": "^1.0.7"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
@@ -116,5 +121,15 @@
   "overrides": {
     "lodash": "4.18.1",
     "path-to-regexp": "0.1.13"
-  }
+  },
+  "private": true,
+  "author": {
+    "name": "Chrispine Mndala",
+    "url": "https://chrispine-portfolio.vercel.app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Chrispine-1210/ChrispinePortfolio.git"
+  },
+  "homepage": "https://chrispine-portfolio.vercel.app"
 }

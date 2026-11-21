@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const SOURCE_ROOTS = ["api", "server", "shared", "scripts"];
-const RUNTIME_EXTENSION = /\.(?:js|json|node|css|svg|png|jpe?g|webp|gif|woff2?)(?:[?#].*)?$/;
+const RUNTIME_EXTENSION = /\.(?:[cm]?js|json|node|css|svg|png|jpe?g|webp|gif|woff2?)(?:[?#].*)?$/;
 const RELATIVE_IMPORT = /(?:from\s+|import\s*\()(["'])(\.{1,2}\/[^"']+)\1/g;
 
 async function collectTypeScriptFiles(directory: string): Promise<string[]> {

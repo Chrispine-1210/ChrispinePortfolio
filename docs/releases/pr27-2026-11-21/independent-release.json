@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-11-21",
+  "baseCommit": "6948033ae66cb8138ac856f9fecca4c23b88be78",
+  "previousPrHead": "60e5ffd7a7e6e7ec22a8de0bbd965d4e33d5d779",
+  "executor": "Codex workspace, independent of GitHub-hosted Actions",
+  "node": "v24.22.3",
+  "npm": "11.19.1",
+  "install": "npm ci --no-fund --no-audit",
+  "command": "npm run verify:release",
+  "exitCode": 0,
+  "testFiles": 12,
+  "tests": 107,
+  "productionVulnerabilities": 0,
+  "fullAudit": {
+    "moderate": 6,
+    "high": 0,
+    "critical": 0,
+    "exceptionsUsed": 0
+  },
+  "lockSha256": "cbdc38dc64a7db6fb43ab56fbca918c18caaf0f09677e7cae75ab5531ab7abcd",
+  "releaseLogSha256": "f928aaa99086cf17aaf569f666b02d706c34e9074173419bdf10ae0ff5c68ce7",
+  "clientDiffAgainstBase": "empty",
+  "githubActions": "blocked by account billing lock; not certified",
+  "codeql": "not executed by this independent release suite",
+  "livePreviewCertification": "historical PASS at 4a1cf0d62eb8e4cb44d6dc4db9dfa7b889df1dad; not a current-head PASS",
+  "productionActivation": "not performed"
+}

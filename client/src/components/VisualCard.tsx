@@ -44,16 +44,11 @@ export function VisualCard({
       className="h-full"
     >
       <Card
-        className={`
-          flex flex-col h-full tech-card group
-          transition-all duration-300
-          ${
-            variant === "featured"
-              ? "hover:shadow-[0_0_40px_rgba(59,130,246,0.4)] border-primary/50"
-              : "hover:shadow-[0_0_30px_rgba(59,130,246,0.3)]"
-          }
-          ${variant === "interactive" ? "cursor-pointer hover:scale-105" : ""}
-        `}
+        className={` flex flex-col h-full tech-card group transition-all duration-300 ${
+          variant === "featured"
+            ? "hover:shadow-sm border-primary/50"
+            : "hover:shadow-sm"
+        } ${variant === "interactive" ? "cursor-pointer hover:scale-105" : ""} `}
       >
         {image && (
           <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-blue-600/20">
@@ -69,7 +64,7 @@ export function VisualCard({
         <CardHeader className="flex-none">
           <div className="flex items-center gap-3">
             {icon && <div className="text-primary text-2xl">{icon}</div>}
-            <CardTitle className="text-xl font-black text-white uppercase tracking-tighter">
+            <CardTitle className="text-xl font-black text-foreground uppercase tracking-tighter">
               {title}
             </CardTitle>
           </div>
@@ -77,7 +72,7 @@ export function VisualCard({
 
         {description && (
           <CardContent className="flex-1">
-            <p className="text-muted-foreground font-mono text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               {description}
             </p>
           </CardContent>

@@ -5,7 +5,7 @@ Last updated: 2026-07-23
 ## Completed
 
 - Phase 0 repository, architecture, data, deployment and security audit.
-- Replit configuration and references removed from the application repository.
+- Legacy host-specific configuration and references removed from the application repository.
 - GitHub repository and Vercel project connected with the correct serverless API routing.
 - All authoritative blog, portfolio and email-template mutations protected by administrator middleware.
 - Analytics and database seed administration endpoints made administrator-only.

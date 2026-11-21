@@ -1,0 +1,2522 @@
+{
+  "date": "2026-11-18",
+  "timeZone": "Africa/Blantyre",
+  "sourceParent": "625db9fbda258f68b70bc025d9f8321e2104f9a0",
+  "projectFileCount": 392,
+  "projectFiles": [
+    {
+      "path": ".env.example",
+      "bytes": 1429,
+      "sha256": "b6c898dab49f5cad6bf4ee60b64804d304e854ea2e523297955d7bd05862412d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": ".github/workflows/codeql.yml",
+      "bytes": 4794,
+      "sha256": "1e16016b75ee59c1b5cee3d58a8af4bedef4b1c6c7e390aabe4ce0231228b288",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": ".github/workflows/quality.yml",
+      "bytes": 838,
+      "sha256": "ed75fd963d961da47a1d72906aec3c126365cd20b26960519c242f4f7ed61595",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 216,
+      "sha256": "3246a7e93f535c15771cb7f747313b06994f883f9cd00b255925cf62fb19b2b6",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "ADMIN_PLATFORM_PROGRESS.md",
+      "bytes": 5194,
+      "sha256": "03c446088211a867a89e54437d3f9ba68de84da0b6de7bd247df74948eadcd56",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "APPLICATION_IMPROVEMENTS.md",
+      "bytes": 5729,
+      "sha256": "b98d4e30d9ecd3d70fa542187023f28889aabf05d5fafb6cb8d7de0dcecf51d2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "AUTHORS.md",
+      "bytes": 535,
+      "sha256": "f750cd50c7381b644985e119d91ad18069691529ac7338e9c2f3024be139802a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "COMPLETE_UPGRADE_STATUS.md",
+      "bytes": 4769,
+      "sha256": "7e76322ff7e78f0eb2ea55e52b8ae6ebefa8ca836a5378ed65422265bb4cd0e5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "FINAL_UPGRADE_SUMMARY.md",
+      "bytes": 4664,
+      "sha256": "0a60102c1326ebcb5fb72a54c3aed3a3e0456f986a83d0e8916b91aa6b70c280",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1073,
+      "sha256": "d6dfa6009bed8a29adb892210b80d1307cde02b70a3237b6ab18d703445f7c84",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3779,
+      "sha256": "53ef446196992c56935b91624c630ce5a4a7e2d5e75ab0fbcdd03ee044369959",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "UPGRADE_SUMMARY.md",
+      "bytes": 2769,
+      "sha256": "6421c9848119c9f427287d441851df772073cb45c29be6294d4e22a065d91c88",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "api/index.ts",
+      "bytes": 61,
+      "sha256": "79cec90a7ac19b3a3ea66faf7912994c0a4ebc41b98a30ed82b955d50210b428",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/Chrispine-Mndala-CV-2026.pdf",
+      "bytes": 46127,
+      "sha256": "25ed9154a04f50d56acd026e787d5c3db6f7b8bab4c9ed8bb29410a9dbbabf7c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/Pasted--Transform-the-entire-project-into-a-complete-Enterpris_1784235418382.txt",
+      "bytes": 9113,
+      "sha256": "2a696b9ee2f1108d28223775dc7e99f0d5452ef6014a6e4fe52abd82d08a7b94",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/Pasted-Continue-Autonomous-Mode-Execute-Phase-3-Authority-Trus_1784048400142.txt",
+      "bytes": 4432,
+      "sha256": "d130ee32f19e71132fbb5a3d88dcb40950357b192e0d04789d1aa0e29da674c5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/Pasted-Continue-Autonomous-Mode-Execute-Phase-4-Final-Enterpri_1784048952870.txt",
+      "bytes": 2861,
+      "sha256": "7570d30a2fa1327a17175fcf654fbf60e2259f7099eb159ab969b522996b0ccd",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/Pasted-Continue-Autonomous-Mode-Perform-Phase-2-Executive-Leve_1784048007962.txt",
+      "bytes": 3872,
+      "sha256": "8741b76c0b62e2177be9106c4245cd514a29769e02018276d90f9a04c7b7c4cb",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/Pasted-You-are-a-world-class-portfolio-strategist-senior-UI-UX_1784047167727.txt",
+      "bytes": 4541,
+      "sha256": "88521f8f20fc523adfc878e9ed20038d2ca3c03356681964b46a7c3af114f3c4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/chrispine-personalblog-main_1762954710078.zip",
+      "bytes": 3866886,
+      "sha256": "e50caaf51b6021c31618a127c6d7ace7da3fb7ac8e7b4e669795a10fb9183d14",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/generated_images/Data_visualization_blog_header_e2cd350a.png",
+      "bytes": 1328664,
+      "sha256": "9366f04536f5ee2fa0dc7f888314bd6233e1488ecede3e6cfbb16e35679e146e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/generated_images/MEL_analytics_dashboard_screenshot_aabdae3a.png",
+      "bytes": 925030,
+      "sha256": "e85963da8f482bf349ec79fa35e46d28cdb126a397d19961e440090cf655f81c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/generated_images/Network_infrastructure_diagram_3adcffdf.png",
+      "bytes": 640277,
+      "sha256": "b797831eb3292d313ec77e5d157c894979189da611dcb302891c548c18288b6e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/generated_images/Networking_technology_illustration_9313c577.png",
+      "bytes": 1682836,
+      "sha256": "130f3502e46336e7e4c2285447e6ddb9abd5f1b947675be4479fe66d3dbfcfd8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/generated_images/Professional_consulting_presentation_photo_e36fb9f8.png",
+      "bytes": 1487660,
+      "sha256": "029cfce5d72c1b404f4e47909056919ab79fe9570a9d58db6a2af45e95b9a7cd",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/generated_images/Professional_headshot_portrait_eb0606b5.png",
+      "bytes": 1389643,
+      "sha256": "b903e6101bbd2d2eb26edc62be188a0b29587f9400fc963a87727f61dd045a57",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/generated_images/Programming_code_editor_screenshot_a8d5ef89.png",
+      "bytes": 879637,
+      "sha256": "6017d02ae92376778733614f27f8953a6bbce407e108b850721eac826fcacfb9",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/generated_images/Web_application_mockup_f4932951.png",
+      "bytes": 759032,
+      "sha256": "3b8fd75a10c2f3931f9f960c20524b64b5a120ca5c16e1b1e208bbcb20798aae",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/README.md",
+      "bytes": 3574,
+      "sha256": "7ed16038b3f472ae3f884005ec1b5d5e48fafd8ebebf1792e10d297779e1ec59",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/chrispine-portrait.webp",
+      "bytes": 128098,
+      "sha256": "405465f997e80e6973c992863879e3f9ff6d28a1d3ba9ef7f10e3ee53d807478",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/education-workflow.webp",
+      "bytes": 84280,
+      "sha256": "3190aff23ee02e0534ace971c0d0318a5f7984ec3be577180d48ed2018b57922",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/internal-operations.webp",
+      "bytes": 73726,
+      "sha256": "c94e6de673c0acf628629a84900981ab2f97034c6b8f57dc1cb0e66759260301",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/lilongwe-2022.webp",
+      "bytes": 280846,
+      "sha256": "5847d4a58dc5df941f3ea7dd36f7bdccc02e130e4025a355b1484302ad0bc8f4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/photo-code.webp",
+      "bytes": 75326,
+      "sha256": "7c631605490e7a83679337d8370fce8f4d828f7aa7ac3e521d941e36cc49d96e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/photo-collaboration.webp",
+      "bytes": 37584,
+      "sha256": "76898bb8ebb35f3c23f6d781178d459ae8c349c7c6b19b5c00b07f2764705b8a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/photo-contact.webp",
+      "bytes": 71556,
+      "sha256": "a9b9dc7026dba79f497135012316733cc8075b47d5d420b4976b376112d7c11e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/photo-library.webp",
+      "bytes": 103014,
+      "sha256": "1582e3c24ff68eea99b7a70a13103a31984d661a0a8fa61e37369f30ae817b4a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/photo-planning.webp",
+      "bytes": 56558,
+      "sha256": "bd33910b55b0fb8a885f562e2239ccff701552373be5e2213405e3f6e9a081e8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/photo-reading.webp",
+      "bytes": 66984,
+      "sha256": "2437d8677a9daf3fc7382ffd596e011a0928dd249e0ff4348c779b715c89dcb2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/photo-workspace.webp",
+      "bytes": 116058,
+      "sha256": "cd90bd8d6c51d2807bce5a796f556d70d3363c7397f73d7f5b99a4b04bd74b07",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio-editorial/photo-writing.webp",
+      "bytes": 22982,
+      "sha256": "fccae5d3b5b2939278bfc9f3eb0e0dd4e1b454f31498e74663fe35c4a4cd2fc0",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio_photos/chrispine-about-campus.png",
+      "bytes": 2285947,
+      "sha256": "3959e667890b4bb9bc5b57f13b2cbff278608bb9f39ae5b0db31106e5fb6b7f0",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio_photos/chrispine-consulting-office.png",
+      "bytes": 1922880,
+      "sha256": "62c0f87ff470a49b37eb01eb92159ea5ef7383a76a7eeca2d47c1ccd2c9683d2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio_photos/chrispine-edtech-veranda.png",
+      "bytes": 2289558,
+      "sha256": "556a015d3ce7ec1b5e4a29a9ac4a694bd6616aab248cdabbf5f171f9f431ab4b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio_photos/chrispine-executive-transformation.png",
+      "bytes": 1763270,
+      "sha256": "c61aee9c1f98e2676b38f2e78e5859ff5b8e4bf237be7f23bb4d3fceb6b9f71b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio_photos/chrispine-hero-tech.png",
+      "bytes": 2071802,
+      "sha256": "88230c0e4a4196307d75bcc287a3c67447e8b7068ef99ae40d3cbc202a10b7ff",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "attached_assets/portfolio_photos/chrispine-profile-headshot.png",
+      "bytes": 1912772,
+      "sha256": "5403e9ece15a3ce5975ae46759c383ab4444338a8d424aa82b0267928423da83",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/index.html",
+      "bytes": 3426,
+      "sha256": "85a52bc9e184f7109201cd6d002ba6ca0d8cdcce54c26334363100f570ebfc9c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/favicon.png",
+      "bytes": 1145,
+      "sha256": "b6acb73abb0b7e8e808d72c016e81d97860bc7e7e0eb4f06ff76ba1d16a5b04f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/aothothe-enterprise-os-2026-11-18.jpg",
+      "bytes": 83165,
+      "sha256": "b763a699fea0255fe0bdd3605e508767e327d5b4798b41036f4ab424f4a4f442",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/aothothe-enterprise-os-commercial-foundation-architecture.svg",
+      "bytes": 1766,
+      "sha256": "68aeaa311d576e5fce34dfa0631b9ed8603eb4135141a8e67dddce1b77f4d9d5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/area25-commerce-prototype-architecture.svg",
+      "bytes": 1765,
+      "sha256": "d02a660c257624f237900ef32db6a55a01f2a46041ce0571a80b316dc561b79b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/bookingpro-appointment-platform-architecture.svg",
+      "bytes": 1745,
+      "sha256": "42df9eeb0e67bd49a77cec81d6be3527eb53363a182bba45809b08c3340f2aca",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/brandgenius-brand-workbench-architecture.svg",
+      "bytes": 1743,
+      "sha256": "04393a235fada4061cd7bfd11c28e7c07cfb6962e8d435723c7a6f4f1492cdbf",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/chrispine-portfolio-2026-11-18.jpg",
+      "bytes": 78864,
+      "sha256": "a53410f464f9fb41624900f2c115894a187b8970e39ebeb9656e1d495f19c3e5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/chrispine-portfolio-capital-system-architecture.svg",
+      "bytes": 1765,
+      "sha256": "bd53d5f74525fcc5253510e3b321dd0fe4140bc9d88057346f35c4af092795d4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/design-city-2026-11-18.jpg",
+      "bytes": 52147,
+      "sha256": "d8998c3310b89436f0a977ea727cf92e0d79490cc9a1645b48a55dd23dadf128",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/design-city-digital-studio-architecture.svg",
+      "bytes": 1734,
+      "sha256": "90aa85f307d114497519206f1765250a2f0e730a8cfa2eae9470d286025ed45f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/fatima-agro-2026-11-18.jpg",
+      "bytes": 110096,
+      "sha256": "dede64a8bdd119938622a2be3bc41e74c4af92d61940a4a2b7b0bf29eb178d8b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/fatima-agro-digital-operations-architecture.svg",
+      "bytes": 1753,
+      "sha256": "98098e8648e945aecf69d114d047a763cde5460dd1aba4a56d48388f0f9f9514",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/leadersspark-publishing-platform-architecture.svg",
+      "bytes": 1740,
+      "sha256": "0a2c39fe64359d0bb61055120c89bdaf5d592f9c9e5f797357b7d491f7c49b8d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/mec-archived-training-login.png",
+      "bytes": 511769,
+      "sha256": "e89a2f1153c1c8c13eb9cec4e0e19f31bb9dc079e69a804a7de916a1af3b69e2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/mtendere-education-platform-architecture.svg",
+      "bytes": 1761,
+      "sha256": "b6e3803a8db6e81e9d1f5384f84fe49f2bc5bfe74d47ecae83b4a6b9abd26491",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/network-operations-training-architecture.svg",
+      "bytes": 1735,
+      "sha256": "94d6a5e278e5e8ab05dc39091f540fdba91e9265e7735f54084e4946afefb0d9",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/network-ops-2026-11-18.jpg",
+      "bytes": 115185,
+      "sha256": "19f7b8bec313c37b8d2a89efd70b78f5730bf60f2800cec65e1541506d155db9",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/network-ops-incident-2026-11-18.jpg",
+      "bytes": 135432,
+      "sha256": "fc48aa1a653078e9a929070852492f60b1f154c2a4081ded12a07d9c489d5aee",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/scamshield-risk-engine-architecture.svg",
+      "bytes": 1743,
+      "sha256": "a47216ef0e5a7a85d5d7ad887994ca29e502d3d876b4be77ee8c09ffab183169",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/sudern-canary-2026-11-18.jpg",
+      "bytes": 32246,
+      "sha256": "b2d75423d22905e817fcca2f0c1514de5cb8780081ce6632607bacba2394ae89",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/sudern-institutional-operations-architecture.svg",
+      "bytes": 1736,
+      "sha256": "aaa348e0191ac360c2b325aa8c6a7fe9f2bd4871a89126ba6141f7ce6bfe1c0f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/thandizo-healthcare-2026-11-18.jpg",
+      "bytes": 105948,
+      "sha256": "df6a6357707586f8dfc4e6fc4bb43ead2483e36c768225c67ad23646f61aed16",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/thandizo-healthcare-platform-architecture.svg",
+      "bytes": 1768,
+      "sha256": "7dbc2987f312dffb2de8b57b826d3392cabd17d31fb2eb36fb0ce7341eb7c7a7",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/thoko-ordering-paused-2026-11-18.jpg",
+      "bytes": 94191,
+      "sha256": "bd47cda7fbb1c48606d72fe2c320c23cd687375efe68bea6464fb1d12b27a864",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/thoko-restaurant-2026-11-18.jpg",
+      "bytes": 162014,
+      "sha256": "7fa9798e77ae88cb827f399a7f0f4ed32a47a307c206f8cb6d064fd27c64d371",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/thoko-restaurant-operations-architecture.svg",
+      "bytes": 1745,
+      "sha256": "e99a79afa1a2fcd8986b8000b19fa88cdc73c312ce635b857bb9b52b91fa6247",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/thrivebridge-malawi-community-platform-architecture.svg",
+      "bytes": 1761,
+      "sha256": "95ed924bb43b9af5e303804d158f99797c88cf1cf574e4be9ce99863de8a8493",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/validus-circle-2026-11-18.jpg",
+      "bytes": 116863,
+      "sha256": "6f9942530bd7ee2661f4969893662b71e60616c9b3dfef35294de8cf1291d77b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/public/project-evidence/2026-11-18/validus-circle-public-website-architecture.svg",
+      "bytes": 1748,
+      "sha256": "fee44bd191591157e6c3b8cbaa96c0d7664b83832f6ab442b11932c2bbc85353",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/App.tsx",
+      "bytes": 8092,
+      "sha256": "fc68da6822686e060ad26bdd0f84764ff6ef9df86a0a00ddf5a7c4fd34e2f9df",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/BinaryProfileCanvas.tsx",
+      "bytes": 3342,
+      "sha256": "9b4be1000377ec59331d07897a1aa6407c1781268c40e450a786b41133d4311c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/BlogCard.tsx",
+      "bytes": 3732,
+      "sha256": "6970c54ce9b561e8ddf4a33d78a9b507cfca0de812247a2213a80e9422b13824",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/CaseStudyCover.tsx",
+      "bytes": 1806,
+      "sha256": "db0cd4f7ad4ee2f0026b7c028d36965527d30e3c4565804e31aa02ed9d15b331",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ConsultationForm.tsx",
+      "bytes": 13117,
+      "sha256": "992bacb15f295507f8a8f5b55883b067b2a721572ffd05a31899840da5c18cdc",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ContactForm.tsx",
+      "bytes": 10230,
+      "sha256": "3073d2d2cb2bcc7815c275a8704674f406ba0b44a677110828c8e32a94e07c7f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/EditorialPhoto.tsx",
+      "bytes": 3376,
+      "sha256": "b822bafde8ae0462098d9b2a0057a1dcbba843a10d3702e95af645b3b97a99cf",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/EnhancedPortfolioCard.tsx",
+      "bytes": 4915,
+      "sha256": "24e48ee6b8ad73ea3d8eb1a566bb7cf2f8b02ae35b7a7e30f4b8c9f93a2cc55d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ExternalPosts.tsx",
+      "bytes": 3587,
+      "sha256": "f60134cabb72ee56e67d7a93a1c64c832b86ec924767e8364d6ccb152759d6e2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/FeatureGrid.tsx",
+      "bytes": 1956,
+      "sha256": "5088b2d3b94df5eff77fd9c423c88a6e8c5df36639897c657e624421d08509f1",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/Footer.tsx",
+      "bytes": 6185,
+      "sha256": "da2a6b87a5a673e27a6f2896fc7ace27bfc4fe1ada11db785705b773cb1d5b80",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/Hero.tsx",
+      "bytes": 6692,
+      "sha256": "7cf9b27bc71e016f9546c64d5b8655a84977611f147c8a87cbfeeddeda2a41fd",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/HeroSection.tsx",
+      "bytes": 2690,
+      "sha256": "55943828c82d1c32bc2105339996d8108d9010e227183cdd8a41d6a5786dd8ca",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/Navigation.tsx",
+      "bytes": 11252,
+      "sha256": "d6a62ffddd89c6a4d03f1f8cfd8aa8098dfec2b591e2cabf10808b5dd95451d6",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/NewsletterForm.tsx",
+      "bytes": 6862,
+      "sha256": "bd19975b1b0cd5625b21bf1dbc7e1832bc346e0a44b063d74784fd14723a0347",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/PortfolioShowcase.tsx",
+      "bytes": 5337,
+      "sha256": "a311f59c97f2213b555616b2c0dae0028ee20dab9c6b25d6488bc7a8a4db100b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/PricingCards.tsx",
+      "bytes": 4508,
+      "sha256": "e0410dde56a7ba92eee1b03888545f2ccc8963dfa2eee90b379027b41fba80cd",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/RegionalFocus.tsx",
+      "bytes": 3035,
+      "sha256": "3ab5dcc66d4860a09261d81c8c7b57d931a25d56f7543341bac67f815b7c9717",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ServiceGrid.tsx",
+      "bytes": 3454,
+      "sha256": "8ad0fb61d1af1628f61550ef3fbc5c861dc50eee087c83e61b8560f871927f4d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/StatsSection.tsx",
+      "bytes": 1556,
+      "sha256": "f3906756a700be808270e1fdafe1d226fdd1bec1bc3423c1dd2f5f35b37fbf6d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/TechArchitectureDiagram.tsx",
+      "bytes": 5241,
+      "sha256": "20dac1b53744f9f35e50fdea01f479c39d36f646160b4b89a16b906468840d30",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/Testimonials.tsx",
+      "bytes": 3035,
+      "sha256": "4d2e0600574d894d4f79b7eddc0496049c30f0200f7362c3f740ed6b2296381c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/TimelineSection.tsx",
+      "bytes": 2771,
+      "sha256": "2e110d3418a5b66afd804db3b11bc34e65843acc599a2d4319daf188f117ddb8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/VisualCard.tsx",
+      "bytes": 2613,
+      "sha256": "b72da27541dca1de0456af018ec467c49f2f0b9bb0242e818e121c1f235b039c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/admin/AdminShell.tsx",
+      "bytes": 6667,
+      "sha256": "3b8334eb047d6c3643ab7e2a3afeb234dfea39fbc2e6fefacf3a10fb9026bf7f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/engineering/PresentationStage.tsx",
+      "bytes": 4647,
+      "sha256": "b46322e72567a6f921f843c18409336eeed6a6fef18977c9c8db45577e08da80",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/engineering/PublishNote.tsx",
+      "bytes": 9765,
+      "sha256": "47d329bf991686bfa025f33084b0b8e48c0fb141cb598a4f5f3ef94898bec15b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/engineering/RecordEditor.tsx",
+      "bytes": 23293,
+      "sha256": "b1cfea8a7758e549bdec1547afe2ff7d5d6bb2d6589f1f92aa6cc27e8ccee0d5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/engineering/SocialMedia.tsx",
+      "bytes": 1977,
+      "sha256": "d525402cfeaa5c2381b1c83a267d6802b463641960b3aabf01214554eea33441",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/accordion.tsx",
+      "bytes": 1977,
+      "sha256": "6b84cb28b5c8e2129d854cffb8c5ba0161758d577db6db30a380cf593a8c0705",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/alert-dialog.tsx",
+      "bytes": 4420,
+      "sha256": "5ab57317c19d0edd8e2d6d9c98992bcefa1e023a4f90072e40364451dc18456f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/alert.tsx",
+      "bytes": 1584,
+      "sha256": "ed78a053a9db783f48d5dfab7398b630f87c17ed2e237b6f30a3eb153675960c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/aspect-ratio.tsx",
+      "bytes": 140,
+      "sha256": "08b0aa0b05efc573c7d63363c03e83d4b101bfeb54140764e96ddea30659cfcc",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/avatar.tsx",
+      "bytes": 1592,
+      "sha256": "f83b4d3f868442e571d9cf8737a9e36ba5de373f6d599c7a6ddd59c1b5c78dfa",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/badge.tsx",
+      "bytes": 1202,
+      "sha256": "f1f149c9db40e787a6c2ae8ee6b0fedceb4ccb68b3944f6fdca10d7fd540312e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/breadcrumb.tsx",
+      "bytes": 2712,
+      "sha256": "c3d3dcb0d82fc5e91d8830bac7fead905686fe876f1f42c3ed872bb0a6b6584e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/button.tsx",
+      "bytes": 2359,
+      "sha256": "d6a9b9d04cb882af71199a3cf4cb87f6cfaab44d17f871ff8a78ec2a1830511d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/calendar.tsx",
+      "bytes": 2695,
+      "sha256": "a7873d2b249506009a6f018b10a58c7cb38cc583d0d9391e2d90ed288cf6d013",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/card.tsx",
+      "bytes": 1904,
+      "sha256": "48dfcf29c71644ebe3dd5d70319ac1e663c9094c7c524be0cf492048b2989eb1",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/carousel.tsx",
+      "bytes": 6210,
+      "sha256": "5a4ff73c804e86c873382da80c453f1399006326ef042fb984c24162ec86666e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/chart.tsx",
+      "bytes": 10481,
+      "sha256": "e30219cedb35c55c2f9069f6470d60514c54c43fe0a3b641615275a2acd25f12",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/checkbox.tsx",
+      "bytes": 1056,
+      "sha256": "60a0084cbdfcb96e54c9f6438e9066dfe7ed0a7e421b33985d5eb57975d110a4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/collapsible.tsx",
+      "bytes": 329,
+      "sha256": "f4cdd104de29928bfcd40b865c7d08eed9157a537fbb8b5e6d0921f02b63cc04",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/command.tsx",
+      "bytes": 4966,
+      "sha256": "88b01d9ffc6b7a521fb17acc5d0be61f88dee8bfddfa758f257543c5964c2e9a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/context-menu.tsx",
+      "bytes": 7428,
+      "sha256": "b3abf3bb92fc028dd9a4c5dc6a10093b7f1346be8841fabb214fa08e5f40b181",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/dialog.tsx",
+      "bytes": 3848,
+      "sha256": "60d5246653c714fc12a67743ee5951331ecd2548cdaef9a599922bcb14da26db",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/drawer.tsx",
+      "bytes": 3021,
+      "sha256": "774316527ddc577fc54012a0c898ebcf7cf8f11152126e550828b53004a5b70c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/dropdown-menu.tsx",
+      "bytes": 7609,
+      "sha256": "aca10633792d03bb541e09ea106b5e1f3de429b69b3cade5ccfb7dca20289424",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/form.tsx",
+      "bytes": 4120,
+      "sha256": "0d812c11a1afa799fb2bfa8f1e11052eacb64252c4b52be969a5f89aae1f52fb",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/hover-card.tsx",
+      "bytes": 1251,
+      "sha256": "dcb793b8b1202b1634d791a993acadca0cfc3043a93b98c91a627fbff794f384",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/input-otp.tsx",
+      "bytes": 2154,
+      "sha256": "b06b6294edee39d817586b3cf4766de1720b06e184624d45d2bfd0f38d2a5e72",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/input.tsx",
+      "bytes": 844,
+      "sha256": "b5c4ff4e0a57cf16c4519165745550029d66a2e25b8b018654b60ac2c5764e79",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/label.tsx",
+      "bytes": 710,
+      "sha256": "e69cfc27d78c9ef31b248ab8ea4fa54327c1038843f70efb5cd85d54c0bf1e0e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/menubar.tsx",
+      "bytes": 8605,
+      "sha256": "da0c7ace239ead75f7fbc46ffbae8ddf177477445354500d7304a276065ea7b3",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/navigation-menu.tsx",
+      "bytes": 5128,
+      "sha256": "74f3b1b937e42582093a1671cf7f5c7250cd884922d51f201632317af9c24209",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/pagination.tsx",
+      "bytes": 2751,
+      "sha256": "6d66283fc04f3901772f15f3108bda732efc75ce878e0d8ecf8f9fc3b0c63c26",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/popover.tsx",
+      "bytes": 1280,
+      "sha256": "d853c561833e545879a56e2c4de18a92653de1e55e9e7fae463540679924ac0c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/progress.tsx",
+      "bytes": 791,
+      "sha256": "8c036da4baed076de68d27719929dc98151a81b51456bfa6a2488d835303b1d7",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/radio-group.tsx",
+      "bytes": 1467,
+      "sha256": "74f87531da1fde8d3c07dbd7b380ee6508a70d5c0af1c22e2d2c33d66cc79f10",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/resizable.tsx",
+      "bytes": 1723,
+      "sha256": "70d1e35a5fb0897af7063cdd841d8ed636e1c332ef7ea6469f0f175a5a93dddf",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/scroll-area.tsx",
+      "bytes": 1642,
+      "sha256": "d7d02600effca55d0dcadce8c09c97ebddda3a19c5fa1d52dc9f6f727b26c6b1",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/select.tsx",
+      "bytes": 5741,
+      "sha256": "544172f40b3ae1d86d518dbc428e4bed58b3a733644564f4907bbf0b60ba3218",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/separator.tsx",
+      "bytes": 756,
+      "sha256": "c956c4cca4b8442fa9314d6079b9f975e1ee39d5804aaf2966990f6258ac342a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/sheet.tsx",
+      "bytes": 4281,
+      "sha256": "9051eb9d885a18c0521c63c945480effcfca29282d2a342cb3ce7f9d080c6d38",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/sidebar.tsx",
+      "bytes": 21846,
+      "sha256": "b023ff6245be1930e152a18c6aaa2b6dd1a11df7b05fcf41bbe483968bfb1c39",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/skeleton.tsx",
+      "bytes": 261,
+      "sha256": "a72a9d8fc1c1999b5411a33391c5e70048863c5865629077280e943ca85689a8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/slider.tsx",
+      "bytes": 1077,
+      "sha256": "61e959d046f72e295d73a822b9afc7cc87ec6d1007905f2572e6117d7b2067b6",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/switch.tsx",
+      "bytes": 1139,
+      "sha256": "bd29ce723e952bc7f8fab367320347ca82fbb933f4da9872c7120d6765662ebe",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/table.tsx",
+      "bytes": 2765,
+      "sha256": "1da243956282c040db49d5718d2f0093a705fbbdfa3a25f51c1a31a069c45093",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/tabs.tsx",
+      "bytes": 1883,
+      "sha256": "d9958fd005db42bcca4f2c12ede63500e74f1a9bd82ddc3a6bf6fcb369706f07",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/textarea.tsx",
+      "bytes": 689,
+      "sha256": "aaf46918c590c2bf59e2afb7904dfd8e69317e12ee34ff93ed2746dd06cc994a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/toast.tsx",
+      "bytes": 4845,
+      "sha256": "99f9f4a3e897f71d89b01c6772b2f5db51b888cecb2c8214fb2c2dbb2b3e6356",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/toaster.tsx",
+      "bytes": 772,
+      "sha256": "1348f1a1f9820e2f1394b93cecc156a7e22f03636ab9270753985549aae2be74",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/toggle-group.tsx",
+      "bytes": 1753,
+      "sha256": "dba95ead40d163af6959198ded9853a2cc9282b2cb534980f99937a65edf4e2d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/toggle.tsx",
+      "bytes": 1527,
+      "sha256": "c9a401b2e134f28d870f3f44330b9d91d66bd2ac7ced3ad67039a2bb3d52e8f0",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/components/ui/tooltip.tsx",
+      "bytes": 1209,
+      "sha256": "2f26d20816448c630faccbda5ae9b4fe47c36f1fb14dbbd85b6652b7c24c1d51",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/hooks/use-auth.ts",
+      "bytes": 1091,
+      "sha256": "0ab183ba5a48dc00820a2aea7cbe5647b750f9fa46df4753799be0814f1daf4b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/hooks/use-mobile.tsx",
+      "bytes": 565,
+      "sha256": "ad0936f84f1df79d3697bfbff9c18f8ad58431c1cbaf2359c6a853b0fcc9f28b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/hooks/use-toast.ts",
+      "bytes": 3895,
+      "sha256": "5aab0623ee24bddf9420c259a23a06996292e38ea70eccbac2715516f6d01a0b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/hooks/useApi.ts",
+      "bytes": 792,
+      "sha256": "ad3a55047c26b798ec979dc43d38f7417ee83c85d45c1baca53a7aadab60dbef",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/hooks/useAuth.ts",
+      "bytes": 314,
+      "sha256": "5859531afe426a675c8c08cb236b830eee25f7e61be84c070c50a8b19566592d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/hooks/useCustomAuth.ts",
+      "bytes": 2527,
+      "sha256": "b2a4c7b15fd07a78a19f2d83591a933745cfc3b8d4c464151bde1716c85fcc0d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/index.css",
+      "bytes": 14784,
+      "sha256": "20a9fbd8972eec80debf2ba2ce383f336c19dc55117477e5e450ffe53de47eee",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/acquisition.ts",
+      "bytes": 2786,
+      "sha256": "185e5a8980c34bed944e3947b0162defc297a225b498b97c72e7b215092d67d0",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/api.ts",
+      "bytes": 1102,
+      "sha256": "5d6a01186fec9ca06534f9ffe7a2abe8c01c43ad223ebe256c53effa0ed31c5b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/auth-utils.ts",
+      "bytes": 517,
+      "sha256": "ca5de7a04a552ff400ae7d47dec3b45258a6a69158c6f8d49fc5650e1b09525d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/authUtils.ts",
+      "bytes": 116,
+      "sha256": "0a8c74eef60dd205e2a344b6c5ddba800bc514814d6b8e5be36d3a6b61e3c2dc",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/errorBoundary.tsx",
+      "bytes": 2649,
+      "sha256": "85c770f340cd0bf3c17d8bbe3f6afb61008c65a8fdc5445232b8c8da6c8a4311",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/queryClient.ts",
+      "bytes": 1978,
+      "sha256": "ad8c3a5a85fe2e2c9f59841a509d84b12dc3a602e8d8710033f61de4ab3071b2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/routePreload.ts",
+      "bytes": 873,
+      "sha256": "8f236ef192eb79e364d51f588f34e9cf798c8e1b5468941a2541c9806e610594",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/seo.ts",
+      "bytes": 2065,
+      "sha256": "a06cc37ade79b4b5ebdddcce230e13e69bff6382ec8e97d2d54aa8711fe0580d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/seoHelper.ts",
+      "bytes": 2011,
+      "sha256": "1886ef041d60e02dc05ae22b11e0e27cfbb345015a9d948b3a6d71fcdd42ded8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/utils.ts",
+      "bytes": 166,
+      "sha256": "7c8c3dfc0cdd370d44932828eb067ef771c8fe7996693221d5d4b90af6d54f2d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/lib/validation.ts",
+      "bytes": 1473,
+      "sha256": "a4d00ebf7c2bdbbfdaab7509f9c45c144b60dc2a1c714b8e6257ad11122637b1",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/main.tsx",
+      "bytes": 157,
+      "sha256": "29946f51942fba11605c7595fd82b50b0d7e50148e0194fd356dacbc958f18ec",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/About.tsx",
+      "bytes": 27683,
+      "sha256": "02adc1da466d60b72f29f9700a14e386283059a009e06253d78c72bcb13a3b11",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/AdminDashboard.tsx",
+      "bytes": 8411,
+      "sha256": "1b16422993781b263cc6d318df3a9307804c371e00feb62ced0ee7dc55808c23",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Analytics.tsx",
+      "bytes": 4680,
+      "sha256": "3a789209698eb20953dcbc1a75d5e09c86d36b76edce590b70f0836f41c481ea",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Blog.tsx",
+      "bytes": 6259,
+      "sha256": "56fa4ded9154265c1a054e2f95fe0a3b012de18b4a2919be84e8028c7c084f33",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/BlogPost.tsx",
+      "bytes": 6527,
+      "sha256": "1316bec935df99d44d89ef268dae58887074d643a28c3896d8467742a4d742ea",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Contact.tsx",
+      "bytes": 1292,
+      "sha256": "87f539ca46edd67d0bf84520e38b8887b39c92fe88a3fd4e76ff62a22e422b5b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/CustomSoftwareDevelopment.tsx",
+      "bytes": 9163,
+      "sha256": "5f7bccb355a50c03649bc247bb304201420d012597d1639832b10d170d551c5c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Dashboard.tsx",
+      "bytes": 7460,
+      "sha256": "41fe275c9dc7d667bbdfd74ba4b7a1bcd27403f723f3e203249c12b0215187fe",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/DigitalTransformationAfrica.tsx",
+      "bytes": 6998,
+      "sha256": "fd3935e5a01023bbbdf5b7bc1c5ff8725e4d049da4241330b5bd57b6ffecfdb0",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/EducationTechnologySolutions.tsx",
+      "bytes": 7825,
+      "sha256": "4c2952d6fef81a4ad7e56f814aa03288b813cb18ad43028a72744c870daae5aa",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/EngineeringJourney.tsx",
+      "bytes": 20095,
+      "sha256": "8cd969266c01d663713dd81bf542596e1c3a40070e6f498825826837808c26a9",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/EnhancedAbout.tsx",
+      "bytes": 5911,
+      "sha256": "269327cb45736658501370e164894c6f15c376737460e28c2517ee840fbbf475",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/ExternalPosts.tsx",
+      "bytes": 536,
+      "sha256": "ccefd90a70eaa2ae158d470c2a0de09ad2262a153a3b025e4296c4f3f5bc3733",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/GitHubProfile.tsx",
+      "bytes": 17534,
+      "sha256": "89dd4aa4d62c9093a125166087dadb06a1e394ce8a5caead4f556c208ae5c480",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/HireMe.tsx",
+      "bytes": 19402,
+      "sha256": "3288f3be5f86944486e573dd9ef8525e27502bad865b6788ef46aec75ea28f97",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Home.tsx",
+      "bytes": 2862,
+      "sha256": "b8b5a0270a2d5a00d3cff857486991234e39bb48eea5cee9ffef4fa617885aba",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Landing.tsx",
+      "bytes": 28266,
+      "sha256": "4ea77e9906aceceed8fc1ce1ab118f717ee0d6751e5e37bd87aa2f1245cb9c41",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Login.tsx",
+      "bytes": 4495,
+      "sha256": "5c166b0a93bd59dd8c84abca47d5b9bf7c547b933968a1c9a5f01c9373434635",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/NewsletterManagement.tsx",
+      "bytes": 6109,
+      "sha256": "025bd983a144a2d55cfce8f01059614f47db1d284b2c0e9e2f909fba112eee1f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Portfolio.tsx",
+      "bytes": 1669,
+      "sha256": "a6e5bd94b810ca897334195961c408baba7235e6020cadd062b033dfd7ffeec6",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/PortfolioAdvanced.tsx",
+      "bytes": 7565,
+      "sha256": "93d9254179da706873911bce5783a7fa49e5a39006839c74b2f9c32c6ad141f3",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/PortfolioDetail.tsx",
+      "bytes": 9356,
+      "sha256": "e229feaef44a30dbf4cf440a650dfaa2aa846db3191226e0327c9f0893f334e7",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Resources.tsx",
+      "bytes": 14369,
+      "sha256": "fcf464db83807312962be64ed1058dca234df1301b3c66c01286029898b2b2da",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/SoftwareConsultingMalawi.tsx",
+      "bytes": 5864,
+      "sha256": "15f5fbdbc439fa624823d728d6d5156040449658d47d8f50e27c0a7108241d34",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/Subscribe.tsx",
+      "bytes": 5902,
+      "sha256": "bac81ce2f89cc524cb19d7e62a38e5ba625d24177e793d6f6ddb6a12384c6c92",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/AudienceManagement.tsx",
+      "bytes": 4312,
+      "sha256": "32aa000e3f48bd6a63349588f4eab98e7340d0f51e34026a9ce35481f7ae1798",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/CapitalOperatingSystem.tsx",
+      "bytes": 44004,
+      "sha256": "72028f66ee81c712fd0a03465fd6ca03a84d9455d3ff48c65220cd25440ded06",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/CaseStudyManagement.tsx",
+      "bytes": 17091,
+      "sha256": "1ec39a279a22e1bcf659005e1f9e6b64cde6721523544291de10033ad56001b1",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/ContactsManagement.tsx",
+      "bytes": 3856,
+      "sha256": "1e7d3d2dfb8bb8d4053f9f4d04d69054410127ad1d2990b27f21d0ed1f0a0513",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/ContentManagement.tsx",
+      "bytes": 21870,
+      "sha256": "43a653ec4c3e504c29367dc31ba0f03ffc0367108d7d6bb6740106a8b471828f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/EngineeringWorkspace.tsx",
+      "bytes": 51540,
+      "sha256": "9548c03409982fb09d818b1be05430d1c10e8fa58703a471c67c6c1377f05cb1",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/LeadPipeline.tsx",
+      "bytes": 42232,
+      "sha256": "4d0ad14d02a6be41f40042e16e824688122165f48f603c1affa514804fe43fbd",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/PortfolioManagement.tsx",
+      "bytes": 7656,
+      "sha256": "68d9d86c2addda2dd8192e2784b11b66abe6ab835f605900d67395ddd68cd177",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/ProjectManagement.tsx",
+      "bytes": 13375,
+      "sha256": "8afe0bdc7827fe05b918af39e846c41d88353c22cad24c1935efb2239276286f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/RevenueIntelligence.tsx",
+      "bytes": 34430,
+      "sha256": "b122f417600520bdb689cff729c7615855f387cde11a6da9f5ec202eaa56f6d7",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/SecurityManagement.tsx",
+      "bytes": 6868,
+      "sha256": "b3f437d1825acc84b520b73c8bded360c863fb3bc4c92b9583da79fffbadaea4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/TreasuryRoic.tsx",
+      "bytes": 36746,
+      "sha256": "e07338f2356b2aee1cba878705e2f8d9e13d1ea941c4c0ae46f7ee05f33340b8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/admin/UserManagement.tsx",
+      "bytes": 6809,
+      "sha256": "8bf8fce4ad2f57809bbc352c179885f0a96b84956981bc9cb531bdcb9a2dc549",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/pages/not-found.tsx",
+      "bytes": 711,
+      "sha256": "718a41bd05a163d1db32480aba013f5fe754894e656b6542a8e4b302275b172e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "client/src/services/api.client.ts",
+      "bytes": 2145,
+      "sha256": "a87780c44a620e069ed03f899bc066e9d917b4a56fee75e4bc6ca6a4d894b44f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "components.json",
+      "bytes": 459,
+      "sha256": "ac24a8e743f3be926f7ff2bce97563097ed0c69f88fc57a7e6ec94af3615a031",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "design_guidelines.md",
+      "bytes": 7508,
+      "sha256": "18e333762b5be2950d50835ff69494e6e573e4bb69c7b3b5bbf683d0892327a0",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/admin-platform/2026-11-09-IMPLEMENTATION-REVIEW.md",
+      "bytes": 6955,
+      "sha256": "f137dac881483154f7f2f68030f14de35606a0d574888cc25544dd8ea88ca3f2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/admin-platform/EXECUTION_PLAN.md",
+      "bytes": 4441,
+      "sha256": "dda272f0950fa1e994508536f96dbfb0f9f70e398de968cd8b220c7b7dd558ff",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/admin-platform/GAP_ANALYSIS.md",
+      "bytes": 3672,
+      "sha256": "4cbe9766071a0272a4c7312e7c9be87ad28046c6c54a3b94bb77c369df32317a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/admin-platform/PHASE_0_REPOSITORY_AUDIT.md",
+      "bytes": 8754,
+      "sha256": "4a8fb60a8456124625b2f0f550af6123f5c72e334c7896655f5c27b9cd4037e6",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/admin-platform/PROGRESS.md",
+      "bytes": 5304,
+      "sha256": "5adf56b2f04a4b28fcf4021eed84df18c674cedddcbf0f3963af025f72fd36c2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/admin-platform/RISK_REGISTER.md",
+      "bytes": 3220,
+      "sha256": "833ac577e048f4c5766aa8a7aefcd6a6eda2a3fe03e857631a7d1e4d62200c48",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/admin-platform/TARGET_ARCHITECTURE.md",
+      "bytes": 4720,
+      "sha256": "f89d0e1f46bafe54d50a63beb593516fae77d320b57461869beb2108163b6af5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/OPERATING-STRATEGY.md",
+      "bytes": 7083,
+      "sha256": "f5783bc28733420229257076aa7bb97473d2ab12a2a0a1aed3a598c485d04391",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/README.md",
+      "bytes": 8333,
+      "sha256": "7102378a3dda615fd88c459963dd4528b3d228a8c27eea094356c300330f59a4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/RELEASE.md",
+      "bytes": 4175,
+      "sha256": "92990c1e456f18306a4297852c9fb419677ca527854e014c483eef63df9046e4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/VERIFICATION.md",
+      "bytes": 5738,
+      "sha256": "a490265aaedafffb153eed498795cc2b1ddf3ec662927818e429c0250ab10efe",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/build.log",
+      "bytes": 11098,
+      "sha256": "8ee7762e71f6a80c81575608032f1e2c9c1ab65ff999b6c72181eec2b6e067ae",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/connections-map.jpg",
+      "bytes": 99259,
+      "sha256": "03e98821050c8ddae6f3cac1c782115413aade99bfb63e508d4127b83ab6b3ee",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/daily-ledger.jpg",
+      "bytes": 97571,
+      "sha256": "58bb689bea8dbb7fe6f85c0ff1b66b4216ef3372a15c3b947df7d13b6442d204",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/presentation-rehearsal.jpg",
+      "bytes": 38304,
+      "sha256": "77c01e5245305bcf147465cfb186c5ca6d2cbf5e27a9cc88dc0c7c627845e9b2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/private-history.jpg",
+      "bytes": 70626,
+      "sha256": "69b02b207e285805c50db7548a0babc42c26aa70e851d2303663400fcada7dbd",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/private-overview.jpg",
+      "bytes": 116130,
+      "sha256": "94ac1b9621d37c015722156e650a4f6d1deb02d88406e085cadd54d43a65adbc",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/public-journey.jpg",
+      "bytes": 94560,
+      "sha256": "937844dc71ead1090fe9883658aa9f3ce08db080ae689698430fc4b741c25e6f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/public-note.jpg",
+      "bytes": 81123,
+      "sha256": "2b00eb17da8d30a59dc4aa9af92d6a7e61a1479bd6859ee866db2f2e2e743f93",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/screenshots.json",
+      "bytes": 2887,
+      "sha256": "b978a5064ef5dafd610388fd3627d2571f25a5a151b235b1aeed4247c2799270",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/tests.log",
+      "bytes": 395,
+      "sha256": "5f8060ffbce6368251badbec10561f6bc1305fdbe8bbd6416d1439426baa6f84",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/engineering-workspace/verification/typecheck.log",
+      "bytes": 133,
+      "sha256": "b0edd8706c828cfe5ca3ae5a757d7bf6bd06b82005cd70e1a231450c320a99d6",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/README.md",
+      "bytes": 7231,
+      "sha256": "36cf5a06f7ad1be80f213115762404dbc3d3a9a73e1a4c99ee9da6d74a6b1277",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/VERIFICATION.md",
+      "bytes": 4136,
+      "sha256": "7adf5b43f4cb273d9c57e76069e59d0f01cd842590c6b4f989a85b055d484591",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/asset-manifest.json",
+      "bytes": 9551,
+      "sha256": "80b17f4f0a86bf18fca57b030c40fb88ab35282ea1b4b18c1644852a24e4bf3b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/aothothe-enterprise-os-commercial-foundation.md",
+      "bytes": 10537,
+      "sha256": "a0f5297d5f97f0bb8619f3eea04d2163bf40cf9b7aa35a890e421b3f225dd0cf",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/area25-commerce-prototype.md",
+      "bytes": 10283,
+      "sha256": "b9014debcd4bc7e7a060db671c575dff6865bfd59fdb30f8d449d508af5d423a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/bookingpro-appointment-platform.md",
+      "bytes": 9482,
+      "sha256": "9d79761b0b4a87441f89c9c221a108a31273e087758d84a517bb9d73dc4ecb86",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/brandgenius-brand-workbench.md",
+      "bytes": 9778,
+      "sha256": "614fd91a523d495e71a0495dc2e38c7cd84d144ac3c2cfa2cf35f9368db289b8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/chrispine-portfolio-capital-system.md",
+      "bytes": 10252,
+      "sha256": "f80c8a1540102a1c1259636e4a8f6d3e17b24d2a8616b964be1285505a342f07",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/design-city-digital-studio.md",
+      "bytes": 9542,
+      "sha256": "43188901c02ea1b9743f6661e4682985c604da481718582719a72502412f1339",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/fatima-agro-digital-operations.md",
+      "bytes": 10597,
+      "sha256": "a21f5a013b2499821292e4a476b26acea2cbc70846aa253a5a8c1218c9861203",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/leadersspark-publishing-platform.md",
+      "bytes": 9543,
+      "sha256": "ea1ca4ad1fbfdae7e4afa953bccb15c564a34207b469ce3443b1906acad1510a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/mtendere-education-platform.md",
+      "bytes": 10867,
+      "sha256": "66396c1dc1172533a02d437bc8f7120b1bb9cd1e3e9206230eb910274d021f06",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/network-operations-training.md",
+      "bytes": 9684,
+      "sha256": "578c7b8302f53ee7ff1879a7c2dd3b4a272edc02dcabd15f61d67e954fc34bb7",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/scamshield-risk-engine.md",
+      "bytes": 9776,
+      "sha256": "1a79f9cb6f8e5a8ff86270ca31c529dfddf16b345a02544c30878560f077ee81",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/sudern-institutional-operations.md",
+      "bytes": 9846,
+      "sha256": "cf4bb9e02d9d35aca11deeb46bb273851e167bc21c74621d7f39b1ffacf87f4e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/thandizo-healthcare-platform.md",
+      "bytes": 10358,
+      "sha256": "a190dcd04680793016fb4278da0cf60ec3af00b7e18b550b9ac6c2f186590cb1",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/thoko-restaurant-operations.md",
+      "bytes": 10436,
+      "sha256": "a3104c127865cffe8d09256ea1355d57e63b24b5c8775d2882ec999f7793dd86",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/thrivebridge-malawi-community-platform.md",
+      "bytes": 9535,
+      "sha256": "64defc5ccf603abb21d2964462de0f5b21900d6e9ec4378afb421bfd9b2df69e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/case-studies/validus-circle-public-website.md",
+      "bytes": 9586,
+      "sha256": "107c403429e44c828e958c6a2850e953245798ec5fabc209561b89ebf897b5d6",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/casebooks-2026-11-18.json",
+      "bytes": 273879,
+      "sha256": "e347103e1ac3c8e5191f456194dde7c11d2c121e051253124f5f8840c65e2f5f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/source-review-index-2026-11-18.json",
+      "bytes": 9036,
+      "sha256": "83db70348d4ea0c0bcf5dd6d59f21b79639d75ba3b063f9c84069113fcbdc386",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/verification/architecture-preview.jpg",
+      "bytes": 90167,
+      "sha256": "a1c9f8b30ba83fc1c60cd829fc3cc90eed5d5c7018ac419b1a1a5f73cbf7ebf8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/verification/live-case-study.jpg",
+      "bytes": 84280,
+      "sha256": "123cd2ea0f8b7e9dfbfe9febc7c5bdafca93229d173ab3caf755ae4907644f55",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/verification/reader-preview.jpg",
+      "bytes": 136406,
+      "sha256": "f3f2365f62ca9e8b9726fb7ad100872166a412477ce9b6e1f22131c124309fd3",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/portfolio/verification/result.json",
+      "bytes": 1304,
+      "sha256": "bd511f91b45b88e31ef23ab26406e6cfcdf9a90a3aa41a62f326b393202a4caf",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/releases/2026-08-31-proof-driven-portfolio.md",
+      "bytes": 3089,
+      "sha256": "c355972454d66a51439e89a4bfdcc0b2d49a051b4fe1f6d913812c3fc6feae6c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/README.md",
+      "bytes": 4337,
+      "sha256": "0cd34d75b0281389b64c1d37b4822b7815bb2ca055463dc37f0cbd58bdba7c8e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/build.log",
+      "bytes": 11105,
+      "sha256": "0ca804473273b1a51edb06d9f3ebbc04be145cb57adf96753e6ddd88075769d4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/checks.json",
+      "bytes": 1545,
+      "sha256": "1940990559c1bd85131c1e04390e78a51909efc3ea1eae9a6a31a536c660f869",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/full-audit.log",
+      "bytes": 3494,
+      "sha256": "c8614263fd5d169ae80793ea96b80d24bd86785a8afb989289f1f4aec296f3cf",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/production-audit.log",
+      "bytes": 1743,
+      "sha256": "507fe66ed830132ad4f49bebe61046854deec8652bb8a867ccfcf8f9d11206b2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/qa-build.log",
+      "bytes": 65,
+      "sha256": "b2b725b849e5b99be2729c434bdb9f6bb28c443b1dbfcd3701f69b8bd7afc3c9",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/qa-production-refusal.log",
+      "bytes": 579,
+      "sha256": "2f2ff87f959ef937a0f60dcec48ae10e4e8ea1cfa1305b4876b991061df0f433",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/qa-vercel-refusal.log",
+      "bytes": 579,
+      "sha256": "2f2ff87f959ef937a0f60dcec48ae10e4e8ea1cfa1305b4876b991061df0f433",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/tests.log",
+      "bytes": 402,
+      "sha256": "2b40b4c1fd94174a8e02cf836f1f7f99d40428ae79c222e896ce10ad81e2d617",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "docs/workspace-sync/verification/typecheck.log",
+      "bytes": 140,
+      "sha256": "30baf40f8b0764a6e9c2ac8ac6e09469a8a53695e9aefc2a44200b13432a97e8",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "drizzle.config.ts",
+      "bytes": 325,
+      "sha256": "db80922910a890344195617c17acd664cd9b922973f607a5c6fdc0c749b4476a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0000_secure_foundation.sql",
+      "bytes": 15300,
+      "sha256": "21243029e76dcde96edd425060ec7f824157ad76896c95933907fd02f0f80508",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0001_email_delivery_foundation.sql",
+      "bytes": 3499,
+      "sha256": "bca7e28a3ef8efa6b45bfd1e9368b075b19aa9fc0117a61152ad2155db74dc43",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0002_notification_platform.sql",
+      "bytes": 3558,
+      "sha256": "d0da8a3c680ff21f00caa30ff541e6c818ab61efcb6893376a23e1c2240a80b3",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0003_crm_pipeline.sql",
+      "bytes": 3801,
+      "sha256": "da7abd420fdc61d42f33bd82a39d77977b587211f4a7903f71c39a3eb5aae6dc",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0004_content_workflow.sql",
+      "bytes": 3182,
+      "sha256": "e883709a702169e64a1b2c9dbb9f46c5ca20a70846b87086cbae7cbf9ecf0b66",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0005_project_case_study_evidence.sql",
+      "bytes": 13163,
+      "sha256": "af24904a88d760c833c23f4f67939c2f6564332fb079bcf6c4ef83c9e9af2e21",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0006_case_study_evidence_withdrawal.sql",
+      "bytes": 279,
+      "sha256": "858142cbc7f4beb06d03bc9124ce1fe79a0ee8d00739ecc32cbb2f6333632467",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0007_acquisition_attribution.sql",
+      "bytes": 2654,
+      "sha256": "d03033dcae2a795301437b9e47148888008d0cdbc42d72471d1c4812b22517cb",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0008_revenue_intelligence_capital_allocation.sql",
+      "bytes": 5484,
+      "sha256": "9109f8e30d025fa211f6a1795d2c708aa702ff9d5e5623efa99c973ec3270b80",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0009_cash_realization_capital_deployment.sql",
+      "bytes": 9264,
+      "sha256": "35f8c55dad972b12ade91f4157ed2448c9528c1280156918717cb7c8512d1855",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0010_treasury_roic_capital_management.sql",
+      "bytes": 14535,
+      "sha256": "b28cce63439dcbce92d97504d8ce45758c4474273633d68a8747582ccbd639a2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/0011_engineering_workspace.sql",
+      "bytes": 5887,
+      "sha256": "ed99a25af4cba84a9894d871518a536b241d33ed2cf7338309b39eda4c72ea27",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/meta/0000_snapshot.json",
+      "bytes": 46487,
+      "sha256": "42821d90396a0bff0e25c49521fc9c531cc84b80bcefa02729babea2ce7c12c3",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "migrations/meta/_journal.json",
+      "bytes": 211,
+      "sha256": "0b69546ac78b5a3cb34a2b73a8add9d405fefa3abfe7557b2d6ec57c21aadeca",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "network-ops-training-platform/README.md",
+      "bytes": 689,
+      "sha256": "4a9f962eae5ebc02ce29a80c54e041f8ac8c612f4fc7aa0997f929fa98fdd247",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "network-ops-training-platform/index.html",
+      "bytes": 82821,
+      "sha256": "318187e5aa6eed5001967586df946d1e5dde4cbf8564e2f7b48b8dcb46aa457d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "network-ops-training-platform/vercel.json",
+      "bytes": 171,
+      "sha256": "a159ba87ef8a14932ec33cbba2f4eb40286c0e70877e727e8a596ea372c0b954",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 364433,
+      "sha256": "36a6ced4a151b0a30984ad455ed0969fcec4cbddb5485b0d4dd88e5515a8e712",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "package.json",
+      "bytes": 4428,
+      "sha256": "f9380c6d3db02bdefae7c5b65f284055fb430e1cf72bef9e0ee2124ce525b49a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "postcss.config.js",
+      "bytes": 80,
+      "sha256": "190c877db466995bf1482f4a16abd06e04a89ede3119341e2a86ff96e1737b27",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/audit-probe.mjs",
+      "bytes": 633,
+      "sha256": "ec66ad4932d2b38bf693d91faf3d4eab9a5a7e5ce9915d1c7a1d8061f29f5e2b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/bootstrap-admin.ts",
+      "bytes": 3633,
+      "sha256": "16113dcd7a0a169f6ed00c531af85034484e2af6546a2de841706841646bf590",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/build-portfolio-casebooks.py",
+      "bytes": 72952,
+      "sha256": "5f9741bdc76f8c15ad1a9845db1376adda48e9e2b0e6d4a30bc9f9a75321b3e5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/generate_public_cv.py",
+      "bytes": 6904,
+      "sha256": "25f3006bb3a715e2ae57dcfb0c756e3c2148963970542c94291b297402c38f48",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/migrate.ts",
+      "bytes": 1001,
+      "sha256": "b2a25c1f127a3a59ce9444ed09b609e1761fe34ac3bc59a3fab52e118c38e977",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/portfolio-casebooks-sql.ts",
+      "bytes": 7389,
+      "sha256": "2c206ac23f8049efcab0f2dc0781fcceb33314964b81f0cf530e7c9ee3feb7fc",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/prepare-portfolio-casebooks.ts",
+      "bytes": 775,
+      "sha256": "c4f7c23f598b278f55eb4b92f4f064b85fafbe48b77312ffbecf3286671f8967",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/qa/README.md",
+      "bytes": 1296,
+      "sha256": "2e220a088cc3c38bdb626a156abb0fb70cb8978d0b83ccd3f12485dd071fd066",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/qa/engineering-preview.mjs",
+      "bytes": 2558,
+      "sha256": "6bf7b7fc640f932586ba0c1cda0de0de75b66843e5a06730e6190ea2e6231fda",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/qa/engineering-preview/database.ts",
+      "bytes": 859,
+      "sha256": "829e36ad0bd9089c8e460c3e9dc0456e9f45837c5b3b640f353457edc2af938f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "scripts/qa/engineering-preview/entry.ts",
+      "bytes": 1747,
+      "sha256": "9fcea61d813209498093784e14cf44aca083fe198ea7b6c3dc24a828e7ab9f33",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "seed.ts",
+      "bytes": 1461,
+      "sha256": "39a9daa9a1d46eb342edaaac14406d0dbef9ee44f476010f0d7ac239aa588c43",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/admin/routes.ts",
+      "bytes": 73778,
+      "sha256": "6b8a29a785cff2f18e2c1d33c2a0d73b9b8b3247ebd9e440dfa87ea1b7ec1808",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/advanced-filtering.ts",
+      "bytes": 5001,
+      "sha256": "bc355b47aeb42530c122899859ddea7d9aad1d1d1281185ebdf34fac922be9cf",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/analytics.ts",
+      "bytes": 2148,
+      "sha256": "e0d446ef6352d69b8ac60af169eb7c71d307ab8cbbd8f8ed9c7c6af705147a2b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/api-analytics.ts",
+      "bytes": 1257,
+      "sha256": "3b709ca8f68e78b761b63e4419f492e708b1c0c7a8bb7c46e7b69ce650b68d24",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/app.ts",
+      "bytes": 3367,
+      "sha256": "df9a330d2bd0d8ecf5f08ec08e40205fce2bfa44529a1d80ba166b1e09074acc",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/capital/routes.ts",
+      "bytes": 63364,
+      "sha256": "a720d745af2b9103bc5872b07ee72a87eba4fbdd4ec26ad1a79564ed288109b0",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/content-seeder.ts",
+      "bytes": 684,
+      "sha256": "872905e57078251590e7fd104b516ede07ce59b019d4fd6aebb837895321c795",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/crm/lead-service.ts",
+      "bytes": 5866,
+      "sha256": "397b0a8aa61920b447c6eb03e1621f2434a35b15beb42ab08fd4220efbf1811e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/custom-auth.ts",
+      "bytes": 5893,
+      "sha256": "902738f1a8b7321292e054aa7c13d91855a9b9865c4775725970dabf936db526",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/db.ts",
+      "bytes": 574,
+      "sha256": "0b635350af832964d08b699a348d22816aab895238553dd367204b0c4bd0eaae",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email-system.test.ts",
+      "bytes": 5663,
+      "sha256": "1711c61129447be6248f3f6b663f4a88e34cc5f56e3cd8a42d61780da582da6c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/automations.ts",
+      "bytes": 3695,
+      "sha256": "aec0bd17dba24a8c05b222ff27ed79975fcd02f0f5ddf3388637706d6d3f1731",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/disabled-provider.ts",
+      "bytes": 317,
+      "sha256": "313718a85f10511e53c21f2d3b80ba2195b04fa0825544d2add9efd75cc7d272",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/dispatcher.ts",
+      "bytes": 1965,
+      "sha256": "9e5599004a5fd1ab82e7245364e2e250fabba44c7d9b379503c37d537bfe6f20",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/drizzle-outbox-repository.ts",
+      "bytes": 4552,
+      "sha256": "0d71a33556e422d48f4eb225af0eb79c2af2ecbd41eb8a93bd9e542f25382b6e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/postmark-provider.ts",
+      "bytes": 1401,
+      "sha256": "a06c35e771893c2589f8d1e3f1c521cb7737db12b84deeb1f3ef0ff1e17eb411",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/postmark-webhook-auth.ts",
+      "bytes": 882,
+      "sha256": "ccac5711d69fa72bd22eb2dd428b55e598a2cf198676aea9ec6d60904bd1ceba",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/postmark-webhook-route.ts",
+      "bytes": 1663,
+      "sha256": "9231ee0b7616cf61dd7fe6baf0d429eaa4440031cca0416cc770961dfd09f7e7",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/postmark-webhook.ts",
+      "bytes": 3264,
+      "sha256": "b2a3f480f2ee1b2c758783574148c10a7baa9598fda5d6ea23529d2fd0bc7782",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/provider-factory.ts",
+      "bytes": 449,
+      "sha256": "13c8723da77337450bd6806cd29916507280bee18ffaea2c4f2d6b52c89a78b4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/routes.ts",
+      "bytes": 3142,
+      "sha256": "45531415c954ed7d81a7d2035f45cfe28e2cf2c096362e8511bb70bee58e9bbb",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/template-renderer.ts",
+      "bytes": 1667,
+      "sha256": "5b4e44b1d83428508b1563a7bd6dc9810f00d7e4e5d473096250f969b981f4a2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/email/types.ts",
+      "bytes": 918,
+      "sha256": "7d29a458e1b5123bc77b6584cad2d5c5dc8b275e74585bedad5472850940eb7c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/engineering-workspace.test.ts",
+      "bytes": 17644,
+      "sha256": "a06036c7cca41652a2b38cce29f37a4c800c7aaa71e58a2a48b741c2dd2e0761",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/engineering/routes.ts",
+      "bytes": 27807,
+      "sha256": "206ae409be895be4183ee4e7b05547e02ddddf8945b9e3d43ff8896baf91cd8b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/entities/BaseEntity.ts",
+      "bytes": 811,
+      "sha256": "366386b473e3b336e78965e90db57e929c99e35dcccd195adec3003ac3fae350",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/entities/BlogPostEntity.ts",
+      "bytes": 2371,
+      "sha256": "efb54a55e2ed6a851fd3f861cbbfa848ecac154962784f73f33c70a33ca79b7f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/env.ts",
+      "bytes": 5879,
+      "sha256": "01bc183b1715379106686ca3062d96e60ca326a0d98ac800585bbabc4ae656a9",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/errors/AppError.ts",
+      "bytes": 1849,
+      "sha256": "6f278506b1aa8a683efe07dabf83c6c5ef2aa1f11a669d8f37da9f1170c3f301",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/esm-imports.test.ts",
+      "bytes": 1426,
+      "sha256": "9a47e50d6178cb391242e565b58f199bf4453b17561333595fad9babbbf3f15f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/factories/ServiceFactory.ts",
+      "bytes": 2615,
+      "sha256": "71afe410dcb1ed281073275bfca8b964d3873039512f742501ee9999659a66e5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/index.ts",
+      "bytes": 731,
+      "sha256": "726a4d50d4c1ba89798aea30d20f60b6c83336a3dea04ddd04d1276537a00f84",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/logger.ts",
+      "bytes": 1104,
+      "sha256": "c4b50871d32f05e463b625823cec33827c4e6dea25d8d2fd35c2cee170fd9f62",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/middleware.ts",
+      "bytes": 3872,
+      "sha256": "7c83f258922a8d88e6153b26b5fa54d3af1be09a958d1de92c8152053398adb9",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/middleware/RequestProfiler.ts",
+      "bytes": 2831,
+      "sha256": "7e3c093b81611c1baaaef89e8a589bb60818586a6ea74ae07688d572277f72a4",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/notifications/action-token.ts",
+      "bytes": 407,
+      "sha256": "b25e6fcc637ae94318cbcbaddc260010eda70d8bafa68927d86c04aa5fade6d7",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/notifications/routes.ts",
+      "bytes": 6929,
+      "sha256": "5e52ebc629b50e19172ad706742b0c76903dca2e5198ea20fee4ad31604b1293",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/notifications/twilio-provider.ts",
+      "bytes": 906,
+      "sha256": "e3d813ba7689290421b067cb508f5d7dd7bdc9b7330ea80d8828c0b0314238de",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/notifications/twilio-webhook-route.ts",
+      "bytes": 1645,
+      "sha256": "cfd785b05741a52cbb8e3c22221059a5a1ae29ed8c3cbb97ab4f45d8ff54bb08",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/notifications/web-push-provider.ts",
+      "bytes": 572,
+      "sha256": "37dab4dc62f841154ded143239ff4e812e52399f618e291fbb73466f2a44f8e2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/portfolio-casebooks.test.ts",
+      "bytes": 3240,
+      "sha256": "495916379dbcc6d7e5776987c2d505a7fb38e80f31ee2926b5ce94eb7071d48b",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/portfolio-governance-http.test.ts",
+      "bytes": 72055,
+      "sha256": "f91c3b77eb88fbf26054077d3b1d61a1c9a14997fd8e7beab5755c172460e425",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/portfolio-governance.test.ts",
+      "bytes": 7684,
+      "sha256": "69fad0d8c583bbb4398eddffe21d622997142a8c94b58f453ab5021dd2cba9ed",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/portfolio/admin-routes.ts",
+      "bytes": 26499,
+      "sha256": "294a259930b1602ce8ce224a6fb020b0c867b20fd7a8535935adc9ba3395f1ef",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/portfolio/policy.ts",
+      "bytes": 1709,
+      "sha256": "f3387001c9b2e157a9c8d5701bebd1072728b16f723f1159c1b858f32815c930",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/portfolio/public-case-study-service.ts",
+      "bytes": 3438,
+      "sha256": "7b3e8c8ef6fdfbfe74df75c213d97ec5d886b141cb5a5002bb934b0a6e375739",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/query-cache.ts",
+      "bytes": 893,
+      "sha256": "2c49572837f684e1add741804f980a58780da36c23cb9d7d2082c25b184c9c6d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/repositories/BlogRepository.ts",
+      "bytes": 2201,
+      "sha256": "81d5a982742db6f65afbe785738a06cc6ec4640372f08dc5ebd2240bc6d9a987",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/repositories/PortfolioRepository.ts",
+      "bytes": 2052,
+      "sha256": "411dcd82cf5d06550f9e7678000bf25238a06daad6202e0a44aa1193bf9ecc2c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/revenue/routes.ts",
+      "bytes": 52737,
+      "sha256": "4096c2b665b6e71dab59e09caef8c2a0a0be9640f9f4d88c64fb7bb1a7815ea7",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/routes.ts",
+      "bytes": 19350,
+      "sha256": "67cb79ef24712979604afe0a3e098bcdb80639aa2ff949b0edf0e3543e640927",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security-foundation.test.ts",
+      "bytes": 31836,
+      "sha256": "75059d58accf6ee7b8e7203b1aa500387096a7a4085c71a33fca90245477f060",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security.test.ts",
+      "bytes": 4634,
+      "sha256": "4fdda2cc196449bfafbc5b5970e083a847ee89d47250cd61ba6e777c2918b219",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/audit-repository.ts",
+      "bytes": 541,
+      "sha256": "28b133d7b4b99bf365f4560915283ccb226c58ee845e9f3f63a52daab90f7ef9",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/authentication-service.ts",
+      "bytes": 4524,
+      "sha256": "f66a881d0808d081dc2fa5ea4d7df13ec18d5c0f5bb0a5bf6b8d97c4572a604c",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/database-auth-routes.ts",
+      "bytes": 4242,
+      "sha256": "ac7de3a37c5413218642676548c196d98a7736e336f58d4372f4f9f09854e5be",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/drizzle-authentication-user-repository.ts",
+      "bytes": 1297,
+      "sha256": "9236a553d7f311cb1c5240975103294c741a479127eee0b0e735d94367dd532a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/drizzle-login-attempt-repository.ts",
+      "bytes": 1391,
+      "sha256": "c1cb96112d0955804f425566705f1bb0928ae6e8d40107bf0dceeab15cc061cc",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/drizzle-session-repository.ts",
+      "bytes": 2811,
+      "sha256": "4bbfef93cc00d5d4e0806e070b289836294fda9a083f52b739ee03a4f5f7fdc2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/http-boundary.ts",
+      "bytes": 1692,
+      "sha256": "6a011949f8411a8af33afca30280d7f8aebf38a1500f9be2b6c3ff3e6f690d0d",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/login-throttle.ts",
+      "bytes": 2497,
+      "sha256": "e63c123af6b8015f583489f84b68eabc123712a940f919bd4477f2597cd621e6",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/passwords.ts",
+      "bytes": 763,
+      "sha256": "5f940352b73f0445a8c432bc283dfd86abb050d6c5677ca6a5c5a553bc52754f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/session-middleware.ts",
+      "bytes": 1868,
+      "sha256": "15374bf69532465e5470f2b9d73a5fc9bcad3ffe3bd5e7e61ce456a192d3524f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/security/session-service.ts",
+      "bytes": 4030,
+      "sha256": "df995c2c7e2263482cdae3a061eba895cab6b267a49ca08afc157babe02c58b2",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/seed-data.ts",
+      "bytes": 12710,
+      "sha256": "31cb8aef6afd65853aed96bcb3d8b6919eeb764df0e2862bf5b4b16a7ab78978",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/seed-trigger.ts",
+      "bytes": 3232,
+      "sha256": "f5d8d9dc6be3b2bb50c95e7be160baa94eb7011ea82cd7f510f37143ce4dc400",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/services/BlogService.ts",
+      "bytes": 3156,
+      "sha256": "6d71ecd74de86f355fcd7ac8081cb33b69a2b48dfe5a7517c9202a549dc6d46f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/services/NewsletterService.ts",
+      "bytes": 2249,
+      "sha256": "c673669d0d8e22bff7e50b658c7101a97e269dbf71c4bf910c95b00164350138",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/services/PortfolioService.ts",
+      "bytes": 2809,
+      "sha256": "827e0e7c9b9d78daf765636783bc40f8481d5e63470fc878bf6b0bb9ffe3a5ca",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/storage.ts",
+      "bytes": 15406,
+      "sha256": "641d66bfa569bd836c29e8588fc2bbbb1aa4951e435be0278684be6449c7c729",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/treasury/routes.ts",
+      "bytes": 48548,
+      "sha256": "f5dbd06956e71e386f9f741b2b2af210b70bd0fdbc8c291a3f864c8cd3e0a191",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/types/express.d.ts",
+      "bytes": 230,
+      "sha256": "3cfcac33cfbe760704e040169d90ee60f0788617952ec9dfaf2d96e917e4715f",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/utils/DatabaseUtils.ts",
+      "bytes": 1480,
+      "sha256": "a0445b553faa6085aac55921d31be65ddd5711e97423bee70b2e82d4a88d1506",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/utils/Decorators.ts",
+      "bytes": 2012,
+      "sha256": "1f21010dd58e58d80ca3ea936ab4d176bf238e460e526f5ed19c3ee8ab008190",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/utils/EventEmitter.ts",
+      "bytes": 2032,
+      "sha256": "f640e4b9144b4133568308d705924e2a73d447c9dfe66ad64c6b9a876fd2df1e",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/utils/Logger.ts",
+      "bytes": 1723,
+      "sha256": "0dfe1bda3340c2c4f142a1210b0f97cafae92ddcb21ec1501aee542de9a31c5a",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/utils/Pagination.ts",
+      "bytes": 1380,
+      "sha256": "1578e67dcc6ffcfd9246f69302b4d6305d80a5a4c2c0a332f8cb243877d1bcdb",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/validation.ts",
+      "bytes": 1813,
+      "sha256": "b884927caf89aa3b16a46b79dcfda0d98f6dd96b36dbdbe9447d0e7650081c89",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "server/vite.ts",
+      "bytes": 2266,
+      "sha256": "b71f96892cd08b6d7f96267a2de4d9231e8d8df019d51c288aeb04728bf3cc34",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "shared/engineering.ts",
+      "bytes": 13868,
+      "sha256": "196c9e3190b85d71675a938f6386aae8054c9810f0ba128e42c507b414b070ca",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "shared/models/auth.ts",
+      "bytes": 216,
+      "sha256": "af6ced33af035cdf357f1683e8f8b3444c0e7869d6fec63c1947bd73a440ef45",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "shared/schema.ts",
+      "bytes": 65513,
+      "sha256": "bafd4e1208e158abfbb25380cd591017e6bd751619f4390cb07e88f41ec9e022",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "tailwind.config.ts",
+      "bytes": 4050,
+      "sha256": "b827a9fe34d05a37dcab63f35f37359b9ad2dae336f51ac3b258f21d58883c60",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "tsconfig.json",
+      "bytes": 729,
+      "sha256": "86355446d143f1a1ddfd895c55a652dd4a3d969634d86cf872dbc6e62fe83d44",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "vercel.json",
+      "bytes": 403,
+      "sha256": "f44cb5eddacb5dcb9c40376d824ac07680cbc48de55957b439505140db9d9675",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "vite.config.ts",
+      "bytes": 626,
+      "sha256": "b0e714c264733cff3e2ec750b4ff0ed78e11731899c083b2535b36806005b6a5",
+      "disposition": "canonical project source or reviewed asset"
+    },
+    {
+      "path": "vitest.config.ts",
+      "bytes": 436,
+      "sha256": "d2d9e84c6c6a6e4fa4f8f8ae71b9d06cc904a6b4f78bf30ec90233844652bab2",
+      "disposition": "canonical project source or reviewed asset"
+    }
+  ],
+  "ancillaryMaterial": [
+    {
+      "path": "authoring-evidence/build.log",
+      "bytes": 10191,
+      "sha256": "40cc117daa91f3fbe351b4b111192cfd6b4b7a284b43a36c15a555eefdd621df",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/casebook-tests.log",
+      "bytes": 470,
+      "sha256": "045f674d467670c90bb3646a51a53c62021ec92a56725c679026e533f02b0406",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/deployments.json",
+      "bytes": 14856,
+      "sha256": "048d17ddd5134f71514a63f84f0d3c5ae498d4ef061412876d72477cb5a8cff9",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/engineering-tests.log",
+      "bytes": 431,
+      "sha256": "2c869d0e423890dc904481199f47899668f7256dad572ac3e0f75ad29205fdde",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/expected-case-versions.json",
+      "bytes": 137,
+      "sha256": "9c1e9d83e6ed5abaf885d5ae615c2236fb7b49106bd2070b4b51f999ef54e020",
+      "disposition": "Restricted review or database before-state material; public reviewed outputs and guarded importer source are versioned"
+    },
+    {
+      "path": "authoring-evidence/full-tests.log",
+      "bytes": 396,
+      "sha256": "215bdcaae49b1e5123be9a56971879729cdc07d6828fb295f5b6a45cfbdacf59",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/live-public-cases.json",
+      "bytes": 154852,
+      "sha256": "7822d1fd7164150d5e2a0cc4c33e21fa7295c0a9ca7478b64a6236e8c000ca86",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/live-search-page2.json",
+      "bytes": 37225,
+      "sha256": "b9f42419b2dfbc13f01f4eafe17fc943e0b932b9e414f6b1f598601b1e0b8103",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/live-thoko-case.json",
+      "bytes": 10722,
+      "sha256": "1186f63f3e30054f966971d8061ca200b60281ab57812838042aff2252e02f2c",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/mec-archived-login.png",
+      "bytes": 511769,
+      "sha256": "e89a2f1153c1c8c13eb9cec4e0e19f31bb9dc079e69a804a7de916a1af3b69e2",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/mec-login.b64",
+      "bytes": 693734,
+      "sha256": "6118546136c20a1ff6c2ee9e50c70a977a93f732bafb427957615cb13ca11477",
+      "disposition": "Duplicate encoding of a versioned reviewed image"
+    },
+    {
+      "path": "authoring-evidence/npm-audit.json",
+      "bytes": 9920,
+      "sha256": "490ff8e04eba4c6ccbfdf54d8727515db8737e24bf65d1e4ec292ea9b86f9d2f",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/portfolio-original-case-studies.json",
+      "bytes": 5890,
+      "sha256": "7ea5b44bb65fbd9fd1c55ba3e92bdf3cc0e8f069f3d84d936414880678c7270a",
+      "disposition": "Restricted review or database before-state material; public reviewed outputs and guarded importer source are versioned"
+    },
+    {
+      "path": "authoring-evidence/portfolio-original-evidence.json",
+      "bytes": 1949,
+      "sha256": "92faf3502d583c000d5cc639065832d91c8650fb923880ef60ee022f8a6d3073",
+      "disposition": "Restricted review or database before-state material; public reviewed outputs and guarded importer source are versioned"
+    },
+    {
+      "path": "authoring-evidence/preview-approved-cases.json",
+      "bytes": 254639,
+      "sha256": "2eb16f5288cefbf4d5c8d42e750dda19fe13aa197c741d4e0e9a03ba3efea345",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/production-audit.log",
+      "bytes": 1743,
+      "sha256": "24add0afbd7a12df51c4e67795302c89b56bb03df43aaeb509181aa8e6135238",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/publish-casebooks.sql",
+      "bytes": 268725,
+      "sha256": "b0289517379e3d36e9f787073ce44ac54b60ad75ac2df6c6c33d741a71c59b5c",
+      "disposition": "Restricted review or database before-state material; public reviewed outputs and guarded importer source are versioned"
+    },
+    {
+      "path": "authoring-evidence/repository-review.json",
+      "bytes": 4514437,
+      "sha256": "1a5cb17a8e3447c977307192e097eb38abb858f34b43a2369e915225a135f883",
+      "disposition": "Restricted review or database before-state material; public reviewed outputs and guarded importer source are versioned"
+    },
+    {
+      "path": "authoring-evidence/tailwind-chain.txt",
+      "bytes": 1091,
+      "sha256": "125725fe62dc83f7685afdc1be29046e635b980bfc8d515c927735497f17d672",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/typecheck.log",
+      "bytes": 134,
+      "sha256": "501687db208c3cc1e9509693bf44425eb6966d077982e9ae2afbb8b4eeeb2416",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/workspace-baseline-audit.json",
+      "bytes": 9920,
+      "sha256": "490ff8e04eba4c6ccbfdf54d8727515db8737e24bf65d1e4ec292ea9b86f9d2f",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/workspace-build.log",
+      "bytes": 11098,
+      "sha256": "8ee7762e71f6a80c81575608032f1e2c9c1ab65ff999b6c72181eec2b6e067ae",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/workspace-full-tests.log",
+      "bytes": 396,
+      "sha256": "ef6df7af7c70c2a9741c0f469848e295b53e8084585993547eebef5b26cc7cc8",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring-evidence/workspace-typecheck.log",
+      "bytes": 134,
+      "sha256": "501687db208c3cc1e9509693bf44425eb6966d077982e9ae2afbb8b4eeeb2416",
+      "disposition": "Intermediate evidence; reviewed publication, asset provenance and current verification records are versioned"
+    },
+    {
+      "path": "authoring/build_casebooks.py",
+      "sha256": "64a5de5bb437ca124878275e4abf05df01e63a2024fb496649c1422aa989019d",
+      "disposition": "Portable source retained as scripts/build-portfolio-casebooks.py; raw source input replaced by approved metadata index"
+    }
+  ],
+  "generatedOrPrivateExclusions": [
+    "node_modules/",
+    "dist/",
+    ".qa-preview/",
+    ".git/",
+    ".env and real runtime secrets",
+    "browser and authentication state",
+    "local FIFO inputs",
+    "superseded read-only cloud preview glue"
+  ],
+  "cloudReviewSource": "scripts/qa/engineering-preview.mjs"
+}

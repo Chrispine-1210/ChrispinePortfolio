@@ -1,150 +1,323 @@
-import { EditorialPhoto } from "@/components/EditorialPhoto";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, useSearch } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
+import { ArrowRight, ArrowUpRight, BookOpen } from "lucide-react";
 import { setSEO } from "@/lib/seoHelper";
-import { BlogCard } from "@/components/BlogCard";
-import { NewsletterForm } from "@/components/NewsletterForm";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Terminal, Zap, Filter } from "lucide-react";
-import { motion } from "framer-motion";
-import type { BlogPost } from "@shared/schema";
+import {
+  EditorialPage,
+  ProjectReadingCard,
+} from "@/components/editorial/EditorialPage";
+import {
+  articlePhoto,
+  editorialPhotoSource,
+  PhotoCredit,
+} from "@/components/EditorialPhoto";
+import type { BlogPost, PortfolioProject } from "@shared/schema";
 
-const categories = ["All", "MEL", "Programming", "Career", "Networking", "AI & Data", "Leadership", "Hardware Engineering", "Infrastructure"];
+const topics = [
+  "Programming",
+  "Networking",
+  "Hardware Engineering",
+  "Infrastructure",
+  "AI & Data",
+  "MEL",
+  "Career",
+  "Leadership",
+];
 
 export default function Blog() {
-  const searchParams = new URLSearchParams(useSearch());
-  const initialCategory = searchParams.get("category") || "All";
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [, setLocation] = useLocation();
-
+  const search = useSearch();
+  const category = new URLSearchParams(search).get("category") || "All";
+  const [query, setQuery] = useState("");
+  const [, navigate] = useLocation();
+  const posts = useQuery<BlogPost[]>({ queryKey: ["/api/blog"] });
+  const casebooks = useQuery<{ data: PortfolioProject[] }>({
+    queryKey: ["/api/portfolio/search?featured=true&limit=2&page=1"],
+  });
+  const articles = useMemo(
+    () =>
+      [...(posts.data ?? [])].sort(
+        (a, b) =>
+          new Date(b.publishedAt ?? 0).getTime() -
+          new Date(a.publishedAt ?? 0).getTime(),
+      ),
+    [posts.data],
+  );
+  const categories = Array.from(
+    new Set([...topics, ...articles.map((p) => p.category)]),
+  );
+  const filtered = articles.filter(
+    (p) =>
+      (category === "All" || p.category === category) &&
+      [p.title, p.excerpt, p.category, ...(p.tags ?? [])]
+        .join(" ")
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
+  );
+  const changeCategory = (value: string) =>
+    navigate(
+      value === "All"
+        ? "/blog"
+        : `/blog?${new URLSearchParams({ category: value })}`,
+    );
   useEffect(() => {
     setSEO(
-      "Writing & Technical Notes | Chrispine Mndala",
-      "Articles and practical notes on programming, networks, and data systems.",
-      "/blog"
+      "Writing & technical notes | Chrispine Mndala",
+      "Practical writing on software, networks and operating systems, connected to project case studies and an engineering journal from Malawi.",
+      "/blog",
     );
   }, []);
 
-  const { data: posts = [], isLoading } = useQuery<BlogPost[]>({
-    queryKey: ["/api/blog"],
-  });
-
-  const filteredPosts = posts.filter((post) => {
-    const matchesCategory = selectedCategory === "All" || post.category === selectedCategory;
-    const matchesSearch =
-      searchQuery === "" ||
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (post.tags || []).some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    if (category !== "All") {
-      setLocation(`/blog?category=${category}`);
-    } else {
-      setLocation("/blog");
-    }
-  };
-
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-[#0a0c14] relative">
-      <div className="tech-grid-bg opacity-20" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-8 mb-16"
-        >
-          <div className="grid items-center gap-8 lg:grid-cols-2">
-            <div className="space-y-4">
-              <h1 className="text-4xl font-black tracking-tight text-white sm:text-6xl">Writing &amp; technical notes</h1>
-              <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-                Articles and practical notes on programming, networks, and data systems.
-              </p>
-            </div>
-            <EditorialPhoto photo="writing" eager />
+    <EditorialPage>
+      <header className="editorial-hero">
+        <div>
+          <span className="editorial-kicker">Writing / Chrispine Mndala</span>
+          <h1>
+            Notes from
+            <br />
+            the <em>work.</em>
+          </h1>
+          <p className="editorial-lead">
+            The reasoning behind the code. Practical lessons in software,
+            networks and the systems that keep a business moving.
+          </p>
+          <div className="editorial-actions">
+            <a className="editorial-button" href="#articles">
+              Explore the writing <ArrowRight size={16} />
+            </a>
+            <Link className="editorial-button secondary" href="/journey">
+              Engineering journal
+            </Link>
           </div>
-
-          <div className="max-w-2xl mx-auto relative group">
-            <div className="absolute -inset-1 bg-primary/20 blur opacity-0 group-hover:opacity-100 transition duration-500" />
-            <div className="relative flex items-center">
-              <Search className="absolute left-4 h-5 w-5 text-primary" />
-              <Input
-                type="search"
-                placeholder="QUERY_DATABASE: Search posts, tags, or categories..."
-                className="pl-12 h-14 bg-card/50 border-primary/30 rounded-none font-mono focus:ring-primary/50 text-white"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="grid lg:grid-cols-4 gap-8">
-          <aside className="lg:col-span-1 space-y-6">
-            <div className="tech-card p-6">
-              <h3 className="font-mono text-primary text-sm font-bold mb-4 uppercase tracking-widest border-b border-primary/20 pb-2">
-                NODES_INDEX
-              </h3>
-              <div className="flex flex-wrap lg:flex-col gap-2">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => handleCategoryChange(category)}
-                    className={`text-left px-3 py-2 text-xs font-mono uppercase transition-all ${
-                      selectedCategory === category 
-                        ? "bg-primary text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
-                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-                    }`}
-                  >
-                    {">"} {category}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <NewsletterForm variant="sidebar" />
-          </aside>
-
-          <div className="lg:col-span-3">
-            {isLoading ? (
-              <div className="grid sm:grid-cols-2 gap-8">
-                {[1, 2, 4].map((i) => (
-                  <div key={i} className="space-y-4">
-                    <div className="h-48 w-full bg-white/5 animate-pulse" />
-                    <div className="h-8 w-3/4 bg-white/5 animate-pulse" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 gap-8">
-                {filteredPosts.map((post, idx) => (
-                  <motion.div
-                    key={post.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.1 }}
-                  >
-                    <BlogCard post={post} />
-                  </motion.div>
-                ))}
-              </div>
-            )}
-
-            {!isLoading && filteredPosts.length === 0 && (
-              <div className="text-center py-24 border border-dashed border-primary/20 font-mono">
-                <Zap className="mx-auto h-12 w-12 text-primary mb-4 opacity-50" />
-                <p className="text-xl text-muted-foreground">ERROR_404: No matching data nodes found.</p>
-              </div>
-            )}
-          </div>
+          <p className="editorial-copy" style={{ marginTop: 24 }}>
+            Built in Malawi. Written to make the next decision clearer.
+          </p>
         </div>
-      </div>
-    </div>
+        <aside className="editorial-feature">
+          <Link
+            href="/portfolio/network-operations-training"
+            aria-label="Read the NetOps Command case study"
+          >
+            <img
+              src="/project-evidence/2026-11-18/network-ops-2026-11-18.jpg"
+              alt="Recorded NetOps Command troubleshooting workspace"
+            />
+          </Link>
+          <div className="editorial-feature-copy">
+            <div className="editorial-eyebrow">
+              Inside the work · Project case study
+            </div>
+            <h2>Learning by diagnosing.</h2>
+            <p className="editorial-copy">
+              A network troubleshooting workspace that connects incidents,
+              command evidence and deliberate practice.
+            </p>
+            <Link
+              href="/portfolio/network-operations-training"
+              className="editorial-text-link"
+            >
+              Explore NetOps Command <ArrowUpRight size={16} />
+            </Link>
+          </div>
+        </aside>
+      </header>
+
+      <section
+        className="editorial-section"
+        id="articles"
+        aria-labelledby="articles-heading"
+      >
+        <div className="editorial-section-heading">
+          <div>
+            <span className="editorial-eyebrow">
+              01 / Articles & perspectives
+            </span>
+            <h2 id="articles-heading">A space for considered thinking.</h2>
+          </div>
+          <p>
+            Longer explanations live here. Experiments, lab observations and
+            progress notes belong in the journal.
+          </p>
+        </div>
+        <div className="editorial-toolbar">
+          <label className="editorial-field search">
+            Search the writing
+            <input
+              type="search"
+              placeholder="A topic, question or technology…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+          <label className="editorial-field">
+            Topic
+            <select
+              value={category}
+              onChange={(e) => changeCategory(e.target.value)}
+            >
+              <option value="All">All topics</option>
+              {!categories.includes(category) && category !== "All" && (
+                <option>{category}</option>
+              )}
+              {categories.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="editorial-count" role="status">
+          {posts.isLoading
+            ? "Loading published articles…"
+            : posts.isError
+              ? "Article collection unavailable"
+              : `${filtered.length} published ${filtered.length === 1 ? "article" : "articles"}${category !== "All" ? ` · ${category}` : ""}`}
+          {(query || category !== "All") && (
+            <button
+              className="editorial-text-link"
+              onClick={() => {
+                setQuery("");
+                changeCategory("All");
+              }}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
+        {posts.isError ? (
+          <div className="editorial-empty" role="alert">
+            <h3>The writing could not be loaded.</h3>
+            <p className="editorial-copy">
+              Please try again. The project casebooks below are another way into
+              the work.
+            </p>
+            <button
+              className="editorial-button secondary"
+              style={{ marginTop: 18 }}
+              onClick={() => posts.refetch()}
+            >
+              Try again
+            </button>
+          </div>
+        ) : !posts.isLoading && filtered.length === 0 ? (
+          <div className="editorial-empty">
+            <BookOpen size={23} color="#355d4c" />
+            <h3 style={{ marginTop: 14 }}>
+              {articles.length
+                ? "No articles match this view."
+                : "The first essays are taking shape."}
+            </h3>
+            <p className="editorial-copy">
+              {articles.length
+                ? "Try another topic or clear your search to see the published collection."
+                : "There are no published blog articles yet. In the meantime, the casebooks document real projects, their development decisions and the evidence available to review."}
+            </p>
+            <div className="editorial-actions">
+              <Link className="editorial-text-link" href="/portfolio">
+                Read the project casebooks <ArrowRight size={16} />
+              </Link>
+              <Link className="editorial-text-link" href="/journey">
+                Visit the field journal <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="editorial-project-grid">
+            {filtered.map((post) => {
+              const fallback = articlePhoto(post.category);
+              return (
+                <article key={post.id} className="editorial-project">
+                  <Link
+                    className="editorial-project-image"
+                    href={`/blog/${post.slug}`}
+                  >
+                    <img
+                      src={post.featuredImage || editorialPhotoSource(fallback)}
+                      alt={post.title}
+                      loading="lazy"
+                      style={{ objectFit: "cover", padding: 0 }}
+                    />
+                  </Link>
+                  <div className="editorial-project-copy">
+                    <div className="editorial-eyebrow">
+                      {post.category} · {post.readTimeMinutes ?? 5} min read
+                      {post.isPremium ? " · Premium" : ""}
+                    </div>
+                    <h3>
+                      <Link href={`/blog/${post.slug}`}>
+                        {post.title}
+                        <ArrowUpRight size={20} />
+                      </Link>
+                    </h3>
+                    <p className="editorial-copy">{post.excerpt}</p>
+                    {post.publishedAt && (
+                      <time
+                        className="editorial-copy"
+                        dateTime={new Date(post.publishedAt).toISOString()}
+                      >
+                        {new Date(post.publishedAt).toLocaleDateString(
+                          "en-GB",
+                          {
+                            timeZone: "Africa/Blantyre",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
+                      </time>
+                    )}
+                    {!post.featuredImage && (
+                      <p className="editorial-copy" style={{ fontSize: 11 }}>
+                        <PhotoCredit photo={fallback} />
+                      </p>
+                    )}
+                    <Link
+                      className="editorial-text-link"
+                      href={`/blog/${post.slug}`}
+                    >
+                      Read article <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+      {casebooks.data?.data.length ? (
+        <section
+          className="editorial-section"
+          aria-labelledby="casebook-heading"
+        >
+          <div className="editorial-section-heading">
+            <div>
+              <span className="editorial-eyebrow">02 / From the casebooks</span>
+              <h2 id="casebook-heading">Start with a real system.</h2>
+            </div>
+            <Link className="editorial-text-link" href="/portfolio">
+              All project case studies <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="editorial-project-grid">
+            {casebooks.data.data.map((p) => (
+              <ProjectReadingCard key={p.id} project={p} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+      <section className="editorial-bridge">
+        <div>
+          <h2>Follow the engineering journey.</h2>
+          <p>
+            Networks, programming, repairs, servers and security practice. A
+            place for reviewed field notes, lessons and linked media as the work
+            develops.
+          </p>
+        </div>
+        <Link className="editorial-button" href="/journey">
+          Open the journal <ArrowUpRight size={17} />
+        </Link>
+      </section>
+    </EditorialPage>
   );
 }

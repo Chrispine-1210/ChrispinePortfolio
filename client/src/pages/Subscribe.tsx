@@ -1,13 +1,24 @@
 import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect, useState } from "react";
-import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import {
+  useStripe,
+  Elements,
+  PaymentElement,
+  useElements,
+} from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { PricingCards } from "@/components/PricingCards";
 
 const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY
@@ -115,7 +126,10 @@ export default function Subscribe() {
   if (isLoading) {
     return (
       <div className="min-h-screen pt-32 flex items-center justify-center">
-        <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full" data-testid="loading-spinner" />
+        <div
+          className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
+          data-testid="loading-spinner"
+        />
       </div>
     );
   }
@@ -125,11 +139,18 @@ export default function Subscribe() {
       <div className="bg-gradient-to-br from-background via-background to-accent/5 py-16 sm:py-24">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
           <div>
-            <h1 className="text-5xl sm:text-6xl font-bold text-foreground mb-6" data-testid="text-page-title">
-              Upgrade to Premium
+            <h1
+              className="text-5xl sm:text-6xl font-bold text-foreground mb-6"
+              data-testid="text-page-title"
+            >
+              Membership & updates
             </h1>
-            <p className="text-xl text-muted-foreground" data-testid="text-page-description">
-              Get unlimited access to premium tutorials, templates, and exclusive content
+            <p
+              className="text-xl text-muted-foreground"
+              data-testid="text-page-description"
+            >
+              Follow the technical writing and project notes. Membership
+              availability is shown below.
             </p>
           </div>
           <EditorialPhoto photo="reading" eager />
@@ -140,13 +161,18 @@ export default function Subscribe() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <Card>
             <CardHeader>
-              <CardTitle>Payment Integration Pending</CardTitle>
+              <CardTitle>Membership is being prepared</CardTitle>
               <CardDescription>
-                Stripe payment integration is not yet configured. Please contact the administrator.
+                Paid membership is not available in this environment. You can
+                explore the public writing, project casebooks and engineering
+                journal.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PricingCards />
+              <p className="text-sm text-muted-foreground">
+                Browse the free writing and journal from the navigation above,
+                or contact Chrispine about future membership availability.
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -155,7 +181,9 @@ export default function Subscribe() {
           {!clientSecret ? (
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
               <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-              <p className="mt-4 text-muted-foreground">Loading payment form...</p>
+              <p className="mt-4 text-muted-foreground">
+                Loading payment form...
+              </p>
             </div>
           ) : (
             <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

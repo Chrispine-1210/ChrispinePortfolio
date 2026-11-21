@@ -1,0 +1,226 @@
+[
+  {
+    "file": "network-ops-incident-2026-11-18.jpg",
+    "sha256": "fc48aa1a653078e9a929070852492f60b1f154c2a4081ded12a07d9c489d5aee",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://network-ops-training-command-center.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "design-city-digital-studio-architecture.svg",
+    "sha256": "90aa85f307d114497519206f1765250a2f0e730a8cfa2eae9470d286025ed45f",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "sudern-canary-2026-11-18.jpg",
+    "sha256": "b2d75423d22905e817fcca2f0c1514de5cb8780081ce6632607bacba2394ae89",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://sudern-institutional-ops-preview.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "sudern-institutional-operations-architecture.svg",
+    "sha256": "aaa348e0191ac360c2b325aa8c6a7fe9f2bd4871a89126ba6141f7ce6bfe1c0f",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "aothothe-enterprise-os-commercial-foundation-architecture.svg",
+    "sha256": "68aeaa311d576e5fce34dfa0631b9ed8603eb4135141a8e67dddce1b77f4d9d5",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "network-operations-training-architecture.svg",
+    "sha256": "94d6a5e278e5e8ab05dc39091f540fdba91e9265e7735f54084e4946afefb0d9",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "thandizo-healthcare-2026-11-18.jpg",
+    "sha256": "df6a6357707586f8dfc4e6fc4bb43ead2483e36c768225c67ad23646f61aed16",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://health-care-management-system-mocha.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "fatima-agro-digital-operations-architecture.svg",
+    "sha256": "98098e8648e945aecf69d114d047a763cde5460dd1aba4a56d48388f0f9f9514",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "thoko-ordering-paused-2026-11-18.jpg",
+    "sha256": "bd47cda7fbb1c48606d72fe2c320c23cd687375efe68bea6464fb1d12b27a864",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://thoko-restaurant-kanengo.chrispine-ala.chatgpt.site/order",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "network-ops-2026-11-18.jpg",
+    "sha256": "19f7b8bec313c37b8d2a89efd70b78f5730bf60f2800cec65e1541506d155db9",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://network-ops-training-command-center.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "bookingpro-appointment-platform-architecture.svg",
+    "sha256": "42df9eeb0e67bd49a77cec81d6be3527eb53363a182bba45809b08c3340f2aca",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "fatima-agro-2026-11-18.jpg",
+    "sha256": "dede64a8bdd119938622a2be3bc41e74c4af92d61940a4a2b7b0bf29eb178d8b",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://fatima-agro.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "chrispine-portfolio-2026-11-18.jpg",
+    "sha256": "a53410f464f9fb41624900f2c115894a187b8970e39ebeb9656e1d495f19c3e5",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://chrispine-portfolio.vercel.app/portfolio",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "aothothe-enterprise-os-2026-11-18.jpg",
+    "sha256": "b763a699fea0255fe0bdd3605e508767e327d5b4798b41036f4ab424f4a4f442",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://aothothe-enterprise-os.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "scamshield-risk-engine-architecture.svg",
+    "sha256": "a47216ef0e5a7a85d5d7ad887994ca29e502d3d876b4be77ee8c09ffab183169",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "mtendere-education-platform-architecture.svg",
+    "sha256": "b6e3803a8db6e81e9d1f5384f84fe49f2bc5bfe74d47ecae83b4a6b9abd26491",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "validus-circle-public-website-architecture.svg",
+    "sha256": "fee44bd191591157e6c3b8cbaa96c0d7664b83832f6ab442b11932c2bbc85353",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "thoko-restaurant-operations-architecture.svg",
+    "sha256": "e99a79afa1a2fcd8986b8000b19fa88cdc73c312ce635b857bb9b52b91fa6247",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "thrivebridge-malawi-community-platform-architecture.svg",
+    "sha256": "95ed924bb43b9af5e303804d158f99797c88cf1cf574e4be9ce99863de8a8493",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "thoko-restaurant-2026-11-18.jpg",
+    "sha256": "7fa9798e77ae88cb827f399a7f0f4ed32a47a307c206f8cb6d064fd27c64d371",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://thoko-restaurant.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "brandgenius-brand-workbench-architecture.svg",
+    "sha256": "04393a235fada4061cd7bfd11c28e7c07cfb6962e8d435723c7a6f4f1492cdbf",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "chrispine-portfolio-capital-system-architecture.svg",
+    "sha256": "bd53d5f74525fcc5253510e3b321dd0fe4140bc9d88057346f35c4af092795d4",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "validus-circle-2026-11-18.jpg",
+    "sha256": "6f9942530bd7ee2661f4969893662b71e60616c9b3dfef35294de8cf1291d77b",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://validus-circle-staging.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  },
+  {
+    "file": "area25-commerce-prototype-architecture.svg",
+    "sha256": "d02a660c257624f237900ef32db6a55a01f2a46041ce0571a80b316dc561b79b",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "leadersspark-publishing-platform-architecture.svg",
+    "sha256": "0a2c39fe64359d0bb61055120c89bdaf5d592f9c9e5f797357b7d491f7c49b8d",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "mec-archived-training-login.png",
+    "sha256": "e89a2f1153c1c8c13eb9cec4e0e19f31bb9dc079e69a804a7de916a1af3b69e2",
+    "type": "archived_training_screenshot",
+    "captureDate": null,
+    "sourceUrl": null,
+    "note": "Archived MEC training login; masked password; original capture date unknown."
+  },
+  {
+    "file": "thandizo-healthcare-platform-architecture.svg",
+    "sha256": "7dbc2987f312dffb2de8b57b826d3392cabd17d31fb2eb36fb0ce7341eb7c7a7",
+    "type": "architecture_diagram",
+    "captureDate": "2026-11-18",
+    "sourceUrl": null,
+    "note": "Conceptual source model; not certified deployment topology."
+  },
+  {
+    "file": "design-city-2026-11-18.jpg",
+    "sha256": "d8998c3310b89436f0a977ea727cf92e0d79490cc9a1645b48a55dd23dadf128",
+    "type": "public_browser_screenshot",
+    "captureDate": "2026-11-18",
+    "sourceUrl": "https://design-city.vercel.app/",
+    "note": "Observed public interface, no private session or live personal/payment records."
+  }
+]

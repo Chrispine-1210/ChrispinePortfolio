@@ -31,6 +31,7 @@ import {
 } from "../../shared/schema.js";
 import { requireAdminPermission } from "../custom-auth.js";
 import { db } from "../db.js";
+import { env } from "../env.js";
 
 const DAY_MS = 86_400_000;
 const TTM_DAYS = 365;
@@ -212,8 +213,9 @@ async function audit(
   previousState: unknown,
   newState: unknown,
   justification?: string,
+  writer: Pick<typeof db, "insert"> = db,
 ) {
-  await db.insert(auditEvents).values({
+  await writer.insert(auditEvents).values({
     actorUserId: request.securityPrincipal?.userId ?? null,
     actorSessionId: request.securityPrincipal?.sessionId ?? null,
     action,
@@ -590,44 +592,59 @@ export function createTreasuryRoicRouter() {
   router.post(
     "/api/admin/treasury/evidence/:kind/:id/void",
     requireAdminPermission("pipeline.financial.read"),
-    async (request, response) => {
-      const parsed = voidSchema.safeParse(request.body);
-      if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
-      const kind = request.params.kind;
-      const permission =
-        kind === "balance" || kind === "disbursement" ? "treasury.evidence.manage" :
-        kind === "opex" || kind === "tax" || kind === "invested-capital" || kind === "attestation" ? "roic.evidence.manage" :
-        kind === "deployment" ? "capital.deployment.manage" : null;
-      if (!permission || !request.securityPrincipal?.permissions.includes(permission)) {
-        return response.status(403).json({ message: "Forbidden" });
-      }
+    async (request, response, next) => {
+      try {
+        const parsed = voidSchema.safeParse(request.body);
+        if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
+        const kind = request.params.kind;
+        const permission =
+          kind === "balance" || kind === "disbursement" ? "treasury.evidence.manage" :
+          kind === "opex" || kind === "tax" || kind === "invested-capital" || kind === "attestation" ? "roic.evidence.manage" :
+          kind === "deployment" ? "capital.deployment.manage" : null;
+        const authorized =
+          env.ADMIN_AUTH_MODE === "database"
+            ? Boolean(permission && request.securityPrincipal?.permissions.includes(permission))
+            : Boolean(permission && (request as any).user?.isAdmin);
+        if (!authorized) {
+          return response.status(403).json({ message: "Forbidden" });
+        }
 
-      const now = new Date();
-      const values = {
-        voidedAt: now,
-        voidedBy: request.securityPrincipal.userId,
-        voidReason: parsed.data.reason,
-      };
-      const config: Record<string, {
-        table: any;
-        id: any;
-        resource: string;
-      }> = {
-        balance: { table: treasuryBalanceSnapshots, id: treasuryBalanceSnapshots.id, resource: "treasury_balance_snapshot" },
-        disbursement: { table: treasuryCashDisbursements, id: treasuryCashDisbursements.id, resource: "treasury_cash_disbursement" },
-        opex: { table: operatingExpenseEntries, id: operatingExpenseEntries.id, resource: "operating_expense_entry" },
-        tax: { table: operatingTaxProvisions, id: operatingTaxProvisions.id, resource: "operating_tax_provision" },
-        "invested-capital": { table: investedCapitalSnapshots, id: investedCapitalSnapshots.id, resource: "invested_capital_snapshot" },
-        attestation: { table: financialEvidenceAttestations, id: financialEvidenceAttestations.id, resource: "financial_evidence_attestation" },
-        deployment: { table: capitalDeploymentEntries, id: capitalDeploymentEntries.id, resource: "capital_deployment_entry" },
-      };
-      const selected = config[kind];
-      const [previous] = await db.select().from(selected.table).where(eq(selected.id, request.params.id)).limit(1);
-      if (!previous) return response.status(404).json({ message: "Evidence record not found" });
-      if (previous.voidedAt) return response.status(409).json({ message: "Evidence record is already voided" });
-      const [record] = await db.update(selected.table).set(values).where(eq(selected.id, request.params.id)).returning();
-      await audit(request, `${selected.resource}.void`, selected.resource, request.params.id, previous, record, parsed.data.reason);
-      response.json(record);
+        const now = new Date();
+        const values = {
+          voidedAt: now,
+          voidedBy: request.securityPrincipal?.userId ?? null,
+          voidReason: parsed.data.reason,
+        };
+        const config: Record<string, {
+          table: any;
+          id: any;
+          resource: string;
+        }> = {
+          balance: { table: treasuryBalanceSnapshots, id: treasuryBalanceSnapshots.id, resource: "treasury_balance_snapshot" },
+          disbursement: { table: treasuryCashDisbursements, id: treasuryCashDisbursements.id, resource: "treasury_cash_disbursement" },
+          opex: { table: operatingExpenseEntries, id: operatingExpenseEntries.id, resource: "operating_expense_entry" },
+          tax: { table: operatingTaxProvisions, id: operatingTaxProvisions.id, resource: "operating_tax_provision" },
+          "invested-capital": { table: investedCapitalSnapshots, id: investedCapitalSnapshots.id, resource: "invested_capital_snapshot" },
+          attestation: { table: financialEvidenceAttestations, id: financialEvidenceAttestations.id, resource: "financial_evidence_attestation" },
+          deployment: { table: capitalDeploymentEntries, id: capitalDeploymentEntries.id, resource: "capital_deployment_entry" },
+        };
+        const selected = config[kind];
+        const result = await db.transaction(async (transaction) => {
+          const [previous] = await transaction.select().from(selected.table)
+            .where(eq(selected.id, request.params.id)).limit(1).for("update");
+          if (!previous) return { outcome: "missing" as const };
+          if (previous.voidedAt) return { outcome: "voided" as const };
+          const [record] = await transaction.update(selected.table).set(values)
+            .where(eq(selected.id, request.params.id)).returning();
+          await audit(request, `${selected.resource}.void`, selected.resource, request.params.id, previous, record, parsed.data.reason, transaction);
+          return { outcome: "ok" as const, record };
+        });
+        if (result.outcome === "missing") return response.status(404).json({ message: "Evidence record not found" });
+        if (result.outcome === "voided") return response.status(409).json({ message: "Evidence record is already voided" });
+        response.json(result.record);
+      } catch (error) {
+        next(error);
+      }
     },
   );
 

@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-18",
+  "timeZone": "Africa/Blantyre",
+  "sourceParent": "625db9fbda258f68b70bc025d9f8321e2104f9a0",
+  "checks": [
+    {
+      "check": "typecheck",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "exitCode": 0
+    },
+    {
+      "check": "tests",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exitCode": 0
+    },
+    {
+      "check": "build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exitCode": 0
+    },
+    {
+      "check": "production-audit",
+      "command": [
+        "npm",
+        "audit",
+        "--omit=dev",
+        "--audit-level=high"
+      ],
+      "exitCode": 1
+    },
+    {
+      "check": "full-audit",
+      "command": [
+        "npm",
+        "audit",
+        "--audit-level=high"
+      ],
+      "exitCode": 1
+    },
+    {
+      "check": "qa-build",
+      "command": [
+        "node",
+        "scripts/qa/engineering-preview.mjs",
+        "--build-only"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true
+    },
+    {
+      "check": "qa-vercel-refusal",
+      "command": [
+        "node",
+        "scripts/qa/engineering-preview.mjs",
+        "--build-only"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": true
+    },
+    {
+      "check": "qa-production-refusal",
+      "command": [
+        "node",
+        "scripts/qa/engineering-preview.mjs",
+        "--build-only"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": true
+    }
+  ]
+}

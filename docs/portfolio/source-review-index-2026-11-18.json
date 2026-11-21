@@ -1,0 +1,250 @@
+{
+  "erp-ios": {
+    "documents": {
+      "README.md": {
+        "sha": "c4e24999d31254ca88dce05bc1764871cf2ba402",
+        "display_url": "https://github.com/Chrispine-1210/erp-ios/blob/master/README.md"
+      }
+    }
+  },
+  "Crosfade-company-website": {
+    "documents": {}
+  },
+  "duwa": {
+    "documents": {
+      "README.md": {
+        "sha": "962963f792412a125f648584770602fc396439ab",
+        "display_url": "https://github.com/Chrispine-1210/duwa/blob/mbuye/README.md"
+      }
+    }
+  },
+  "Mtendere-Education-Consult-": {
+    "documents": {}
+  },
+  "ThriveBridge-Malawi-": {
+    "documents": {
+      "package.json": {
+        "sha": "f48b524995891d81a8984b2910dc5888a3691400",
+        "display_url": "https://github.com/Chrispine-1210/ThriveBridge-Malawi-/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "98ab99e263a1f7418a6bea617f1a2d0e62bf8831",
+        "display_url": "https://github.com/Chrispine-1210/ThriveBridge-Malawi-/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "Web-Sync-Project---Mtendere-Education-": {
+    "documents": {}
+  },
+  "MEC": {
+    "documents": {
+      "README.md": {
+        "sha": "202a13bd0fed7f95df6e108fe7c910ba45408982",
+        "display_url": "https://github.com/Chrispine-1210/MEC/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "9a6aca765ac51bbd800289665ea3c9dcfcfae476",
+        "display_url": "https://github.com/Chrispine-1210/MEC/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "a53e2e2ed95afb0a877304696f95e7bc5ba5c4ec",
+        "display_url": "https://github.com/Chrispine-1210/MEC/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "Mede-mede": {
+    "documents": {
+      "README.md": {
+        "sha": "f0d03658e30e83f0621a71e1733b7c2dd9563598",
+        "display_url": "https://github.com/Chrispine-1210/Mede-mede/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "378573fe672a8f64ab6088450c349f229005e786",
+        "display_url": "https://github.com/Chrispine-1210/Mede-mede/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "2f126597b348afd530b8d5e41a02c342b99810bb",
+        "display_url": "https://github.com/Chrispine-1210/Mede-mede/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "AreaTwentyFive": {
+    "documents": {
+      "README.md": {
+        "sha": "554ff5f2bd84ef8c173927f016ac0f06bb5cc192",
+        "display_url": "https://github.com/Chrispine-1210/AreaTwentyFive/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "df77c1f0123bc216abc49e86996e21efc4c878fd",
+        "display_url": "https://github.com/Chrispine-1210/AreaTwentyFive/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "a952bb9db8b639c13ec233af0fa5c8cf5d74c019",
+        "display_url": "https://github.com/Chrispine-1210/AreaTwentyFive/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "Appointments-Booker": {
+    "documents": {
+      "README.md": {
+        "sha": "7fc3545a8da6bb991c1e18ed3dee5ff5d7f6d814",
+        "display_url": "https://github.com/Chrispine-1210/Appointments-Booker/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "984f31451b2f80693d405656a938fe2208a5d39b",
+        "display_url": "https://github.com/Chrispine-1210/Appointments-Booker/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "77b2eac0dbeedb1409d1de13a018e009cf700187",
+        "display_url": "https://github.com/Chrispine-1210/Appointments-Booker/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "Portfolio": {
+    "documents": {
+      "README.md": {
+        "sha": "65907502a1cd6bf2679033fa95691a0dc16db0f4",
+        "display_url": "https://github.com/Chrispine-1210/Portfolio/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "738651e63e6ac90294e7561fd2d8a24c47fe80cb",
+        "display_url": "https://github.com/Chrispine-1210/Portfolio/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "db946fadeb7d0d54608acfd2899cb0f3d196b461",
+        "display_url": "https://github.com/Chrispine-1210/Portfolio/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "ScamShield": {
+    "documents": {
+      "README.md": {
+        "sha": "fb436eceab6753d51bc392eaf6203cbe2a7ab4cf",
+        "display_url": "https://github.com/Chrispine-1210/ScamShield/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "1353e88db75015b78c7bd7eb524c335ea450ab27",
+        "display_url": "https://github.com/Chrispine-1210/ScamShield/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "8a7d1431b09c65b5cf32526442a565ccc6803afa",
+        "display_url": "https://github.com/Chrispine-1210/ScamShield/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "LeadersSpark-Blogs": {
+    "documents": {
+      "README.md": {
+        "sha": "bd9918c828a73da924c7a4b43db3c15a23fadee9",
+        "display_url": "https://github.com/Chrispine-1210/LeadersSpark-Blogs/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "9201289652cb68990135e8c2a430e8595ab4c8e2",
+        "display_url": "https://github.com/Chrispine-1210/LeadersSpark-Blogs/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "2ef99d0c9257e059ce8969e945a96e237ad38469",
+        "display_url": "https://github.com/Chrispine-1210/LeadersSpark-Blogs/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "Health-Care-Management-System": {
+    "documents": {
+      "README.md": {
+        "sha": "4b83bfa213eabad9abab023e77c70313cd061e27",
+        "display_url": "https://github.com/Chrispine-1210/Health-Care-Management-System/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "bad00871b40bbb0c2df6f4c33d4332a8913c5a4c",
+        "display_url": "https://github.com/Chrispine-1210/Health-Care-Management-System/blob/main/package.json"
+      },
+      "shared/schema.ts": {
+        "sha": "69b76d1996b88e87169badd4458d3cb6043b12f4",
+        "display_url": "https://github.com/Chrispine-1210/Health-Care-Management-System/blob/main/shared/schema.ts"
+      }
+    }
+  },
+  "BrandGenius": {
+    "documents": {
+      "README.md": {
+        "sha": "9ff240e71f530ebbe44eb6a76b3e034214546609",
+        "display_url": "https://github.com/Chrispine-1210/BrandGenius/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "3c7b1408b97cb6100e3438bcb94bea6580475935",
+        "display_url": "https://github.com/Chrispine-1210/BrandGenius/blob/main/package.json"
+      }
+    }
+  },
+  "design-city": {
+    "documents": {
+      "package.json": {
+        "sha": "69ae56e6f25efdf70c8dff09cda7059724b561b3",
+        "display_url": "https://github.com/Chrispine-1210/design-city/blob/main/package.json"
+      },
+      "artifacts/api-server/package.json": {
+        "sha": "3ad257d556376685e9d1a58d7931b893711fb9ae",
+        "display_url": "https://github.com/Chrispine-1210/design-city/blob/main/artifacts/api-server/package.json"
+      }
+    }
+  },
+  "aothothe-enterprise-os": {
+    "documents": {
+      "README.md": {
+        "sha": "5f8384da3d2cf5749f1a7463d1391c655d3aae3c",
+        "display_url": null
+      },
+      "apps/web/package.json": {
+        "sha": "a230e5db76c2c82f898b45fa6103cbc6e3eb24fc",
+        "display_url": null
+      }
+    }
+  },
+  "fatima-agro-digital-operations-demo-staging-private-20260911": {
+    "documents": {}
+  },
+  "fatima-agro-digital-operations-demo": {
+    "documents": {
+      "README.md": {
+        "sha": "6453ab4c45a6359087343c2c4df331fbde12ad7f",
+        "display_url": "https://github.com/Chrispine-1210/fatima-agro-digital-operations-demo/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "123cdd8a4b57b8eda77c0301efeb2285cbd75608",
+        "display_url": "https://github.com/Chrispine-1210/fatima-agro-digital-operations-demo/blob/main/package.json"
+      },
+      "db/schema.ts": {
+        "sha": "e4fb074bb14d28d2adb633e5ca7933ab1cfb4dd3",
+        "display_url": "https://github.com/Chrispine-1210/fatima-agro-digital-operations-demo/blob/main/db/schema.ts"
+      }
+    }
+  },
+  "Sudern-ORG": {
+    "documents": {
+      "README.md": {
+        "sha": "481a117561fc88c23d43d78de51516eeabbf1585",
+        "display_url": "https://github.com/Chrispine-1210/Sudern-ORG/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "7315cb00482598514e44bdaf3f19de0fdb1fa485",
+        "display_url": "https://github.com/Chrispine-1210/Sudern-ORG/blob/main/package.json"
+      }
+    }
+  },
+  "CHL-INVESTMENTS": {
+    "documents": {
+      "README.md": {
+        "sha": "004db658e289ebd41753cb4bbc10e97af633788b",
+        "display_url": "https://github.com/Chrispine-1210/CHL-INVESTMENTS/blob/main/README.md"
+      },
+      "package.json": {
+        "sha": "170db67a0667359eae3ea4433a51b25760357b7c",
+        "display_url": "https://github.com/Chrispine-1210/CHL-INVESTMENTS/blob/main/package.json"
+      },
+      "db/schema.ts": {
+        "sha": "692a9a6ef87fbe3f98de795a7e4629a44aa167da",
+        "display_url": "https://github.com/Chrispine-1210/CHL-INVESTMENTS/blob/main/db/schema.ts"
+      }
+    }
+  }
+}

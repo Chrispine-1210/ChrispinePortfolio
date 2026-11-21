@@ -358,7 +358,7 @@ export default function ProjectManagement() {
                     <h2 className="mt-1 truncate font-semibold">
                       {project.name}
                     </h2>
-                    <p className="mt-1 text-xs text-white/35">
+                    <p className="mt-1 text-xs text-white/60">
                       {project.organizationName || "Internal venture"}
                       {" · "}
                       {project.country || "Country not set"}
@@ -372,7 +372,7 @@ export default function ProjectManagement() {
                   </div>
                 </div>
 
-                <p className="mt-4 line-clamp-3 text-sm text-white/45">
+                <p className="mt-4 line-clamp-3 text-sm text-white/60">
                   {project.internalSummary || "No internal summary."}
                 </p>
 
@@ -401,7 +401,7 @@ export default function ProjectManagement() {
           ))}
 
           {!projects.isLoading && !projects.isError && !visibleProjects.length && (
-            <div className="col-span-full rounded-xl border border-dashed border-white/10 py-16 text-center text-sm text-white/35">
+            <div className="col-span-full rounded-xl border border-dashed border-white/10 py-16 text-center text-sm text-white/60">
               No internal projects match this view.
             </div>
           )}

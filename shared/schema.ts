@@ -12,6 +12,7 @@ import {
   numeric,
   primaryKey,
   uniqueIndex,
+  foreignKey,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -437,6 +438,11 @@ export type PublicCaseStudyEvidence = Pick<
 >;
 export type PublicPortfolioProject = PortfolioProject & {
   evidence: PublicCaseStudyEvidence[];
+  dossier?: Pick<CaseStudy,
+    "constraints" | "objectives" | "architecture" | "securityControls" |
+    "integrations" | "roleDescription" | "teamDescription" | "timeline" |
+    "lessons" | "nextPhase"
+  >;
 };
 
 // Newsletter subscribers
@@ -1264,3 +1270,43 @@ export const insertExternalPostSchema = createInsertSchema(externalPosts).omit({
 
 export type InsertExternalPost = z.infer<typeof insertExternalPostSchema>;
 export type ExternalPost = typeof externalPosts.$inferSelect;
+
+// Personal coordination records. Context tags do not grant authority in linked organizations.
+export const engineeringRecords = pgTable("engineering_records", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ownerUserId: varchar("owner_user_id").notNull().references(() => users.id),
+  context: varchar("context", {length:24}).notNull(),
+  kind: varchar("kind", {length:32}).notNull(),
+  title: varchar("title", {length:200}).notNull(),
+  summary: text("summary").notNull().default(""),
+  workDate: varchar("work_date", {length:10}).notNull(),
+  dueDate: varchar("due_date", {length:10}),
+  status: varchar("status", {length:24}).notNull().default("draft"),
+  priority: integer("priority").notNull().default(2),
+  accountable: varchar("accountable", {length:160}).notNull(),
+  evidence: text("evidence").array().notNull().default(sql`ARRAY[]::text[]`),
+  details: jsonb("details").$type<Record<string,unknown>>().notNull(),
+  version: integer("version").notNull().default(1),
+  createdAt: timestamp("created_at", {withTimezone:true}).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", {withTimezone:true}).notNull().defaultNow(),
+},table=>({ownerContext:index("engineering_records_owner_context_idx").on(table.ownerUserId,table.context,table.workDate),queue:index("engineering_records_queue_idx").on(table.ownerUserId,table.context,table.kind,table.status,table.dueDate)}));
+export const engineeringVersions = pgTable("engineering_versions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  recordId:varchar("record_id").notNull().references(()=>engineeringRecords.id),
+  version:integer("version").notNull(),snapshot:jsonb("snapshot").notNull(),
+  actorUserId:varchar("actor_user_id").notNull().references(()=>users.id),
+  createdAt:timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),
+},t=>({uniqueVersion:uniqueIndex("engineering_versions_record_version_idx").on(t.recordId,t.version)}));
+export const engineeringRequests = pgTable("engineering_requests", {
+  id:varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  actorUserId:varchar("actor_user_id").notNull().references(()=>users.id),
+  requestKey:varchar("request_key",{length:36}).notNull(),fingerprint:varchar("fingerprint",{length:64}).notNull(),
+  response:jsonb("response").notNull(),createdAt:timestamp("created_at",{withTimezone:true}).notNull().defaultNow(),
+},t=>({uniqueRequest:uniqueIndex("engineering_requests_actor_key_idx").on(t.actorUserId,t.requestKey),time:index("engineering_requests_actor_time_idx").on(t.actorUserId,t.createdAt)}));
+export const engineeringPublications = pgTable("engineering_publications", {
+  id:varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  recordId:varchar("record_id").notNull().references(()=>engineeringRecords.id),
+  version:integer("version").notNull(),slug:varchar("slug",{length:180}).notNull().unique(),
+  snapshot:jsonb("snapshot").notNull(),publishedBy:varchar("published_by").notNull().references(()=>users.id),
+  publishedAt:timestamp("published_at",{withTimezone:true}).notNull().defaultNow(),withdrawnAt:timestamp("withdrawn_at",{withTimezone:true}),
+},t=>({recordVersion:uniqueIndex("engineering_publications_record_version_idx").on(t.recordId,t.version),publication:index("engineering_publications_public_idx").on(t.withdrawnAt,t.publishedAt),versionReference:foreignKey({columns:[t.recordId,t.version],foreignColumns:[engineeringVersions.recordId,engineeringVersions.version],name:"engineering_publications_version_fk"})}));

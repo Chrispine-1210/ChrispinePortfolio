@@ -1,0 +1,65 @@
+[
+  {
+    "path": "docs/engineering-workspace/verification/connections-map.jpg",
+    "sha256": "03e98821050c8ddae6f3cac1c782115413aade99bfb63e508d4127b83ab6b3ee",
+    "width": 1357,
+    "height": 932,
+    "source": "Browser capture of isolated engineering-workspace QA preview",
+    "capturedOn": "2026-11-18",
+    "data": "Synthetic QA data only; not a production delivery or business-outcome certification"
+  },
+  {
+    "path": "docs/engineering-workspace/verification/daily-ledger.jpg",
+    "sha256": "58bb689bea8dbb7fe6f85c0ff1b66b4216ef3372a15c3b947df7d13b6442d204",
+    "width": 1357,
+    "height": 932,
+    "source": "Browser capture of isolated engineering-workspace QA preview",
+    "capturedOn": "2026-11-18",
+    "data": "Synthetic QA data only; not a production delivery or business-outcome certification"
+  },
+  {
+    "path": "docs/engineering-workspace/verification/presentation-rehearsal.jpg",
+    "sha256": "77c01e5245305bcf147465cfb186c5ca6d2cbf5e27a9cc88dc0c7c627845e9b2",
+    "width": 1363,
+    "height": 936,
+    "source": "Browser capture of isolated engineering-workspace QA preview",
+    "capturedOn": "2026-11-18",
+    "data": "Synthetic QA data only; not a production delivery or business-outcome certification"
+  },
+  {
+    "path": "docs/engineering-workspace/verification/private-history.jpg",
+    "sha256": "69b02b207e285805c50db7548a0babc42c26aa70e851d2303663400fcada7dbd",
+    "width": 1363,
+    "height": 936,
+    "source": "Browser capture of isolated engineering-workspace QA preview",
+    "capturedOn": "2026-11-18",
+    "data": "Synthetic QA data only; not a production delivery or business-outcome certification"
+  },
+  {
+    "path": "docs/engineering-workspace/verification/private-overview.jpg",
+    "sha256": "94ac1b9621d37c015722156e650a4f6d1deb02d88406e085cadd54d43a65adbc",
+    "width": 1357,
+    "height": 932,
+    "source": "Browser capture of isolated engineering-workspace QA preview",
+    "capturedOn": "2026-11-18",
+    "data": "Synthetic QA data only; not a production delivery or business-outcome certification"
+  },
+  {
+    "path": "docs/engineering-workspace/verification/public-journey.jpg",
+    "sha256": "937844dc71ead1090fe9883658aa9f3ce08db080ae689698430fc4b741c25e6f",
+    "width": 1357,
+    "height": 932,
+    "source": "Browser capture of isolated engineering-workspace QA preview",
+    "capturedOn": "2026-11-18",
+    "data": "Synthetic QA data only; not a production delivery or business-outcome certification"
+  },
+  {
+    "path": "docs/engineering-workspace/verification/public-note.jpg",
+    "sha256": "2b00eb17da8d30a59dc4aa9af92d6a7e61a1479bd6859ee866db2f2e2e743f93",
+    "width": 1357,
+    "height": 932,
+    "source": "Browser capture of isolated engineering-workspace QA preview",
+    "capturedOn": "2026-11-18",
+    "data": "Synthetic QA data only; not a production delivery or business-outcome certification"
+  }
+]

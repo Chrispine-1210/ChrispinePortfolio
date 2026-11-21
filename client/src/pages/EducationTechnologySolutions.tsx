@@ -2,7 +2,16 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
-import { CheckCircle, ArrowRight, BookOpen, BarChart2, Users, Globe, Smartphone, ShieldCheck } from "lucide-react";
+import {
+  CheckCircle,
+  ArrowRight,
+  BookOpen,
+  BarChart2,
+  Users,
+  Globe,
+  Smartphone,
+  ShieldCheck,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import edtechImage from "@assets/portfolio_photos/chrispine-edtech-veranda.png";
 
@@ -10,7 +19,11 @@ export default function EducationTechnologySolutions() {
   useEffect(() => {
     document.title = "Education Technology Solutions Africa | Chrispine Mndala";
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "EdTech platforms built for African schools, universities, and development programs. Student portals, learning management systems, and data-driven education tools designed for low-bandwidth environments.");
+    if (meta)
+      meta.setAttribute(
+        "content",
+        "EdTech platforms built for African schools, universities, and development programs. Student portals, learning management systems, and data-driven education tools designed for low-bandwidth environments.",
+      );
   }, []);
 
   const services = [
@@ -55,22 +68,26 @@ export default function EducationTechnologySolutions() {
   ];
 
   return (
-    <div className="min-h-screen pt-20 pb-24 bg-[#0a0c14]">
+    <div className="min-h-screen pt-20 pb-24 bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="py-16 space-y-8"
         >
-          <Badge variant="outline" className="font-mono text-[10px] uppercase">EdTech · Sub-Saharan Africa</Badge>
-          <h1 className="text-5xl font-black text-white uppercase tracking-tighter leading-tight">
-            Education Technology<br />
+          <Badge variant="outline" className="text-[10px] uppercase">
+            EdTech · Sub-Saharan Africa
+          </Badge>
+          <h1 className="text-5xl font-black text-foreground uppercase tracking-tighter leading-tight">
+            Education Technology
+            <br />
             <span className="text-primary">Built for Africa</span>
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl">
-            Purpose-built EdTech platforms for schools, universities, NGOs, and development programs operating across
-            Sub-Saharan Africa. Built for connectivity constraints, mobile-first users, and real institutional needs.
+            Purpose-built EdTech platforms for schools, universities, NGOs, and
+            development programs operating across Sub-Saharan Africa. Built for
+            connectivity constraints, mobile-first users, and real institutional
+            needs.
           </p>
           <div className="flex flex-wrap gap-4 pt-4">
             <Button size="lg" asChild>
@@ -80,25 +97,35 @@ export default function EducationTechnologySolutions() {
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-              <Link href="/portfolio/mtendere-education-platform">Read Case Study</Link>
+              <Link href="/portfolio/mtendere-education-platform">
+                Read Case Study
+              </Link>
             </Button>
           </div>
-          <img src={edtechImage} alt="Chrispine Mndala in a modern African learning and technology space" className="max-h-[640px] w-full rounded-2xl border border-white/10 object-cover object-top shadow-2xl" />
+          <img
+            src={edtechImage}
+            alt="Chrispine Mndala in a modern African learning and technology space"
+            className="max-h-[640px] w-full rounded-2xl border border-border object-cover object-top shadow-2xl"
+          />
         </motion.div>
 
         <motion.section
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="py-16 border-t border-white/5"
+          className="py-16 border-t border-border"
         >
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">EdTech Services</h2>
+          <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter mb-8">
+            EdTech Services
+          </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {services.map(({ icon: Icon, title, desc }, idx) => (
               <div key={idx} className="tech-card p-6 space-y-3">
                 <Icon className="w-8 h-8 text-primary" />
-                <h3 className="font-bold text-white">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                <h3 className="font-bold text-foreground">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {desc}
+                </p>
               </div>
             ))}
           </div>
@@ -108,13 +135,15 @@ export default function EducationTechnologySolutions() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="py-16 border-t border-white/5"
+          className="py-16 border-t border-border"
         >
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-8">Published Evidence Scope</h2>
+          <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter mb-8">
+            Published Evidence Scope
+          </h2>
           <div className="space-y-4">
             {outcomes.map((outcome, idx) => (
               <div key={idx} className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
                 <p className="text-muted-foreground">{outcome}</p>
               </div>
             ))}
@@ -125,9 +154,11 @@ export default function EducationTechnologySolutions() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="py-16 border-t border-white/5"
+          className="py-16 border-t border-border"
         >
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-6">Who This Is For</h2>
+          <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter mb-6">
+            Who This Is For
+          </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {[
               "Universities & colleges deploying student portals",
@@ -149,14 +180,19 @@ export default function EducationTechnologySolutions() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="py-16 border-t border-white/5 text-center space-y-6"
+          className="py-16 border-t border-border text-center space-y-6"
         >
-          <span className="text-[10px] font-mono text-primary uppercase tracking-widest">READY TO BUILD?</span>
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter">
-            Let's Design Your<br />Education Platform
+          <span className="text-[10px] text-primary uppercase tracking-widest">
+            READY TO BUILD?
+          </span>
+          <h2 className="text-3xl font-black text-foreground uppercase tracking-tighter">
+            Let's Design Your
+            <br />
+            Education Platform
           </h2>
           <p className="text-muted-foreground max-w-xl mx-auto">
-            Book a free 30-minute discovery call to discuss your institution's needs, constraints, and goals.
+            Book a free 30-minute discovery call to discuss your institution's
+            needs, constraints, and goals.
           </p>
           <Button size="lg" asChild>
             <Link href="/hire">
@@ -165,7 +201,6 @@ export default function EducationTechnologySolutions() {
             </Link>
           </Button>
         </motion.section>
-
       </div>
     </div>
   );

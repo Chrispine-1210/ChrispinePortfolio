@@ -1,538 +1,352 @@
 import { useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Briefcase, GraduationCap, Award, Users, Cpu, Shield, Database, Code, Network, TrendingUp, Mail, Link as LinkIcon } from "lucide-react";
-import { motion } from "framer-motion";
 import { Link } from "wouter";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Code2,
+  Network,
+  BarChart3,
+  Briefcase,
+  Download,
+} from "lucide-react";
+import { EditorialPage } from "@/components/editorial/EditorialPage";
+import { setSEO } from "@/lib/seoHelper";
 import publicCvUrl from "@assets/Chrispine-Mndala-CV-2026.pdf?url";
-import aboutImage from "@assets/portfolio_photos/chrispine-about-campus.png";
+import portrait from "@assets/portfolio_photos/chrispine-about-campus.png";
+
+const capabilities = [
+  {
+    icon: Code2,
+    title: "Software that supports the work",
+    body: "Web interfaces, APIs and database-backed workflows. My applied stack includes React, TypeScript, Node.js, PostgreSQL and Drizzle.",
+  },
+  {
+    icon: Network,
+    title: "Connected systems",
+    body: "A foundation in TCP/IP, routing, DNS and device troubleshooting, with continued practical work in servers, networks and recovery.",
+  },
+  {
+    icon: BarChart3,
+    title: "Data with a purpose",
+    body: "Collection, analysis and reporting that help people understand operations. Excel, dashboards and monitoring and evaluation inform the approach.",
+  },
+  {
+    icon: Briefcase,
+    title: "An operator’s perspective",
+    body: "Commercial operations, stock controls, compliance and staff coordination shape how I approach software requirements and delivery.",
+  },
+];
+const experience = [
+  {
+    period: "2026 — Present",
+    company: "Aöthothe Technologies",
+    role: "Founder & Systems Lead",
+    text: "Developing enterprise software and delivery foundations, including operational controls, product architecture and evidence standards.",
+    href: "/portfolio/aothothe-enterprise-os-commercial-foundation",
+  },
+  {
+    period: "2020 — Present",
+    company: "Freelance / Contract · Malawi",
+    role: "Technical Consultant",
+    text: "Web platforms, dashboards and digital workflows, from requirements and interface development to data structures, documentation and release support.",
+    href: "/portfolio/mtendere-education-platform",
+  },
+  {
+    period: "2025",
+    company: "Farm Produce Marketing Association",
+    role: "Marketing & Sales Compliance Officer",
+    text: "Auction-floor compliance, farmer consultations, sales information and market-performance reporting.",
+  },
+  {
+    period: "2022 — Present",
+    company: "CHL Investments",
+    role: "Operations & Marketing Manager",
+    text: "Operating processes, staff and vendor coordination, recruitment support, marketing and performance reporting for a family business.",
+  },
+  {
+    period: "2020 — 2021",
+    company: "SBOF Ltd",
+    role: "Assistant Sales & Depot Manager",
+    text: "Depot operations, stock controls, dispatch coordination, team supervision and operational briefs.",
+  },
+];
+const credentials = [
+  {
+    year: "2018 — 2022",
+    qualification: "Bachelor of Business Administration",
+    institution: "Jubilee University · Malawi",
+  },
+  {
+    year: "2024 · Distinction",
+    qualification: "Advanced Diploma in Computer Networks & Internet Protocols",
+    institution: "Alison",
+  },
+  {
+    year: "2023 · Distinction",
+    qualification: "Diploma in Project Management",
+    institution: "Alison",
+  },
+  {
+    year: "2024",
+    qualification: "Monitoring & Evaluation Certificate",
+    institution: "Green Cedar Consult",
+  },
+];
 
 export default function About() {
   useEffect(() => {
-    document.title = "About | Chrispine Mndala";
+    setSEO(
+      "About Chrispine Mndala | Software, networks & operations",
+      "Meet Chrispine Mndala, a Malawi-based software and systems professional connecting practical engineering with business operations, data and delivery.",
+      "/about",
+    );
   }, []);
-
   return (
-    <div className="min-h-screen pt-24 pb-16 bg-[#0a0c14] relative overflow-hidden">
-      <div className="tech-grid-bg opacity-20" aria-hidden="true" />
-
-      {/* Hero Section */}
-      <section className="relative py-16 sm:py-24 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-8"
+    <EditorialPage>
+      <header className="editorial-hero">
+        <div>
+          <span className="editorial-kicker">
+            About / Based in Lilongwe, Malawi
+          </span>
+          <h1 data-testid="text-page-title">
+            Engineering with
+            <br />
+            an <em>operator’s eye.</em>
+          </h1>
+          <p className="editorial-lead" data-testid="text-intro-1">
+            I’m Chrispine Mndala. I build software and connected workflows with
+            an interest in what happens after the screen: the people, decisions
+            and daily operations behind a system.
+          </p>
+          <p
+            className="editorial-copy"
+            style={{ marginTop: 19 }}
+            data-testid="text-intro-2"
+          >
+            My background brings together programming, computer networks, data
+            analysis and commercial operations. That combination keeps the work
+            grounded in the problem a team actually needs to solve.
+          </p>
+          <div className="editorial-actions">
+            <Link href="/portfolio" className="editorial-button">
+              Explore my work <ArrowRight size={16} />
+            </Link>
+            <a
+              href={publicCvUrl}
+              download="Chrispine-Mndala-CV-2026.pdf"
+              className="editorial-button secondary"
+              data-testid="button-download-cv"
             >
-              <div className="inline-flex px-3 py-1 bg-primary text-white font-mono text-[10px] font-black uppercase shadow-[0_0_10px_rgba(59,130,246,0.5)]">
-                Professional Profile
-              </div>
-              <h1 className="text-6xl sm:text-8xl font-black text-white uppercase tracking-tighter leading-none" data-testid="text-page-title">
-                About <span className="text-primary italic">Me</span>
-              </h1>
-              <div className="space-y-6 text-lg text-muted-foreground font-mono leading-relaxed opacity-80">
-                <p data-testid="text-intro-1">
-                  I’m Chrispine Mndala, a full-stack programmer based in Malawi. I build web applications, APIs, and database-backed tools that help organizations run their day-to-day work.
-                </p>
-                <p data-testid="text-intro-2">
-                  Mtendere Education Consult hired me as a programmer to develop its digital platform. My work covered the public website, the administration portal, and the workflows that connect them.
-                </p>
-              </div>
-              <div className="pt-4 flex flex-col sm:flex-row gap-4">
-                <Button size="lg" className="bg-primary text-white rounded-none h-14 px-10 font-mono text-xs uppercase shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.6)] transition-all" asChild data-testid="button-hire-about">
-                  <Link href="/hire">
-                    Hire Me
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild data-testid="button-download-cv">
-                  <a href={publicCvUrl} download="Chrispine-Mndala-CV-2026.pdf">
-                    Download CV
-                  </a>
-                </Button>
-              </div>
-            </motion.div>
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="relative"
-            >
-              <div className="absolute -inset-4 bg-primary/10 blur-2xl rounded-full animate-pulse" />
-              <div className="relative tech-card border-none rounded-none aspect-square overflow-hidden group">
-                <img
-                  src={aboutImage}
-                  alt="Chrispine Mndala Professional"
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-100"
-                  data-testid="img-about"
-                />
-                <div className="scanline" />
-                <div className="absolute top-4 left-4 font-mono text-[10px] bg-black/80 px-2 py-1 text-primary border border-primary/30 uppercase">
-                  NODE_ID: CMNDALA_01
-                </div>
-              </div>
-            </motion.div>
+              <Download size={16} /> Download CV
+            </a>
           </div>
         </div>
-      </section>
-
-      {/* Impact Stats */}
-      <section className="py-16 border-t border-white/5 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8"
+        <figure className="editorial-portrait">
+          <img
+            src={portrait}
+            alt="Chrispine Mndala outdoors on a campus"
+            fetchPriority="high"
+            decoding="async"
+            data-testid="img-about"
+          />
+          <figcaption>
+            <span>Chrispine Mndala</span>
+            <span>Software · Systems · Operations</span>
+          </figcaption>
+        </figure>
+      </header>
+      <section
+        className="editorial-section editorial-about-grid"
+        aria-labelledby="approach-heading"
+      >
+        <div>
+          <span className="editorial-eyebrow">01 / Perspective</span>
+          <h2 id="approach-heading">
+            Start with the work.
+            <br />
+            Then build the system.
+          </h2>
+        </div>
+        <div>
+          <p className="editorial-lead">
+            A useful platform needs more than a good interface. It needs clear
+            ownership, dependable records and a process people can follow.
+          </p>
+          <p className="editorial-copy" style={{ marginTop: 19 }}>
+            My work in stock handling, staff coordination, compliance and
+            reporting has made those details difficult to ignore. I bring that
+            operational perspective into requirements, data models, access
+            controls and release decisions.
+          </p>
+          <p className="editorial-copy" style={{ marginTop: 19 }}>
+            Building in Malawi also means asking practical questions: Can the
+            team afford to run it? Will it remain usable on an ordinary
+            connection? Who maintains it, and how is information recovered when
+            something fails?
+          </p>
+          <Link
+            href="/blog"
+            className="editorial-text-link"
+            style={{ marginTop: 22 }}
           >
-            {[
-              { number: "2", label: "Case Studies" },
-              { number: "1", label: "Public CV" },
-              { number: "Proof", label: "Publication Standard" },
-              { number: "0", label: "Unapproved Client Metrics" },
-            ].map((stat, idx) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="text-center"
-              >
-                <div className="text-4xl sm:text-5xl font-black text-primary mb-2">{stat.number}</div>
-                <div className="text-sm text-muted-foreground font-mono uppercase">{stat.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
+            Read my writing <ArrowUpRight size={16} />
+          </Link>
         </div>
       </section>
-
-      {/* Expertise Areas */}
-      <section className="py-24 border-t border-white/5 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-12"
-          >
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 bg-primary/10 flex items-center justify-center">
-                <Briefcase className="text-primary" />
-              </div>
-              <h2 className="text-4xl font-black text-white uppercase tracking-tighter" data-testid="text-expertise-title">
-                KEY_EXPERTISE // DOMAINS
-              </h2>
+      <section
+        className="editorial-section editorial-about-grid"
+        aria-labelledby="practice-heading"
+      >
+        <div>
+          <span className="editorial-eyebrow">02 / Areas of practice</span>
+          <h2 id="practice-heading">
+            Across code,
+            <br />
+            infrastructure and business.
+          </h2>
+        </div>
+        <div className="editorial-capabilities">
+          {capabilities.map(({ icon: Icon, title, body }) => (
+            <div key={title}>
+              <Icon size={24} strokeWidth={1.5} />
+              <h3>{title}</h3>
+              <p className="editorial-copy">{body}</p>
             </div>
-            
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="tech-card p-8 space-y-4 group hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
-                <div className="flex items-center gap-3 mb-2">
-                  <Code className="w-6 h-6 text-primary" />
-                  <h3 className="text-xl font-bold text-primary uppercase">Full-Stack Engineering</h3>
-                </div>
-                <p className="text-muted-foreground">End-to-end software development from frontend interfaces to backend APIs and databases. React, Node.js, PostgreSQL architecture.</p>
-                <div className="flex flex-wrap gap-2">
-                  {["React", "TypeScript", "Node.js", "Express", "PostgreSQL", "Drizzle ORM", "REST APIs"].map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-                  ))}
-                </div>
-              </div>
-              <div className="tech-card p-8 space-y-4 group hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
-                <div className="flex items-center gap-3 mb-2">
-                  <Network className="w-6 h-6 text-primary" />
-                  <h3 className="text-xl font-bold text-primary uppercase">Network Engineering</h3>
-                </div>
-                <p className="text-muted-foreground">Computer networks, internet protocols, infrastructure design. LoRaWAN, IoT systems, 5G optimization, server administration.</p>
-                <div className="flex flex-wrap gap-2">
-                  {["TCP/IP", "LAN/WAN", "LoRaWAN", "IoT", "5G", "Server Config"].map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-                  ))}
-                </div>
-              </div>
-              <div className="tech-card p-8 space-y-4 group hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
-                <div className="flex items-center gap-3 mb-2">
-                  <Database className="w-6 h-6 text-primary" />
-                  <h3 className="text-xl font-bold text-primary uppercase">Data Systems & Analytics</h3>
-                </div>
-                <p className="text-muted-foreground">Database architecture, data collection systems, Power BI dashboards, Excel analytics, DHIS2 integration for evidence-based decisions.</p>
-                <div className="flex flex-wrap gap-2">
-                  {["SQL", "Power BI", "Excel", "DHIS2", "Data Collection", "Analytics"].map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-                  ))}
-                </div>
-              </div>
-              <div className="tech-card p-8 space-y-4 group hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all">
-                <div className="flex items-center gap-3 mb-2">
-                  <TrendingUp className="w-6 h-6 text-primary" />
-                  <h3 className="text-xl font-bold text-primary uppercase">Business Development</h3>
-                </div>
-                <p className="text-muted-foreground">Digital transformation strategy, project management, sales strategy, and entrepreneurship. Aligning technology with business outcomes.</p>
-                <div className="flex flex-wrap gap-2">
-                  {["Project Management", "Digital Transformation", "Sales Strategy", "Entrepreneurship", "Consulting"].map(tag => (
-                    <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          ))}
         </div>
       </section>
-
-      {/* Technology Philosophy */}
-      <section className="py-24 bg-primary/5 border-y border-primary/10 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-12"
-          >
-            <div className="text-center space-y-4">
-              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">02 // Approach</span>
-              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Technology Philosophy</h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                I build technology systems that convert complex business processes into scalable digital platforms.
+      <section
+        className="editorial-section editorial-about-grid"
+        aria-labelledby="experience-heading"
+      >
+        <div>
+          <span className="editorial-eyebrow">03 / Professional journey</span>
+          <h2 id="experience-heading">
+            Experience that
+            <br />
+            shapes the approach.
+          </h2>
+          <p className="editorial-copy" style={{ marginTop: 17 }}>
+            Roles and dates follow the public CV. Project casebooks provide the
+            technical scope and current evidence separately.
+          </p>
+        </div>
+        <ol className="editorial-timeline">
+          {experience.map((item) => (
+            <li key={item.company}>
+              <div className="editorial-eyebrow">{item.period}</div>
+              <h3>{item.role}</h3>
+              <p style={{ fontSize: 14, color: "var(--leaf)" }}>
+                {item.company}
               </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                { title: "Automation", desc: "Eliminate repetitive manual work through intelligent automation. Every system I design reduces operational overhead and frees teams to focus on strategic priorities." },
-                { title: "Data-Driven Decisions", desc: "Transform raw data into actionable intelligence. Real-time dashboards and analytics that enable leadership to make informed decisions faster." },
-                { title: "Cloud Systems", desc: "Cloud-native architecture designed for reliability and scale. Infrastructure that grows with your business without proportional cost increases." },
-                { title: "Infrastructure Reliability", desc: "Reliability, security, recovery, and operational controls are treated as release requirements rather than marketing claims." },
-                { title: "Human-Centered Design", desc: "Technology should serve people, not the other way around. Interfaces and workflows designed around how teams actually work, not how systems want them to work." },
-                { title: "Scalable Architecture", desc: "Build once, scale infinitely. Modular systems that adapt to changing business needs without requiring fundamental redesign." }
-              ].map((item, idx) => (
-                <motion.div
-                  key={item.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="tech-card p-8 space-y-4"
+              <p className="editorial-copy">{item.text}</p>
+              {item.href && (
+                <Link
+                  href={item.href}
+                  className="editorial-text-link"
+                  style={{ marginTop: 12 }}
                 >
-                  <h3 className="text-lg font-bold text-primary uppercase">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Enterprise Solution Areas */}
-      <section className="py-24 border-t border-white/5 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-12"
-          >
-            <div className="text-center space-y-4">
-              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">03 // Capabilities</span>
-              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Enterprise Solutions</h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              {[
-                {
-                  title: "Digital Transformation",
-                  desc: "End-to-end digital transformation for organizations ready to modernize operations.",
-                  items: ["Business process automation", "Custom software platforms", "Enterprise dashboards", "Workflow optimization"]
-                },
-                {
-                  title: "Data Intelligence",
-                  desc: "Turn data into your most valuable strategic asset.",
-                  items: ["Data collection systems", "Real-time analytics", "Reporting platforms", "Predictive insights"]
-                },
-                {
-                  title: "Infrastructure Engineering",
-                  desc: "Robust, secure infrastructure that scales with your ambitions.",
-                  items: ["Network architecture", "Server administration", "Security hardening", "Cloud deployment"]
-                },
-                {
-                  title: "Education Technology",
-                  desc: "Digital ecosystems designed for learning and administrative excellence.",
-                  items: ["Student management platforms", "Digital learning ecosystems", "Administration systems", "Analytics for educators"]
-                }
-              ].map((solution, idx) => (
-                <motion.div
-                  key={solution.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="tech-card p-8 space-y-4"
-                >
-                  <h3 className="text-xl font-bold text-primary uppercase">{solution.title}</h3>
-                  <p className="text-muted-foreground">{solution.desc}</p>
-                  <ul className="space-y-2">
-                    {solution.items.map((item) => (
-                      <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span className="w-1.5 h-1.5 bg-primary rounded-full" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Selected Work and Ventures */}
-      <section className="py-24 bg-primary/5 border-y border-primary/10 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-12"
-          >
-            <div className="text-center space-y-4">
-              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">04 // Selected Work</span>
-              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Projects &amp; Ventures</h2>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-                Selected programming work and technology ventures.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  name: "Aothothe LLC",
-                  role: "Founder & CEO",
-                  desc: "Technology innovation company focused on building scalable digital platforms for African enterprises. Driving digital transformation through custom software solutions.",
-                  focus: "Digital Platforms"
-                },
-                {
-                  name: "Mtendere Education Consult",
-                  role: "Programmer, Digital Development",
-                  desc: "Developed the public education consultancy website and administration tools for managing content and consultation requests.",
-                  focus: "EdTech"
-                },
-                {
-                  name: "AgriTech Innovation",
-                  role: "Technology Strategist",
-                  desc: "Exploring digital solutions for agriculture value chains. IoT sensors, data collection systems, and market linkage platforms for smallholder farmers.",
-                  focus: "AgriTech"
-                }
-              ].map((venture, idx) => (
-                <motion.div
-                  key={venture.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="tech-card p-8 space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white uppercase">{venture.name}</h3>
-                    <Badge variant="outline" className="text-[10px] font-mono">{venture.focus}</Badge>
-                  </div>
-                  <p className="text-sm text-primary font-mono uppercase">{venture.role}</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{venture.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Professional Credentials */}
-      <section className="py-24 border-t border-white/5 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-12"
-          >
-            <div className="text-center space-y-4">
-              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">05 // Credentials</span>
-              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Certifications & Expertise</h2>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  category: "Engineering",
-                  color: "text-primary",
-                  creds: [
-                    "Advanced Diploma in Computer Networks & Internet Protocols",
-                    "Full-Stack Web Development",
-                    "IoT Systems & LoRaWAN Networks",
-                    "Cloud Infrastructure & DevOps"
-                  ]
-                },
-                {
-                  category: "Business",
-                  color: "text-emerald-400",
-                  creds: [
-                    "Project Management Certification",
-                    "Digital Transformation Strategy",
-                    "Entrepreneurship & Innovation",
-                    "Stakeholder Management"
-                  ]
-                },
-                {
-                  category: "Data",
-                  color: "text-cyan-400",
-                  creds: [
-                    "Monitoring & Evaluation (MEL)",
-                    "Data Analytics & Visualization",
-                    "Power BI & Excel Advanced",
-                    "DHIS2 Implementation"
-                  ]
-                },
-                {
-                  category: "Leadership",
-                  color: "text-amber-400",
-                  creds: [
-                    "HarvardX: Computer Science",
-                    "Systems Architecture Design",
-                    "Team Leadership & Mentoring",
-                    "Technology Strategy Consulting"
-                  ]
-                }
-              ].map((group, idx) => (
-                <motion.div
-                  key={group.category}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="tech-card p-6 space-y-4"
-                >
-                  <h3 className={`text-sm font-black uppercase tracking-widest ${group.color}`}>{group.category}</h3>
-                  <ul className="space-y-3">
-                    {group.creds.map((cred) => (
-                      <li key={cred} className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
-                        <span className={`mt-0.5 flex-shrink-0 ${group.color}`}>›</span>
-                        {cred}
-                      </li>
-                    ))}
-                  </ul>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* GitHub & Open Source Showcase */}
-      <section className="py-24 bg-primary/5 border-y border-primary/10 relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-12"
-          >
-            <div className="text-center space-y-4">
-              <span className="text-[10px] font-mono text-primary uppercase tracking-widest">06 // Open Source</span>
-              <h2 className="text-4xl font-black text-white uppercase tracking-tighter">GitHub & Technical Authority</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Real code. Real systems. Explore repositories and technical implementations.
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="tech-card p-8 space-y-6">
-                <h3 className="text-lg font-bold text-white uppercase">Technical Philosophy</h3>
-                <div className="space-y-4">
-                  {[
-                    { title: "Clean Architecture", desc: "Code organized for maintainability — layers separated, dependencies injected, logic testable." },
-                    { title: "Documentation First", desc: "Every system ships with README, API docs, and architecture diagrams." },
-                    { title: "Security by Design", desc: "Auth, validation, sanitization, and security headers baked in from day one." },
-                    { title: "Performance Optimized", desc: "Caching strategies, query optimization, and lazy loading built into production builds." }
-                  ].map((item) => (
-                    <div key={item.title} className="flex gap-3">
-                      <span className="text-primary mt-0.5 flex-shrink-0">›</span>
-                      <div>
-                        <h4 className="text-xs font-bold text-white uppercase">{item.title}</h4>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="tech-card p-6 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-white uppercase">Technology Expertise</h4>
-                    <Badge variant="outline" className="text-[10px] font-mono">Evidence-led</Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      ["React + TypeScript", "Applied"],
-                      ["Node.js / Express", "Applied"],
-                      ["PostgreSQL", "Applied"],
-                      ["REST API Design", "Applied"],
-                      ["Computer Networks", "Certified"],
-                      ["Project Management", "Certified"],
-                    ].map(([tech, level]) => (
-                      <div key={tech} className="p-2 bg-white/5">
-                        <div className="text-[10px] text-white font-mono uppercase">{tech}</div>
-                        <div className="text-[10px] text-primary">{level}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <Button asChild className="w-full" data-testid="button-github-profile">
-                  <a
-                    href="https://github.com/Chrispine-1210"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2"
-                  >
-                    <Code className="w-4 h-4" />
-                    View GitHub Profile
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="py-24 bg-white/5 relative border-y border-white/5">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="space-y-8"
-          >
-            <h2 className="text-4xl font-black text-white uppercase tracking-tighter">Ready to Work Together?</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Book a free 30-minute technology consultation. No obligation — just clarity.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" asChild data-testid="button-hire-cta">
-                <Link href="/hire#consultation" className="flex items-center gap-2">
-                  <Briefcase className="mr-2 h-5 w-5" />
-                  Book a Consultation
+                  Related project casebook <ArrowUpRight size={15} />
                 </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild data-testid="button-contact-cta">
-                <a href="mailto:peterschrispine@gmail.com" className="flex items-center gap-2">
-                  <Mail className="mr-2 h-5 w-5" />
-                  Email Directly
-                </a>
-              </Button>
-            </div>
-          </motion.div>
+              )}
+            </li>
+          ))}
+        </ol>
+      </section>
+      <section
+        className="editorial-section editorial-about-grid"
+        aria-labelledby="education-heading"
+      >
+        <div>
+          <span className="editorial-eyebrow">
+            04 / Education & continued learning
+          </span>
+          <h2 id="education-heading">
+            A foundation
+            <br />
+            to keep building on.
+          </h2>
+        </div>
+        <div>
+          <ul className="editorial-timeline">
+            {credentials.map((c) => (
+              <li key={c.qualification}>
+                <div className="editorial-eyebrow">{c.year}</div>
+                <h3>{c.qualification}</h3>
+                <p className="editorial-copy">{c.institution}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="editorial-copy" style={{ marginTop: 24 }}>
+            Current learning interests include cybersecurity, network
+            troubleshooting, repair, server operations and embedded systems. The
+            journal records practice and lessons as they develop.
+          </p>
+          <Link
+            href="/journey"
+            className="editorial-text-link"
+            style={{ marginTop: 18 }}
+          >
+            Follow the learning journey <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
-    </div>
+      <section className="editorial-section" aria-labelledby="ventures-heading">
+        <div className="editorial-section-heading">
+          <div>
+            <span className="editorial-eyebrow">05 / Connected work</span>
+            <h2 id="ventures-heading">The wider operating picture.</h2>
+          </div>
+          <p>
+            Explore the technical and institutional work through its public
+            casebooks.
+          </p>
+        </div>
+        <div className="editorial-capabilities">
+          <Link
+            href="/portfolio/aothothe-enterprise-os-commercial-foundation"
+            className="editorial-note"
+          >
+            <span className="editorial-eyebrow">
+              Aöthothe Technologies <ArrowUpRight size={17} />
+            </span>
+            <h2>Governed company operations.</h2>
+            <p className="editorial-copy">
+              Commercial intake, decisions, delivery and an evidence-led
+              approach to building an operating company.
+            </p>
+          </Link>
+          <Link
+            href="/portfolio/sudern-institutional-operations"
+            className="editorial-note"
+          >
+            <span className="editorial-eyebrow">
+              SUDERN <ArrowUpRight size={17} />
+            </span>
+            <h2>Institutional systems.</h2>
+            <p className="editorial-copy">
+              Protected access, accountability and the release evidence behind
+              an institutional operations platform.
+            </p>
+          </Link>
+        </div>
+      </section>
+      <section className="editorial-bridge">
+        <div>
+          <h2>Have an operating problem worth solving?</h2>
+          <p>
+            Let’s discuss the people, process and technical constraints, then
+            define a practical next step.
+          </p>
+        </div>
+        <Link
+          href="/hire"
+          className="editorial-button"
+          data-testid="button-hire-about"
+        >
+          Discuss a project <ArrowUpRight size={17} />
+        </Link>
+      </section>
+    </EditorialPage>
   );
 }
