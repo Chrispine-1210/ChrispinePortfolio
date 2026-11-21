@@ -1,3 +1,4 @@
+import { asyncHandler } from "./middleware.js";
 import express from "express";
 import { setupAuthRoutes } from "./custom-auth.js";
 import { analyticsMiddleware } from "./analytics.js";
@@ -43,7 +44,7 @@ export function createApp() {
   app.use(requestLogger);
   app.use(analyticsMiddleware);
 
-  app.get("/api/release", async (_request, response, next) => {
+  app.get("/api/release", asyncHandler(async (_request, response, next) => {
     try {
       const databaseIdentity = await pool.query(
         "select current_setting('neon.branch_id', true) as branch_id",
@@ -57,7 +58,7 @@ export function createApp() {
     } catch (error) {
       next(error);
     }
-  });
+  }));
 
   const customAuthRouter = express.Router();
   if (env.ADMIN_AUTH_MODE === "database") {

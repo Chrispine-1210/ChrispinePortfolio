@@ -1,3 +1,4 @@
+import { asyncHandler } from "../middleware.js";
 import {
   and,
   desc,
@@ -232,18 +233,18 @@ export function createCapitalOperatingRouter() {
   router.get(
     "/api/admin/capital/invoices",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(commercialInvoices)
         .orderBy(desc(commercialInvoices.issuedAt)).limit(1500);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/invoices",
     requireAdminPermission("cash.realization.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = invoiceInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid invoice evidence", errors: parsed.error.issues });
       const input = parsed.data;
@@ -292,13 +293,13 @@ export function createCapitalOperatingRouter() {
       }).returning();
       await audit(request, "cash.invoice.create", "commercial_invoice", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/invoices/:id/void",
     requireAdminPermission("cash.realization.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid invoice void request", errors: parsed.error.issues });
       const [previous] = await db.select().from(commercialInvoices)
@@ -317,24 +318,24 @@ export function createCapitalOperatingRouter() {
       }).where(eq(commercialInvoices.id, previous.id)).returning();
       await audit(request, "cash.invoice.void", "commercial_invoice", previous.id, previous, record, parsed.data.reason);
       response.json(record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/capital/collections",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(cashCollections)
         .orderBy(desc(cashCollections.receivedAt)).limit(2000);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/collections",
     requireAdminPermission("cash.realization.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = collectionInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid collection evidence", errors: parsed.error.issues });
       const input = parsed.data;
@@ -390,13 +391,13 @@ export function createCapitalOperatingRouter() {
         return response.status(409).json({ message: "Collection exceeds outstanding invoice balance", outstanding: result.outstanding });
       }
       response.status(201).json(result.record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/collections/:id/void",
     requireAdminPermission("cash.realization.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid collection void request", errors: parsed.error.issues });
       const [previous] = await db.select().from(cashCollections)
@@ -411,24 +412,24 @@ export function createCapitalOperatingRouter() {
       await refreshInvoiceStatus(previous.invoiceId);
       await audit(request, "cash.collection.void", "cash_collection", previous.id, previous, record, parsed.data.reason);
       response.json(record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/capital/retention-movements",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(recurringRevenueMovements)
         .orderBy(desc(recurringRevenueMovements.effectiveAt)).limit(2000);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/retention-movements",
     requireAdminPermission("retention.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = movementInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid recurring revenue movement", errors: parsed.error.issues });
       const input = parsed.data;
@@ -500,13 +501,13 @@ export function createCapitalOperatingRouter() {
       if (result.outcome === "before_start") return response.status(400).json({ message: "Movement cannot precede agreement start" });
       if (result.outcome === "invalid_transition") return response.status(409).json({ message: "Movement type and MRR delta do not form a valid retention transition" });
       response.status(201).json(result);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/retention-movements/:id/void",
     requireAdminPermission("retention.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid movement void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
@@ -567,24 +568,24 @@ export function createCapitalOperatingRouter() {
       if (result.outcome === "agreement_unavailable") return response.status(409).json({ message: "Recurring agreement is unavailable" });
       if (result.outcome === "history_invalid") return response.status(409).json({ message: "Voiding this movement would invalidate later MRR history" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/capital/capacity",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(deliveryCapacityRecords)
         .orderBy(desc(deliveryCapacityRecords.periodEnd)).limit(1500);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/capacity",
     requireAdminPermission("delivery.capacity.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = capacityInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid delivery capacity evidence", errors: parsed.error.issues });
       const input = parsed.data;
@@ -606,13 +607,13 @@ export function createCapitalOperatingRouter() {
       }).returning();
       await audit(request, "delivery.capacity.create", "delivery_capacity_record", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/capacity/:id/void",
     requireAdminPermission("delivery.capacity.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid capacity void request", errors: parsed.error.issues });
       const [previous] = await db.select().from(deliveryCapacityRecords)
@@ -626,13 +627,13 @@ export function createCapitalOperatingRouter() {
       }).where(eq(deliveryCapacityRecords.id, previous.id)).returning();
       await audit(request, "delivery.capacity.void", "delivery_capacity_record", previous.id, previous, record, parsed.data.reason);
       response.json(record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/capital/budgets",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const [budgets, allocations] = await Promise.all([
         db.select().from(capitalBudgetCycles).orderBy(desc(capitalBudgetCycles.periodStart)).limit(200),
         db.select().from(capitalBudgetAllocations).orderBy(desc(capitalBudgetAllocations.updatedAt)).limit(2000),
@@ -642,13 +643,13 @@ export function createCapitalOperatingRouter() {
         ...budget,
         allocations: allocations.filter((allocation) => allocation.budgetId === budget.id),
       })));
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/budgets",
     requireAdminPermission("capital.budget.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = budgetInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid capital budget", errors: parsed.error.issues });
       const input = parsed.data;
@@ -672,13 +673,13 @@ export function createCapitalOperatingRouter() {
       }).returning();
       await audit(request, "capital.budget.create", "capital_budget", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/budgets/:id/allocations",
     requireAdminPermission("capital.budget.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = allocationInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid budget allocation", errors: parsed.error.issues });
       const input = parsed.data;
@@ -735,13 +736,13 @@ export function createCapitalOperatingRouter() {
       if (result.outcome === "locked") return response.status(409).json({ message: "Only draft budgets can be edited" });
       if (result.outcome === "over_envelope") return response.status(409).json({ message: "Approved allocations exceed budget envelope" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/budgets/:id/approve",
     requireAdminPermission("capital.budget.approve"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = budgetApprovalSchema.safeParse(request.body ?? {});
       if (!parsed.success) return response.status(400).json({ message: "Invalid budget approval request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
@@ -794,13 +795,13 @@ export function createCapitalOperatingRouter() {
         })),
       });
       response.json(result.record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/capital/budgets/:id/close",
     requireAdminPermission("capital.budget.approve"),
-    async (request, response, next) => {
+    asyncHandler(async (request, response, next) => {
       try {
         const result = await db.transaction(async (transaction) => {
           // Approval takes this same row lock: cleanup sees its committed state.
@@ -838,13 +839,13 @@ export function createCapitalOperatingRouter() {
       } catch (error) {
         next(error);
       }
-    },
+    }),
   );
 
   router.get(
     "/api/admin/capital/intelligence",
     requireAdminPermission("pipeline.financial.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const requested = typeof request.query.window === "string" ? request.query.window : "90d";
       const windowValue = (supportedWindows as readonly string[]).includes(requested)
         ? requested as WindowValue
@@ -1361,7 +1362,7 @@ export function createCapitalOperatingRouter() {
           note: "Increase/hold/reduce signals use realized cash and retention evidence. They do not authorize spending; only an approved capital budget does.",
         },
       });
-    },
+    }),
   );
 
   return router;

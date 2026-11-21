@@ -1,3 +1,4 @@
+import { asyncHandler } from "./middleware.js";
 import { Router, Request, Response } from "express";
 import { storage } from "./storage.js";
 import { seedBlogPosts, seedPortfolioProjects } from "./seed-data.js";
@@ -9,7 +10,7 @@ const readContent = requireAdminPermission("content.read");
 
 export function setupSeedTriggerRoutes(router: Router) {
   // Admin-only endpoint to seed database with rich content
-  router.post("/api/admin/seed-database", manageSystemSettings, async (req: Request, res: Response) => {
+  router.post("/api/admin/seed-database", manageSystemSettings, asyncHandler(async (req: Request, res: Response) => {
     try {
       const results = {
         blogsAdded: 0,
@@ -62,10 +63,10 @@ export function setupSeedTriggerRoutes(router: Router) {
       logger.error("Database seeding failed:", error);
       res.status(500).json({ message: "Seeding failed", error });
     }
-  });
+  }));
 
   // Check seed status
-  router.get("/api/admin/seed-status", readContent, async (req: Request, res: Response) => {
+  router.get("/api/admin/seed-status", readContent, asyncHandler(async (req: Request, res: Response) => {
     try {
       const blogs = await storage.getPublishedBlogPosts();
       const projects = await storage.getAllProjects();
@@ -87,5 +88,5 @@ export function setupSeedTriggerRoutes(router: Router) {
     } catch (error) {
       res.status(500).json({ message: "Failed to check seed status" });
     }
-  });
+  }));
 }

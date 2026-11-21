@@ -1,3 +1,4 @@
+import { asyncHandler } from "../middleware.js";
 import {
   and,
   desc,
@@ -155,7 +156,7 @@ export function createAdminRouter(): Router {
   router.get(
     "/api/admin/content/posts",
     requireAdminPermission("content.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       response.setHeader("Cache-Control", "no-store");
       response.json(
         await db
@@ -164,13 +165,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(blogPosts.updatedAt))
           .limit(500),
       );
-    },
+    }),
   );
 
   router.post(
     "/api/admin/content/posts",
     requireAdminPermission("content.create"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { changeSummary, ...input } = contentInputSchema.parse(
         request.body,
       );
@@ -206,13 +207,13 @@ export function createAdminRouter(): Router {
         return created;
       });
       response.status(201).json(post);
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/content/posts/:id",
     requireAdminPermission("content.update"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { changeSummary, ...input } = contentInputSchema.parse(
         request.body,
       );
@@ -265,13 +266,13 @@ export function createAdminRouter(): Router {
               "Only drafts can be edited; return the item to draft first",
           });
       response.json(post);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/content/posts/:id/versions",
     requireAdminPermission("content.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       response.json(
         await db
           .select({
@@ -286,13 +287,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(contentVersions.version))
           .limit(200),
       );
-    },
+    }),
   );
 
   router.post(
     "/api/admin/content/posts/:id/transition",
     requireAdminPermission("content.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = z
         .object({
           action: z.enum([
@@ -435,10 +436,10 @@ export function createAdminRouter(): Router {
           .status(409)
           .json({ message: "Invalid workflow transition" });
       response.json(post);
-    },
+    }),
   );
 
-  router.get("/api/internal/content-scheduler", async (request, response) => {
+  router.get("/api/internal/content-scheduler", asyncHandler(async (request, response) => {
     if (
       !env.CRON_SECRET ||
       request.headers.authorization !== `Bearer ${env.CRON_SECRET}`
@@ -497,12 +498,12 @@ export function createAdminRouter(): Router {
       return due.length;
     });
     response.json({ published });
-  });
+  }));
 
   router.get(
     "/api/admin/leads",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const search =
         typeof request.query.search === "string"
           ? request.query.search.trim().slice(0, 120)
@@ -543,13 +544,13 @@ export function createAdminRouter(): Router {
           canViewFinancial ? record : { ...record, estimatedValue: null },
         ),
       );
-    },
+    }),
   );
 
   router.get(
     "/api/admin/leads/:id/activities",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       response.json(
         await db
           .select()
@@ -558,13 +559,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(leadActivities.createdAt))
           .limit(200),
       );
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/leads/:id",
     requireAdminPermission("leads.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = updateLeadSchema.parse(request.body);
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction
@@ -655,13 +656,13 @@ export function createAdminRouter(): Router {
           message: "Estimated commercial value is required before proposal, negotiation, or won stages",
         });
       response.json(result.record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/leads/:id/activities",
     requireAdminPermission("leads.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = z
         .object({
           type: z.enum(["note", "call", "email", "meeting", "task"]),
@@ -685,13 +686,13 @@ export function createAdminRouter(): Router {
         })
         .returning();
       response.status(201).json(activity);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/pipeline/summary",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const canViewFinancial =
         !request.securityPrincipal ||
         request.securityPrincipal.permissions.includes(
@@ -714,13 +715,13 @@ export function createAdminRouter(): Router {
           canViewFinancial ? row : { ...row, value: null, weightedValue: null },
         ),
       );
-    },
+    }),
   );
 
   router.get(
     "/api/admin/acquisition/spend",
     requireAdminPermission("pipeline.financial.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const rows = await db
         .select()
         .from(acquisitionSpendEntries)
@@ -728,13 +729,13 @@ export function createAdminRouter(): Router {
         .limit(1000);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/acquisition/spend",
     requireAdminPermission("acquisition.spend.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = acquisitionSpendInputSchema.safeParse(request.body);
       if (!parsed.success) {
         return response.status(400).json({
@@ -771,13 +772,13 @@ export function createAdminRouter(): Router {
         return [created];
       });
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/acquisition/spend/:id/void",
     requireAdminPermission("acquisition.spend.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = z.object({
         reason: z.string().trim().min(5).max(1000),
       }).strict().safeParse(request.body);
@@ -822,13 +823,13 @@ export function createAdminRouter(): Router {
       if (result.outcome === "missing") return response.status(404).json({ message: "Spend entry not found" });
       if (result.outcome === "already_voided") return response.status(409).json({ message: "Spend entry is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/pipeline/funnel",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const requestedWindow =
         typeof request.query.window === "string" ? request.query.window : "90d";
       const windowValue = ["30d", "90d", "365d", "all"].includes(requestedWindow)
@@ -1010,13 +1011,13 @@ export function createAdminRouter(): Router {
           ? [...financial.values()].sort((a, b) => a.currency.localeCompare(b.currency))
           : [],
       });
-    },
+    }),
   );
 
   router.get(
     "/api/admin/acquisition/intelligence",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const requestedWindow =
         typeof request.query.window === "string" ? request.query.window : "90d";
       const windowValue = ["30d", "90d", "365d", "all"].includes(requestedWindow)
@@ -1377,13 +1378,13 @@ export function createAdminRouter(): Router {
             : "Campaign spend is not yet ingested; CAC, ROAS, and payback are intentionally unavailable.",
         },
       });
-    },
+    }),
   );
 
   router.get(
     "/api/admin/audit",
     requireAdminPermission("audit.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const search =
         typeof request.query.search === "string"
           ? request.query.search.trim().slice(0, 120)
@@ -1405,13 +1406,13 @@ export function createAdminRouter(): Router {
         .limit(500);
       response.setHeader("Cache-Control", "no-store");
       response.json(events);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/security/events",
     requireAdminPermission("security.events.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       response.setHeader("Cache-Control", "no-store");
       response.json(
         await db
@@ -1420,13 +1421,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(securityEvents.createdAt))
           .limit(500),
       );
-    },
+    }),
   );
 
   router.get(
     "/api/admin/security/sessions",
     requireAdminPermission("security.events.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       response.setHeader("Cache-Control", "no-store");
       response.json(
         await db
@@ -1447,13 +1448,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(sessions.lastSeenAt))
           .limit(500),
       );
-    },
+    }),
   );
 
   router.post(
     "/api/admin/security/sessions/:id/revoke",
     requireAdminPermission("security.settings.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { justification } = z
         .object({ justification: z.string().trim().min(8).max(1000) })
         .strict()
@@ -1487,13 +1488,13 @@ export function createAdminRouter(): Router {
       if (!revoked)
         return response.status(404).json({ message: "Session not found" });
       response.json({ revoked: true });
-    },
+    }),
   );
 
   router.get(
     "/api/admin/users",
     requireAdminPermission("users.manage"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const userRecords = await db
         .select({
           id: users.id,
@@ -1526,13 +1527,13 @@ export function createAdminRouter(): Router {
             .map((item) => ({ key: item.roleKey, name: item.roleName })),
         })),
       );
-    },
+    }),
   );
 
   router.get(
     "/api/admin/roles",
     requireAdminPermission("users.manage"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const roleRecords = await db.select().from(roles).orderBy(roles.name);
       const grants = await db
         .select({
@@ -1552,13 +1553,13 @@ export function createAdminRouter(): Router {
             .map((item) => item.permissionKey),
         })),
       );
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/users/:id/status",
     requireAdminPermission("users.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = z
         .object({
           status: z.enum(["active", "disabled"]),
@@ -1613,13 +1614,13 @@ export function createAdminRouter(): Router {
       if (!updated)
         return response.status(404).json({ message: "User not found" });
       response.json({ id: updated.id, status: updated.status });
-    },
+    }),
   );
 
   router.put(
     "/api/admin/users/:id/roles",
     requireAdminPermission("users.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = z
         .object({
           roleKeys: z.array(z.string().min(1).max(80)).min(1).max(20),
@@ -1714,13 +1715,13 @@ export function createAdminRouter(): Router {
             message: "The final super administrator role cannot be removed",
           });
       response.json(result);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/contacts",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const search =
         typeof request.query.search === "string"
           ? request.query.search.trim().slice(0, 120)
@@ -1746,13 +1747,13 @@ export function createAdminRouter(): Router {
         .limit(200);
       response.setHeader("Cache-Control", "no-store");
       response.json(contacts);
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/contacts/:id",
     requireAdminPermission("leads.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { isRead } = z
         .object({ isRead: z.boolean() })
         .strict()
@@ -1785,13 +1786,13 @@ export function createAdminRouter(): Router {
       if (!contact)
         return response.status(404).json({ message: "Contact not found" });
       response.json(contact);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/subscribers",
     requireAdminPermission("email.delivery.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const search =
         typeof request.query.search === "string"
           ? request.query.search.trim().slice(0, 120)
@@ -1816,13 +1817,13 @@ export function createAdminRouter(): Router {
         .limit(500);
       response.setHeader("Cache-Control", "no-store");
       response.json(subscribers);
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/subscribers/:id",
     requireAdminPermission("notifications.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { isActive } = z
         .object({ isActive: z.boolean() })
         .strict()
@@ -1858,13 +1859,13 @@ export function createAdminRouter(): Router {
       if (!subscriber)
         return response.status(404).json({ message: "Subscriber not found" });
       response.json(subscriber);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/overview",
     requireAdminPermission("analytics.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const now = new Date();
       const userId = request.securityPrincipal?.userId;
       const [
@@ -2077,7 +2078,7 @@ export function createAdminRouter(): Router {
         recent: { contacts: recentContacts, email: recentEmail },
         generatedAt: now.toISOString(),
       });
-    },
+    }),
   );
 
   return router;

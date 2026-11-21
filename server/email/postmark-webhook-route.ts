@@ -1,3 +1,4 @@
+import { asyncHandler } from "../middleware.js";
 import express, { type Express, type Request, type Response } from "express";
 import { ZodError } from "zod";
 import { env } from "../env.js";
@@ -10,7 +11,7 @@ export function setupPostmarkWebhookRoute(app: Express): void {
   app.post(
     "/api/webhooks/postmark",
     express.raw({ type: "application/json", limit: "256kb" }),
-    async (request: Request, response: Response) => {
+    asyncHandler(async (request: Request, response: Response) => {
       if (
         env.EMAIL_PROVIDER !== "postmark" ||
         !env.POSTMARK_WEBHOOK_USERNAME ||
@@ -37,6 +38,6 @@ export function setupPostmarkWebhookRoute(app: Express): void {
         console.error("Postmark webhook processing failed", error);
         return response.status(500).json({ message: "Webhook processing failed" });
       }
-    },
+    }),
   );
 }
