@@ -1,0 +1,47 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> chrispine-portfolio@1.0.0 audit:release
+> node scripts/audit-release.mjs
+
+{
+  "scope": "production",
+  "findings": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "passed": true,
+  "blocked": [],
+  "exceptions": []
+}
+{
+  "scope": "full",
+  "findings": {
+    "info": 0,
+    "low": 0,
+    "moderate": 6,
+    "high": 13,
+    "critical": 0,
+    "total": 19
+  },
+  "passed": false,
+  "blocked": [
+    "@vitejs/plugin-react: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "anymatch: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "chokidar: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "fast-glob: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "fdir: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "micromatch: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "picomatch: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "readdirp: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "sucrase: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "tailwindcss: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "tinyglobby: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "vite: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)",
+    "vitest: high (build-only exception is absent, unapproved, expired or not bound to this lockfile)"
+  ],
+  "exceptions": []
+}

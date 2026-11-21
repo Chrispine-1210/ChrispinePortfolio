@@ -75,7 +75,7 @@ const emptyForm: ContentForm = {
 };
 
 const statusStyles: Record<string, string> = {
-  draft: "bg-white/5 text-white/50",
+  draft: "bg-white/5 text-white/60",
   in_review: "bg-amber-500/15 text-amber-300",
   approved: "bg-cyan-500/15 text-cyan-300",
   scheduled: "bg-violet-500/15 text-violet-300",
@@ -454,7 +454,7 @@ export default function ContentManagement() {
             </CardHeader>
             <CardContent className="space-y-2">
               {versions.isLoading && (
-                <p className="text-sm text-white/40">Loading revisions...</p>
+                <p className="text-sm text-white/60">Loading revisions...</p>
               )}
               {versions.data?.map((version) => (
                 <div
@@ -465,7 +465,7 @@ export default function ContentManagement() {
                     <p className="text-sm font-medium">
                       Version {version.version}
                     </p>
-                    <p className="text-xs text-white/40">
+                    <p className="text-xs text-white/60">
                       {version.changeSummary || "No revision summary"}
                     </p>
                   </div>
@@ -503,7 +503,7 @@ export default function ContentManagement() {
                     )}
                     <Badge variant="outline">v{post.currentVersion}</Badge>
                   </div>
-                  <p className="mt-2 line-clamp-2 text-sm text-white/40">
+                  <p className="mt-2 line-clamp-2 text-sm text-white/60">
                     {post.excerpt}
                   </p>
                   <p className="mt-2 text-[10px] text-white/20">
@@ -635,7 +635,7 @@ export default function ContentManagement() {
             </Card>
           ))}
           {!posts.isLoading && !visible.length && (
-            <div className="rounded-xl border border-dashed border-white/10 py-16 text-center text-sm text-white/35">
+            <div className="rounded-xl border border-dashed border-white/10 py-16 text-center text-sm text-white/60">
               No posts match this view.
             </div>
           )}

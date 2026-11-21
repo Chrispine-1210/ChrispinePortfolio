@@ -45,9 +45,9 @@ export function sendError(
   error: ApiError | Error,
   statusCode = 500
 ): Response {
-  const message = error.message || "Internal Server Error";
+  const message = statusCode >= 500 || !(error instanceof ApiError) ? "The request could not be completed" : error.message;
   const code = error instanceof ApiError ? error.code : undefined;
-  const details = error instanceof ApiError ? error.details : undefined;
+  const details = error instanceof ApiError && statusCode < 500 ? error.details : undefined;
 
   return res.status(statusCode).json({
     success: false,
@@ -99,7 +99,8 @@ export const securityHeaders = (req: Request, res: Response, next: NextFunction)
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
   res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-src https://js.stripe.com");
+  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-src https://js.stripe.com https://www.youtube-nocookie.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=(), fullscreen=(self \"https://www.youtube-nocookie.com\" \"https://player.vimeo.com\")");
   next();
 };
 

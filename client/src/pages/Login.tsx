@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -23,7 +29,7 @@ export default function Login() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast({
         title: "Validation Error",
@@ -37,7 +43,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0c14] via-[#1a1f2e] to-[#0a0c14] relative overflow-hidden">
+    <div className="min-h-screen px-5 pt-28 pb-20 flex items-center justify-center bg-gradient-to-br from-background via-background to-background relative overflow-hidden">
       {/* Tech grid background */}
       <div className="absolute inset-0 opacity-10">
         <div className="grid grid-cols-12 h-full w-full">
@@ -53,9 +59,12 @@ export default function Login() {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <div className="text-center space-y-2">
-            <CardTitle className="text-2xl">Admin Portal</CardTitle>
+            <CardTitle className="text-2xl">
+              Private operating workspace
+            </CardTitle>
             <CardDescription>
-              Secure login for portfolio management and blog administration
+              Sign in to manage engineering records, projects, communications
+              and operating decisions.
             </CardDescription>
           </div>
         </CardHeader>
@@ -64,11 +73,16 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Input */}
             <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
+              <label
+                htmlFor="workspace-email"
+                className="text-sm font-medium flex items-center gap-2"
+              >
                 <Mail className="w-4 h-4" />
                 Email Address
               </label>
               <Input
+                id="workspace-email"
+                autoComplete="username"
                 type="email"
                 placeholder="your@email.com"
                 value={email}
@@ -81,11 +95,16 @@ export default function Login() {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
+              <label
+                htmlFor="workspace-password"
+                className="text-sm font-medium flex items-center gap-2"
+              >
                 <Lock className="w-4 h-4" />
                 Password
               </label>
               <Input
+                id="workspace-password"
+                autoComplete="current-password"
                 type="password"
                 placeholder="••••••••"
                 value={password}

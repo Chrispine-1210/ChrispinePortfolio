@@ -1,0 +1,8 @@
+{
+  "packageVersionsChanged": [],
+  "addedPaths": [],
+  "removedPaths": [],
+  "lockSha256": "cbdc38dc64a7db6fb43ab56fbca918c18caaf0f09677e7cae75ab5531ab7abcd",
+  "providerAttachmentSha256": "693c892abf93dc75d4cbe758bf5fd11235d12900d4cec80fa76c745af1481096",
+  "note": "Only dependency classification and root dependency metadata changed. Policy remains proposed."
+}

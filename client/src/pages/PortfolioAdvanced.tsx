@@ -1,192 +1,261 @@
-import { EditorialPhoto } from "@/components/EditorialPhoto";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { PortfolioShowcase } from "@/components/PortfolioShowcase";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Filter, SlidersHorizontal } from "lucide-react";
-import { motion } from "framer-motion";
+import { Link } from "wouter";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { PortfolioProject } from "@shared/schema";
+import {
+  EditorialPage,
+  ProjectReadingCard,
+} from "@/components/editorial/EditorialPage";
+import { setSEO } from "@/lib/seoHelper";
 
+type Results = {
+  data: PortfolioProject[];
+  pagination: {
+    page: number;
+    total: number;
+    totalPages: number;
+    hasNextPage: boolean;
+  };
+};
 export default function PortfolioAdvanced() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [showFeatured, setShowFeatured] = useState(false);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [featured, setFeatured] = useState(false);
   const [page, setPage] = useState(1);
-
-  useEffect(() => {
-    document.title = "Portfolio | Chrispine Mndala";
-  }, []);
-
-  // Fetch categories
-  const { data: categoriesData } = useQuery<{ categories: string[] }>({
+  const categories = useQuery<{ categories: string[] }>({
     queryKey: ["/api/categories/portfolio"],
   });
-
-  const categories = ["All", ...(categoriesData?.categories ?? [])];
-
-  // Fetch filtered projects
-  const { data: searchResults, isLoading } = useQuery<{
-    data: PortfolioProject[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-      hasNextPage: boolean;
-    };
-  }>({
-    queryKey: [
-      "/api/portfolio/search",
-      { q: searchQuery, category: selectedCategory, featured: showFeatured },
-    ],
+  const results = useQuery<Results>({
+    queryKey: ["/api/portfolio/search", { search, category, featured, page }],
     queryFn: async () => {
       const params = new URLSearchParams({
-        q: searchQuery,
-        category: selectedCategory,
-        featured: showFeatured.toString(),
-        page: page.toString(),
+        q: search,
+        category,
+        featured: String(featured),
+        page: String(page),
         limit: "12",
       });
-      const res = await fetch(`/api/portfolio/search?${params}`);
-      return res.json();
+      const response = await fetch(`/api/portfolio/search?${params}`);
+      if (!response.ok)
+        throw new Error("Case studies are temporarily unavailable");
+      return response.json();
     },
   });
-
-  const projects = searchResults?.data || [];
-
+  useEffect(() => {
+    setSEO(
+      "Work & project case studies | Chrispine Mndala",
+      "Software and operating systems built in Malawi. Explore project objectives, architecture, technology decisions, recorded interfaces and delivery evidence.",
+      "/portfolio",
+    );
+  }, []);
+  const reset = () => {
+    setSearch("");
+    setCategory("All");
+    setFeatured(false);
+    setPage(1);
+  };
+  const filtered = !!(search || category !== "All" || featured);
   return (
-    <div className="min-h-screen pt-16">
-      <div className="bg-gradient-to-br from-background via-background to-accent/5 py-16 sm:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <span className="text-[10px] font-mono text-primary uppercase tracking-widest">Selected Work</span>
-          <h1 className="text-5xl sm:text-6xl font-black text-foreground uppercase tracking-tighter">
-            Case Studies
+    <EditorialPage>
+      <header className="editorial-hero">
+        <div>
+          <span className="editorial-kicker">
+            Work / Software, systems & operations
+          </span>
+          <h1>
+            Practical systems.
+            <br />
+            <em>Visible decisions.</em>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Explore the software delivered, the decisions behind it, and the public evidence for each project.
+          <p className="editorial-lead">
+            A collection of platforms, prototypes and operating tools. Each case
+            follows the problem, the development choices and what the available
+            evidence actually shows.
           </p>
-          <EditorialPhoto photo="workspace" className="mx-auto max-w-2xl text-left" eager />
+          <div className="editorial-actions">
+            <a href="#project-library" className="editorial-button">
+              Explore the work <ArrowRight size={17} />
+            </a>
+            <Link href="/about" className="editorial-button secondary">
+              Meet the engineer
+            </Link>
+          </div>
         </div>
-      </div>
-
-      {/* Filtering Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-6">
-        {/* Search Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto relative group"
-        >
-          <div className="absolute -inset-1 bg-primary/20 blur opacity-0 group-hover:opacity-100 transition duration-500" />
-          <div className="relative flex items-center">
-            <Search className="absolute left-4 h-5 w-5 text-primary" />
-            <Input
+        <aside className="editorial-note">
+          <span className="editorial-eyebrow">Beyond the finished screen</span>
+          <h2>Understand how it was built.</h2>
+          <ul>
+            <li>
+              <span>01</span>The problem, users and Malawi context
+            </li>
+            <li>
+              <span>02</span>Architecture, data and technology choices
+            </li>
+            <li>
+              <span>03</span>Business workflows and financial handling
+            </li>
+            <li>
+              <span>04</span>Interface evidence, limits and next steps
+            </li>
+          </ul>
+          <p className="editorial-copy" style={{ fontSize: 12, marginTop: 14 }}>
+            A recorded interface shows what was visible at capture. Operational
+            and commercial results require their own evidence.
+          </p>
+        </aside>
+      </header>
+      <section id="project-library" aria-labelledby="library-heading">
+        <div className="editorial-section-heading">
+          <div>
+            <span className="editorial-eyebrow">The project library</span>
+            <h2 id="library-heading">Explore the casebooks.</h2>
+          </div>
+          <p>
+            Education, enterprise operations, commerce, healthcare and practical
+            engineering tools.
+          </p>
+        </div>
+        <div className="editorial-toolbar">
+          <label className="editorial-field search">
+            Search projects
+            <input
               type="search"
-              placeholder="Search case studies by title, evidence summary, or technology..."
-              className="pl-12 h-12 bg-card/50 border-primary/30 focus:ring-primary/50"
-              value={searchQuery}
+              value={search}
               onChange={(e) => {
-                setSearchQuery(e.target.value);
+                setSearch(e.target.value);
                 setPage(1);
               }}
+              placeholder="Project, problem, sector or technology…"
               data-testid="input-portfolio-search"
             />
-          </div>
-        </motion.div>
-
-        {/* Filter Controls */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-wrap gap-3 items-center justify-center"
-        >
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground font-mono">FILTER:</span>
-          </div>
-
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <Button
-                key={cat}
-                variant={selectedCategory === cat ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  setSelectedCategory(cat);
-                  setPage(1);
-                }}
-                data-testid={`button-filter-${cat.toLowerCase().replace(/\s/g, '-')}`}
-              >
-                {cat}
-              </Button>
-            ))}
-          </div>
-
-          {/* Featured Filter */}
-          <Button
-            variant={showFeatured ? "default" : "outline"}
-            size="sm"
+          </label>
+          <label className="editorial-field">
+            Sector
+            <select
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="All">All sectors</option>
+              {(categories.data?.categories ?? []).map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </label>
+          <button
+            className={`editorial-button ${featured ? "" : "secondary"}`}
+            aria-pressed={featured}
             onClick={() => {
-              setShowFeatured(!showFeatured);
+              setFeatured(!featured);
               setPage(1);
             }}
-            className="ml-2"
             data-testid="button-filter-featured"
           >
-            <SlidersHorizontal className="w-4 h-4 mr-1" />
-            Featured
-          </Button>
-        </motion.div>
-
-        {/* Results */}
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full" />
+            Featured only
+          </button>
+        </div>
+        <div className="editorial-count">
+          <span role="status">
+            {results.isLoading
+              ? "Loading project casebooks…"
+              : results.isError
+                ? "Project library unavailable"
+                : `${results.data?.data.length ?? 0} of ${results.data?.pagination.total ?? 0} ${filtered ? "matching " : ""}case studies`}
+          </span>
+          {filtered && (
+            <button className="editorial-text-link" onClick={reset}>
+              Clear filters
+            </button>
+          )}
+          <span>Source · Architecture · Interface evidence</span>
+        </div>
+        {results.isLoading ? (
+          <div className="editorial-empty" aria-busy="true">
+            <p className="editorial-copy">Preparing the project library…</p>
           </div>
-        ) : projects.length > 0 ? (
+        ) : results.isError ? (
+          <div className="editorial-empty" role="alert">
+            <h3>The casebooks could not be loaded.</h3>
+            <p className="editorial-copy">
+              Please retry to retrieve the published project evidence.
+            </p>
+            <button
+              className="editorial-button secondary"
+              style={{ marginTop: 18 }}
+              onClick={() => results.refetch()}
+            >
+              Try again
+            </button>
+          </div>
+        ) : results.data?.data.length ? (
           <>
-            <PortfolioShowcase projects={projects} />
-
-            {/* Pagination */}
-            {searchResults?.pagination && searchResults.pagination.totalPages > 1 && (
-              <div className="flex justify-center gap-2 pt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setPage(Math.max(1, page - 1))}
+            <div className="editorial-project-grid">
+              {results.data.data.map((project, i) => (
+                <ProjectReadingCard
+                  key={project.id}
+                  project={project}
+                  index={(page - 1) * 12 + i}
+                />
+              ))}
+            </div>
+            {results.data.pagination.totalPages > 1 && (
+              <nav
+                className="editorial-pagination"
+                aria-label="Case study pages"
+              >
+                <button
+                  className="editorial-button secondary"
                   disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
                   data-testid="button-prev-page"
                 >
                   Previous
-                </Button>
-                <span className="flex items-center px-4">
-                  Page {page} of {searchResults.pagination.totalPages}
+                </button>
+                <span>
+                  Page {page} of {results.data.pagination.totalPages}
                 </span>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    setPage(
-                      Math.min(searchResults.pagination.totalPages, page + 1)
-                    )
-                  }
-                  disabled={!searchResults.pagination.hasNextPage}
+                <button
+                  className="editorial-button secondary"
+                  disabled={!results.data.pagination.hasNextPage}
+                  onClick={() => setPage(page + 1)}
                   data-testid="button-next-page"
                 >
                   Next
-                </Button>
-              </div>
+                </button>
+              </nav>
             )}
           </>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              No published case studies match your filters.
+          <div className="editorial-empty">
+            <h3>No case studies match this view.</h3>
+            <p className="editorial-copy">
+              Try another sector or a broader search.
             </p>
+            <button
+              className="editorial-text-link"
+              onClick={reset}
+              style={{ marginTop: 18 }}
+            >
+              Reset the project library <ArrowRight size={16} />
+            </button>
           </div>
         )}
-      </div>
-    </div>
+      </section>
+      <section className="editorial-bridge">
+        <div>
+          <h2>The work continues between releases.</h2>
+          <p>
+            Follow the engineering journal for experiments, troubleshooting,
+            development reflections and the lessons behind the next system.
+          </p>
+        </div>
+        <Link href="/journey" className="editorial-button">
+          Follow the journey <ArrowUpRight size={17} />
+        </Link>
+      </section>
+    </EditorialPage>
   );
 }

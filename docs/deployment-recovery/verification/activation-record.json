@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-18",
+  "approval": "Explicit owner Approved message in ChatGPT",
+  "policy": "security/build-audit-exception.json",
+  "expiresAt": "2026-11-25T00:00:00.000Z",
+  "productionDatabase": {
+    "project": "twilight-meadow-16888716",
+    "branch": "br-misty-wave-bb79bj7l",
+    "fingerprint": "Public case ID matched database record before migration",
+    "snapshot": "snap-fragrant-dream-bbspabwq",
+    "restoreTarget": "Fresh isolated PGlite/PostgreSQL-compatible database",
+    "restoreTables": 43,
+    "restoreRows": 246,
+    "allDataDigestsMatched": true,
+    "foreignKeysValidated": true,
+    "nativeSnapshotRestore": "Blocked by branch limit; no branch was removed or reset",
+    "migration0011": "Applied after independent restore proof",
+    "engineeringTables": 4,
+    "engineeringPermissions": 3,
+    "immutableHistoryTriggers": 4,
+    "seededEngineeringRecords": 0
+  },
+  "productionOrigin": "https://chrispine-portfolio.vercel.app",
+  "previewIsolation": "Dedicated review database and independent authentication throttle pepper",
+  "workflowsModified": false,
+  "productionFinancialFixturesCreated": false
+}

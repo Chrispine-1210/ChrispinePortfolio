@@ -16,6 +16,8 @@ export function useCustomAuth() {
   const { data: user, isLoading } = useQuery<AuthUser | null>({
     queryKey: ["/api/auth/me"],
     retry: false,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
 
   // Login mutation
@@ -35,8 +37,11 @@ export function useCustomAuth() {
 
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+    onSuccess: async () => {
+      await queryClient.cancelQueries();
+      queryClient.removeQueries({ predicate: query => query.queryKey[0] !== "/api/auth/me" });
+      queryClient.setQueryData(["/api/auth/me"], null);
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       toast({
         title: "Success",
         description: "Logged in successfully",
@@ -61,8 +66,10 @@ export function useCustomAuth() {
       if (!res.ok) throw new Error("Logout failed");
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+    onSuccess: async () => {
+      await queryClient.cancelQueries();
+      queryClient.removeQueries({ predicate: query => query.queryKey[0] !== "/api/auth/me" });
+      queryClient.setQueryData(["/api/auth/me"], null);
       toast({
         title: "Logged out",
         description: "You have been logged out successfully",

@@ -9,9 +9,10 @@ import type { PortfolioProject } from "@shared/schema";
 
 interface PortfolioShowcaseProps {
   projects: PortfolioProject[];
+  showFilters?: boolean;
 }
 
-export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
+export function PortfolioShowcase({ projects, showFilters = true }: PortfolioShowcaseProps) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const categories = ["All", ...Array.from(new Set(projects.map((project) => project.category)))];
 
@@ -34,8 +35,8 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
         </div>
 
         {/* Category Filter */}
-        <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-12">
-          <TabsList className="flex flex-wrap w-full bg-white/5 border border-white/10 p-1 rounded-none">
+        {showFilters && <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="mb-12">
+          <TabsList className="flex h-auto flex-wrap w-full bg-white/5 border border-white/10 p-1 rounded-none">
             {categories.map((category) => (
               <TabsTrigger
                 key={category}
@@ -47,7 +48,7 @@ export function PortfolioShowcase({ projects }: PortfolioShowcaseProps) {
               </TabsTrigger>
             ))}
           </TabsList>
-        </Tabs>
+        </Tabs>}
 
         {/* Projects Grid */}
         <div className="grid sm:grid-cols-2 gap-8">

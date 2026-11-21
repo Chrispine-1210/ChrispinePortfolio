@@ -1,0 +1,8 @@
+16:01:46.636 Cloning github.com/Chrispine-1210/ChrispinePortfolio (Branch: main, Commit: 9c6251d)
+16:03:03.528  Test Files  8 passed (8)
+16:03:03.529       Tests  86 passed (86)
+16:03:07.109 ✓ built in 3.12s
+16:03:09.688 picomatch  *
+16:03:09.688 picomatch vulnerable to ReDoS through single-branch repeated extglobs - https://github.com/advisories/GHSA-fc5q-39xc-vjpf
+16:03:09.691 10 high severity vulnerabilities
+16:03:09.724 Error: [BUILD_UTILS_SPAWN_1] Command "npm run verify:release" exited with 1

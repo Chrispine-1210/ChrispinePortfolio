@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -26,19 +27,5 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
-      - name: TypeScript
-        run: npm run check
-
-      - name: Tests
-        run: npm test
-        env:
-          NODE_ENV: test
-
-      - name: Production build
-        run: npm run build
-
-      - name: Production dependency audit
-        run: npm audit --omit=dev --audit-level=high
-
-      - name: Full dependency audit
-        run: npm audit --audit-level=high
+      - name: Release verification
+        run: npm run verify:release

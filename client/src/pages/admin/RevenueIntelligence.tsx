@@ -172,7 +172,7 @@ function decisionClass(decision: Decision) {
   if (decision === "scale") return "border-emerald-500/30 bg-emerald-500/10 text-emerald-300";
   if (decision === "cut") return "border-red-500/30 bg-red-500/10 text-red-300";
   if (decision === "maintain") return "border-amber-500/30 bg-amber-500/10 text-amber-300";
-  return "border-white/10 bg-white/[0.03] text-white/45";
+  return "border-white/10 bg-white/[0.03] text-white/60";
 }
 
 export default function RevenueIntelligence() {
@@ -313,10 +313,10 @@ export default function RevenueIntelligence() {
               </div>
               <div className="mt-4 space-y-1">
                 {totalMrr.length ? totalMrr.map((row) => (
-                  <p key={row.currency} className="text-xl font-black">{money(row.mrr, row.currency)} <span className="text-xs font-normal text-white/35">MRR</span></p>
+                  <p key={row.currency} className="text-xl font-black">{money(row.mrr, row.currency)} <span className="text-xs font-normal text-white/60">MRR</span></p>
                 )) : <p className="text-xl font-black">—</p>}
               </div>
-              <p className="mt-2 text-xs text-white/35">Current contracted recurring run rate</p>
+              <p className="mt-2 text-xs text-white/60">Current contracted recurring run rate</p>
             </CardContent>
           </Card>
 
@@ -327,7 +327,7 @@ export default function RevenueIntelligence() {
                 <span className="text-xs text-white/30">{intelligence.data?.proposalVelocityDays.samples.won ?? 0} samples</span>
               </div>
               <p className="mt-4 text-2xl font-black">{days(intelligence.data?.proposalVelocityDays.proposalToWon ?? null)}</p>
-              <p className="mt-2 text-xs text-white/35">Proposal → won velocity</p>
+              <p className="mt-2 text-xs text-white/60">Proposal → won velocity</p>
             </CardContent>
           </Card>
 
@@ -338,7 +338,7 @@ export default function RevenueIntelligence() {
                 <span className="text-xs text-white/30">{intelligence.data?.pipelineAging.stalled.length ?? 0} stalled</span>
               </div>
               <p className="mt-4 text-2xl font-black">{days(intelligence.data?.proposalVelocityDays.openProposalAge ?? null)}</p>
-              <p className="mt-2 text-xs text-white/35">Average open proposal age</p>
+              <p className="mt-2 text-xs text-white/60">Average open proposal age</p>
             </CardContent>
           </Card>
 
@@ -354,7 +354,7 @@ export default function RevenueIntelligence() {
                 <Badge className="bg-red-500/10 text-red-300">{cutCount} cut</Badge>
                 <Badge variant="outline">{insufficientCount} unknown</Badge>
               </div>
-              <p className="mt-3 text-xs text-white/35">Evidence-gated channel × service decisions</p>
+              <p className="mt-3 text-xs text-white/60">Evidence-gated channel × service decisions</p>
             </CardContent>
           </Card>
         </section>
@@ -375,7 +375,7 @@ export default function RevenueIntelligence() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1300px] text-left text-xs">
-                  <thead className="border-b border-white/[0.07] text-white/35">
+                  <thead className="border-b border-white/[0.07] text-white/60">
                     <tr>
                       <th className="px-5 py-3">Decision</th>
                       <th className="px-3 py-3">Channel</th>
@@ -440,10 +440,10 @@ export default function RevenueIntelligence() {
               <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {intelligence.data?.pipelineAging.buckets.map((bucket) => (
                   <div key={bucket.key} className="rounded-lg border border-white/[0.06] bg-black/10 p-3">
-                    <p className="text-xs text-white/35">{bucket.key} days</p>
+                    <p className="text-xs text-white/60">{bucket.key} days</p>
                     <p className="mt-1 text-xl font-black">{bucket.count}</p>
                     {bucket.valueByCurrency.map((value) => (
-                      <p key={value.currency} className="mt-1 text-[10px] text-white/35">{money(value.value, value.currency)}</p>
+                      <p key={value.currency} className="mt-1 text-[10px] text-white/60">{money(value.value, value.currency)}</p>
                     ))}
                   </div>
                 ))}
@@ -453,7 +453,7 @@ export default function RevenueIntelligence() {
                   <div key={lead.id} className="flex items-center justify-between gap-3 rounded-lg border border-amber-500/10 p-3">
                     <div>
                       <p className="text-xs font-semibold">{lead.service.replace(/-/g, " ")}</p>
-                      <p className="mt-1 text-[10px] text-white/35">{lead.stage} · {lead.ageDays} days in stage</p>
+                      <p className="mt-1 text-[10px] text-white/60">{lead.stage} · {lead.ageDays} days in stage</p>
                     </div>
                     <span className="text-xs font-semibold">{money(lead.estimatedValue, lead.currency)}</span>
                   </div>
@@ -467,12 +467,12 @@ export default function RevenueIntelligence() {
             <CardContent className="p-5">
               <h2 className="text-sm font-bold uppercase tracking-wider">LTV model status</h2>
               <p className="mt-4 text-sm font-semibold">{intelligence.data?.recurringRevenue.projectedLtvStatus.replace(/_/g, " ") ?? "—"}</p>
-              <p className="mt-3 text-xs leading-5 text-white/35">{intelligence.data?.recurringRevenue.note}</p>
+              <p className="mt-3 text-xs leading-5 text-white/60">{intelligence.data?.recurringRevenue.note}</p>
               <div className="mt-5 rounded-lg border border-white/[0.06] p-3">
                 <p className="text-[10px] uppercase tracking-wider text-white/30">Observed ended lifetime</p>
                 <p className="mt-1 text-xl font-black">
                   {intelligence.data?.recurringRevenue.observedAverageEndedLifetimeMonths ?? "—"}
-                  <span className="ml-1 text-xs font-normal text-white/35">months</span>
+                  <span className="ml-1 text-xs font-normal text-white/60">months</span>
                 </p>
               </div>
             </CardContent>
@@ -493,7 +493,7 @@ export default function RevenueIntelligence() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[900px] text-left text-xs">
-                  <thead className="border-b border-white/[0.07] text-white/35">
+                  <thead className="border-b border-white/[0.07] text-white/60">
                     <tr>
                       <th className="px-5 py-3">Cohort</th>
                       <th className="px-3 py-3">Enquiries</th>
@@ -545,7 +545,7 @@ export default function RevenueIntelligence() {
               </div>
 
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <label className="text-xs text-white/40">
+                <label className="text-xs text-white/60">
                   Won opportunity
                   <select
                     className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white"
@@ -564,29 +564,29 @@ export default function RevenueIntelligence() {
                     ))}
                   </select>
                 </label>
-                <label className="text-xs text-white/40">
+                <label className="text-xs text-white/60">
                   Service
                   <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={serviceInterest} disabled>
                     <option>{serviceInterest || "Inherited from CRM"}</option>
                     {serviceOptions.filter((item) => item === serviceInterest).map((item) => <option key={item}>{item}</option>)}
                   </select>
                 </label>
-                <label className="text-xs text-white/40">
+                <label className="text-xs text-white/60">
                   Currency
                   <Input className="mt-1" maxLength={3} value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} />
                 </label>
-                <label className="text-xs text-white/40">
+                <label className="text-xs text-white/60">
                   {mode === "agreement" ? "Monthly recurring revenue" : mode === "cost" ? "Direct cost amount" : mode === "attestation" ? "Cost completeness" : "Recognized revenue"}
                   {mode === "attestation"
                     ? <div className="mt-1 flex h-10 items-center rounded-md border border-emerald-500/20 bg-emerald-500/5 px-3 text-xs text-emerald-300">Complete through selected date</div>
                     : <Input className="mt-1" type="number" min={mode === "cost" ? "0" : "0.01"} step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} />}
                 </label>
-                <label className="text-xs text-white/40">
+                <label className="text-xs text-white/60">
                   {mode === "agreement" ? "Agreement start" : mode === "attestation" ? "Costs complete through" : "Evidence date"}
                   <Input className="mt-1" type="datetime-local" value={occurredAt} onChange={(event) => setOccurredAt(event.target.value)} />
                 </label>
                 {mode === "revenue" && (
-                  <label className="text-xs text-white/40">
+                  <label className="text-xs text-white/60">
                     Revenue kind
                     <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={revenueKind} onChange={(event) => setRevenueKind(event.target.value as "one_time" | "recurring")}>
                       <option value="one_time">one time</option>
@@ -595,7 +595,7 @@ export default function RevenueIntelligence() {
                   </label>
                 )}
                 {mode === "cost" && (
-                  <label className="text-xs text-white/40">
+                  <label className="text-xs text-white/60">
                     Cost category
                     <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={category} onChange={(event) => setCategory(event.target.value)}>
                       {["delivery_labour", "infrastructure", "subcontractor", "transaction", "support", "other"].map((item) => <option key={item}>{item}</option>)}
@@ -603,7 +603,7 @@ export default function RevenueIntelligence() {
                   </label>
                 )}
                 {mode === "cost" && (
-                  <label className="text-xs text-white/40">
+                  <label className="text-xs text-white/60">
                     Cost scope
                     <select className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white" value={costScope} onChange={(event) => setCostScope(event.target.value as "one_time" | "recurring")}>
                       <option value="one_time">one-time delivery</option>
@@ -613,11 +613,11 @@ export default function RevenueIntelligence() {
                 )}
                 {mode === "revenue" && revenueKind === "recurring" && (
                   <>
-                    <label className="text-xs text-white/40">Period start<Input className="mt-1" type="datetime-local" value={periodStart} onChange={(event) => setPeriodStart(event.target.value)} /></label>
-                    <label className="text-xs text-white/40">Period end<Input className="mt-1" type="datetime-local" value={periodEnd} onChange={(event) => setPeriodEnd(event.target.value)} /></label>
+                    <label className="text-xs text-white/60">Period start<Input className="mt-1" type="datetime-local" value={periodStart} onChange={(event) => setPeriodStart(event.target.value)} /></label>
+                    <label className="text-xs text-white/60">Period end<Input className="mt-1" type="datetime-local" value={periodEnd} onChange={(event) => setPeriodEnd(event.target.value)} /></label>
                   </>
                 )}
-                <label className="text-xs text-white/40 md:col-span-2">
+                <label className="text-xs text-white/60 md:col-span-2">
                   Source reference
                   <Input className="mt-1" placeholder="Invoice, contract, receipt, ledger or evidence reference" value={sourceReference} onChange={(event) => setSourceReference(event.target.value)} />
                 </label>
@@ -657,7 +657,7 @@ export default function RevenueIntelligence() {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-xs font-semibold">{row.serviceInterest.replace(/-/g, " ")}</p>
-                            <p className="mt-1 text-[10px] text-white/35">{row.sourceReference}</p>
+                            <p className="mt-1 text-[10px] text-white/60">{row.sourceReference}</p>
                           </div>
                           <span className="text-xs font-semibold">{group.value(row)}</span>
                         </div>
@@ -673,7 +673,7 @@ export default function RevenueIntelligence() {
 
         <section className="rounded-xl border border-white/[0.07] bg-white/[0.018] p-5">
           <h2 className="text-sm font-bold uppercase tracking-wider">Decision controls</h2>
-          <p className="mt-2 max-w-4xl text-xs leading-5 text-white/35">
+          <p className="mt-2 max-w-4xl text-xs leading-5 text-white/60">
             SCALE / MAINTAIN / CUT is deterministic policy output, not an AI opinion. A segment remains
             insufficient-data when sample size, service-tagged spend, recognized revenue, or direct-cost evidence is incomplete.
             Gross margin never assumes missing costs are zero, projected LTV is withheld until ended-agreement history exists,

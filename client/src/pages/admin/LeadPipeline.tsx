@@ -298,7 +298,7 @@ export default function LeadPipeline() {
               <Target className="h-6 w-6 text-primary" />
               <div>
                 <p className="text-2xl font-black">{overall?.enquiries ?? 0}</p>
-                <p className="text-xs text-white/35">Enquiries</p>
+                <p className="text-xs text-white/60">Enquiries</p>
               </div>
             </CardContent>
           </Card>
@@ -307,7 +307,7 @@ export default function LeadPipeline() {
               <TrendingUp className="h-6 w-6 text-emerald-400" />
               <div>
                 <p className="text-2xl font-black">{pct(overall?.qualificationRate ?? 0)}</p>
-                <p className="text-xs text-white/35">Enquiry → qualified</p>
+                <p className="text-xs text-white/60">Enquiry → qualified</p>
               </div>
             </CardContent>
           </Card>
@@ -316,7 +316,7 @@ export default function LeadPipeline() {
               <BarChart3 className="h-6 w-6 text-violet-400" />
               <div>
                 <p className="text-2xl font-black">{overall?.proposals ?? 0}</p>
-                <p className="text-xs text-white/35">Reached proposal</p>
+                <p className="text-xs text-white/60">Reached proposal</p>
               </div>
             </CardContent>
           </Card>
@@ -325,7 +325,7 @@ export default function LeadPipeline() {
               <CircleDollarSign className="h-6 w-6 text-amber-400" />
               <div>
                 <p className="text-2xl font-black">{overall?.won ?? 0} / {overall?.lost ?? 0}</p>
-                <p className="text-xs text-white/35">Won / lost · close {pct(overall?.closeRate ?? 0)}</p>
+                <p className="text-xs text-white/60">Won / lost · close {pct(overall?.closeRate ?? 0)}</p>
               </div>
             </CardContent>
           </Card>
@@ -411,7 +411,7 @@ export default function LeadPipeline() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold">{entry.source} · {entry.campaign || entry.channel}</p>
-                        <p className="mt-1 text-[10px] text-white/35">
+                        <p className="mt-1 text-[10px] text-white/60">
                           {money(Number(entry.amount), entry.currency)} · {new Date(entry.occurredAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -444,7 +444,7 @@ export default function LeadPipeline() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px] text-left text-xs">
-                  <thead className="border-b border-white/[0.07] text-white/35">
+                  <thead className="border-b border-white/[0.07] text-white/60">
                     <tr>
                       <th className="px-5 py-3">Channel</th>
                       <th className="px-3 py-3">Enquiries</th>
@@ -487,9 +487,9 @@ export default function LeadPipeline() {
               <CardContent className="p-5">
                 <h2 className="text-sm font-bold uppercase tracking-wider">Funnel velocity</h2>
                 <dl className="mt-4 space-y-3 text-xs">
-                  <div className="flex justify-between gap-4"><dt className="text-white/35">Enquiry → qualified</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToQualified ?? "—"} days</dd></div>
-                  <div className="flex justify-between gap-4"><dt className="text-white/35">Enquiry → proposal</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToProposal ?? "—"} days</dd></div>
-                  <div className="flex justify-between gap-4"><dt className="text-white/35">Enquiry → won</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToWon ?? "—"} days</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-white/60">Enquiry → qualified</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToQualified ?? "—"} days</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-white/60">Enquiry → proposal</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToProposal ?? "—"} days</dd></div>
+                  <div className="flex justify-between gap-4"><dt className="text-white/60">Enquiry → won</dt><dd className="font-semibold">{intelligence.data?.velocityDays.enquiryToWon ?? "—"} days</dd></div>
                 </dl>
               </CardContent>
             </Card>
@@ -497,7 +497,7 @@ export default function LeadPipeline() {
               <CardContent className="p-5">
                 <h2 className="text-sm font-bold uppercase tracking-wider">Attribution coverage</h2>
                 <p className="mt-3 text-3xl font-black">{pct(intelligence.data?.attributionCoverage.lastTouchRate ?? 0)}</p>
-                <p className="mt-1 text-xs text-white/35">leads with last-touch evidence</p>
+                <p className="mt-1 text-xs text-white/60">leads with last-touch evidence</p>
                 <p className="mt-4 text-[10px] leading-5 text-white/30">
                   CAC/payback remains disabled until campaign spend is ingested. No spend assumption is being fabricated.
                 </p>
@@ -522,7 +522,7 @@ export default function LeadPipeline() {
                         <p className="truncate text-xs font-medium">{row.key}</p>
                         <Badge variant="outline">{row.enquiries}</Badge>
                       </div>
-                      <p className="mt-2 text-[10px] text-white/35">
+                      <p className="mt-2 text-[10px] text-white/60">
                         {row.proposals} proposals · {row.won} won · P→W {pct(row.proposalWinRate)}
                       </p>
                     </div>
@@ -543,7 +543,7 @@ export default function LeadPipeline() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px] text-left text-xs">
-                  <thead className="border-b border-white/[0.07] text-white/35">
+                  <thead className="border-b border-white/[0.07] text-white/60">
                     <tr><th className="px-5 py-3">Channel</th><th className="px-3 py-3">Service</th><th className="px-3 py-3">Enquiries</th><th className="px-3 py-3">Proposal</th><th className="px-3 py-3">Won</th><th className="px-3 py-3">Won revenue</th></tr>
                   </thead>
                   <tbody>
@@ -605,7 +605,7 @@ export default function LeadPipeline() {
                       <Badge variant="outline">{row.count}</Badge>
                     </div>
                     {row.valueByCurrency.length > 0 && (
-                      <p className="mt-2 text-[10px] text-white/35">
+                      <p className="mt-2 text-[10px] text-white/60">
                         {row.valueByCurrency.map((item) => money(item.value, item.currency)).join(" · ")}
                       </p>
                     )}
@@ -626,7 +626,7 @@ export default function LeadPipeline() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px] text-left text-xs">
-                  <thead className="border-b border-white/[0.07] text-white/35">
+                  <thead className="border-b border-white/[0.07] text-white/60">
                     <tr>
                       <th className="px-5 py-3">Service</th>
                       <th className="px-3 py-3">Enquiries</th>
@@ -673,7 +673,7 @@ export default function LeadPipeline() {
                       <p className="truncate text-xs font-semibold">{row.key.replace(/_/g, " ")}</p>
                       <Badge variant="outline">{row.enquiries}</Badge>
                     </div>
-                    <p className="mt-2 text-[10px] text-white/35">
+                    <p className="mt-2 text-[10px] text-white/60">
                       Qualified {pct(row.qualificationRate)} · Proposal {pct(row.proposalRate)} · Close {pct(row.closeRate)}
                     </p>
                   </div>
@@ -701,7 +701,7 @@ export default function LeadPipeline() {
               return (
                 <section key={stage} className="rounded-xl border border-white/[0.07] bg-white/[0.018] p-3">
                   <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-white/50">{stage}</h2>
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-white/60">{stage}</h2>
                     <Badge variant="outline">{stageLeads.length}</Badge>
                   </div>
                   <div className="space-y-2">
@@ -709,7 +709,7 @@ export default function LeadPipeline() {
                       <button
                         key={lead.id}
                         onClick={() => setSelected(lead)}
-                        className="w-full rounded-lg border border-white/[0.07] bg-[#0d101a] p-3 text-left transition hover:border-primary/30 hover:bg-primary/[0.03]"
+                        className="w-full rounded-lg border border-white/[0.07] bg-card p-3 text-left transition hover:border-primary/30 hover:bg-primary/[0.03]"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <p className="line-clamp-2 text-sm font-semibold">{lead.name}</p>
@@ -739,7 +739,7 @@ export default function LeadPipeline() {
         </div>
 
         <Sheet open={Boolean(selected)} onOpenChange={(open) => { if (!open) setSelected(null); }}>
-          <SheetContent className="w-full overflow-y-auto border-white/[0.07] bg-[#0b0e18] sm:max-w-xl">
+          <SheetContent className="w-full overflow-y-auto border-white/[0.07] bg-card sm:max-w-xl">
             <SheetHeader><SheetTitle>{selected?.name}</SheetTitle></SheetHeader>
             {selected && (
               <div className="mt-6 space-y-6">
@@ -747,10 +747,10 @@ export default function LeadPipeline() {
                   <a href={`mailto:${selected.email}`} className="inline-flex items-center gap-2 text-sm text-primary">
                     <Mail className="h-4 w-4" />{selected.email}
                   </a>
-                  <p className="mt-3 text-sm leading-6 text-white/50">{selected.message}</p>
+                  <p className="mt-3 text-sm leading-6 text-white/60">{selected.message}</p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <label className="space-y-1 text-xs text-white/40">
+                  <label className="space-y-1 text-xs text-white/60">
                     Stage
                     <select
                       className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white"
@@ -760,7 +760,7 @@ export default function LeadPipeline() {
                       {stages.map((stage) => <option key={stage}>{stage}</option>)}
                     </select>
                   </label>
-                  <label className="space-y-1 text-xs text-white/40">
+                  <label className="space-y-1 text-xs text-white/60">
                     Priority
                     <select
                       className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-white"
@@ -770,33 +770,33 @@ export default function LeadPipeline() {
                       {["low", "normal", "high", "urgent"].map((item) => <option key={item}>{item}</option>)}
                     </select>
                   </label>
-                  <label className="space-y-1 text-xs text-white/40">
+                  <label className="space-y-1 text-xs text-white/60">
                     Estimated value
                     <Input type="number" min="0" value={draft.estimatedValue} onChange={(event) => setDraft({ ...draft, estimatedValue: event.target.value })} />
                   </label>
-                  <label className="space-y-1 text-xs text-white/40">
+                  <label className="space-y-1 text-xs text-white/60">
                     Currency
                     <Input maxLength={3} value={draft.currency} onChange={(event) => setDraft({ ...draft, currency: event.target.value.toUpperCase() })} />
                   </label>
-                  <label className="space-y-1 text-xs text-white/40">
+                  <label className="space-y-1 text-xs text-white/60">
                     Probability %
                     <Input type="number" min="0" max="100" value={draft.probability} onChange={(event) => setDraft({ ...draft, probability: Number(event.target.value) })} />
                   </label>
-                  <label className="space-y-1 text-xs text-white/40">
+                  <label className="space-y-1 text-xs text-white/60">
                     Qualification score
                     <Input type="number" min="0" max="100" value={draft.qualificationScore} onChange={(event) => setDraft({ ...draft, qualificationScore: Number(event.target.value) })} />
                   </label>
-                  <label className="space-y-1 text-xs text-white/40">
+                  <label className="space-y-1 text-xs text-white/60">
                     Follow-up
                     <Input type="datetime-local" value={draft.followUpAt} onChange={(event) => setDraft({ ...draft, followUpAt: event.target.value })} />
                   </label>
                 </div>
-                <label className="space-y-1 text-xs text-white/40">
+                <label className="space-y-1 text-xs text-white/60">
                   Next action
                   <Textarea value={draft.nextAction} onChange={(event) => setDraft({ ...draft, nextAction: event.target.value })} />
                 </label>
                 {draft.stage === "lost" && (
-                  <label className="space-y-1 text-xs text-white/40">
+                  <label className="space-y-1 text-xs text-white/60">
                     Lost reason
                     <Textarea value={draft.lostReason} onChange={(event) => setDraft({ ...draft, lostReason: event.target.value })} />
                   </label>
@@ -828,7 +828,7 @@ export default function LeadPipeline() {
                     {activities.data?.map((activity) => (
                       <div key={activity.id} className="border-l border-primary/30 pl-3">
                         <p className="text-xs font-medium capitalize">{activity.type.replace("_", " ")}</p>
-                        <p className="mt-1 text-xs text-white/40">{activity.body}</p>
+                        <p className="mt-1 text-xs text-white/60">{activity.body}</p>
                         <p className="mt-1 text-[9px] text-white/20">{new Date(activity.createdAt).toLocaleString()}</p>
                       </div>
                     ))}

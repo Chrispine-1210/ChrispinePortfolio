@@ -87,5 +87,26 @@ export async function getPublicCaseStudyBySlug(
     )
     .orderBy(asc(caseStudyEvidence.createdAt));
 
-  return { ...toPublicPortfolioProject(record), evidence };
+  // Only reviewed editorial fields cross the publication boundary. Private
+  // project, commercial, actor, and evidence-source records remain internal.
+  const dossier = {
+    constraints: record.constraints,
+    objectives: record.objectives,
+    architecture: record.architecture,
+    securityControls: record.securityControls,
+    integrations: record.integrations,
+    roleDescription: record.roleDescription,
+    teamDescription: record.teamDescription,
+    timeline: record.timeline,
+    lessons: record.lessons,
+    nextPhase: record.nextPhase,
+  };
+  return {
+    ...toPublicPortfolioProject(record),
+    // Old deployed clients can read the complete dossier from solution; the
+    // richer reader renders each approved editorial field in its own section.
+    solution: record.solution?.split("\n\nDETAILED DEVELOPMENT RECORD\n\n")[0] ?? null,
+    dossier,
+    evidence,
+  };
 }
