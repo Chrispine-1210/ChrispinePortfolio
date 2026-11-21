@@ -22,3 +22,7 @@ for (const name of (await readdir(path.join(root, "migrations")))
   );
 }
 export const db = drizzle(database, { schema });
+// Keep the read-only release probe on the same isolated database as the ORM.
+export const pool = {
+  query: (text: string, parameters?: unknown[]) => database.query(text, parameters),
+};

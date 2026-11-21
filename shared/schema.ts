@@ -479,7 +479,13 @@ export const insertContactRequestSchema = createInsertSchema(contactRequests).om
   id: true,
   isRead: true,
   createdAt: true,
-});
+}).extend({
+  name: z.string().trim().min(2).max(180),
+  email: z.string().trim().email().max(320).transform(value => value.toLowerCase()),
+  projectType: z.string().trim().max(180).nullable().optional(),
+  message: z.string().trim().min(10).max(5000),
+  preferredContact: z.enum(["", "email", "phone", "whatsapp"]).nullable().optional(),
+}).strict();
 
 export type InsertContactRequest = z.infer<typeof insertContactRequestSchema>;
 export type ContactRequest = typeof contactRequests.$inferSelect;

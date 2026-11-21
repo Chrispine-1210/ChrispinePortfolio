@@ -54,9 +54,9 @@ export function ContactForm({ embedded = false }: { embedded?: boolean }) {
     },
     onSuccess: () => {
       toast({
-        title: "Message sent!",
+        title: "Request received",
         description:
-          "Thank you for reaching out. I'll get back to you within 24-48 hours.",
+          "Your enquiry has been recorded for review and follow-up.",
       });
       form.reset();
     },
@@ -70,6 +70,7 @@ export function ContactForm({ embedded = false }: { embedded?: boolean }) {
   });
 
   const onSubmit = (data: InsertContactRequest) => {
+    if (contactMutation.isPending) return;
     contactMutation.mutate(data);
   };
 
@@ -195,6 +196,9 @@ export function ContactForm({ embedded = false }: { embedded?: boolean }) {
                           <FormControl>
                             <Input
                               {...field}
+                              autoComplete="name"
+                              maxLength={180}
+                              required
                               data-testid="input-contact-name"
                             />
                           </FormControl>
@@ -212,6 +216,9 @@ export function ContactForm({ embedded = false }: { embedded?: boolean }) {
                             <Input
                               type="email"
                               {...field}
+                              autoComplete="email"
+                              maxLength={320}
+                              required
                               data-testid="input-contact-email"
                             />
                           </FormControl>
@@ -291,6 +298,9 @@ export function ContactForm({ embedded = false }: { embedded?: boolean }) {
                         <FormControl>
                           <Textarea
                             rows={6}
+                            minLength={10}
+                            maxLength={5000}
+                            required
                             placeholder="Tell me about your project or inquiry..."
                             {...field}
                             data-testid="textarea-contact-message"
@@ -300,6 +310,17 @@ export function ContactForm({ embedded = false }: { embedded?: boolean }) {
                       </FormItem>
                     )}
                   />
+
+                  {contactMutation.isError && (
+                    <p role="alert" className="text-sm text-destructive">
+                      {contactMutation.error.message} Your form entries are retained.
+                    </p>
+                  )}
+                  {contactMutation.isSuccess && (
+                    <p role="status" className="text-sm text-muted-foreground">
+                      Request received and recorded for follow-up.
+                    </p>
+                  )}
 
                   <Button
                     type="submit"

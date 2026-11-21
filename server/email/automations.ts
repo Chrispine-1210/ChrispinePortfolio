@@ -32,7 +32,10 @@ export async function enqueueNewsletterWelcome(subscriber: { id: string; email: 
   });
 }
 
-export async function enqueueContactAutomation(contact: { id: string; name: string; email: string; message: string }) {
+export async function enqueueContactAutomation(
+  contact: { id: string; name: string; email: string; message: string },
+  writer: Pick<typeof db, "insert"> = db,
+) {
   if (!env.POSTMARK_FROM_EMAIL) return;
   const safeName = escapeHtml(contact.name);
   const records: Array<typeof emailOutbox.$inferInsert> = [{
@@ -49,8 +52,8 @@ export async function enqueueContactAutomation(contact: { id: string; name: stri
     textBody: `${contact.name} (${contact.email}) sent: ${contact.message}`,
     idempotencyKey: `contact-admin:${contact.id}`, metadata: { automation: "contact_admin", contactId: contact.id },
   });
-  await db.insert(emailOutbox).values(records).onConflictDoNothing();
-  if (env.ADMIN_INBOX_USER_ID) await db.insert(notificationInbox).values({
+  await writer.insert(emailOutbox).values(records).onConflictDoNothing();
+  if (env.ADMIN_INBOX_USER_ID) await writer.insert(notificationInbox).values({
     userId: env.ADMIN_INBOX_USER_ID, category: "contact", title: `New contact from ${contact.name}`,
     body: contact.message.slice(0, 1000), actionUrl: "/admin/contacts", metadata: { contactId: contact.id },
   });
