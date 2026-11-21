@@ -18,6 +18,8 @@ import { createPortfolioGovernanceRouter } from "./portfolio/admin-routes.js";
 import { createRevenueIntelligenceRouter } from "./revenue/routes.js";
 import { createCapitalOperatingRouter } from "./capital/routes.js";
 import { createTreasuryRoicRouter } from "./treasury/routes.js";
+import { getReleaseMetadata } from "./release-metadata.js";
+import { pool } from "./db.js";
 
 import { createEngineeringRouter } from "./engineering/routes.js";
 import { requestContext, safeApiError } from "./security/http-boundary.js";
@@ -40,6 +42,22 @@ export function createApp() {
 
   app.use(requestLogger);
   app.use(analyticsMiddleware);
+
+  app.get("/api/release", async (_request, response, next) => {
+    try {
+      const databaseIdentity = await pool.query(
+        "select current_setting('neon.branch_id', true) as branch_id",
+      );
+      const branchId = databaseIdentity.rows?.[0]?.branch_id ?? null;
+      response.setHeader("Cache-Control", "no-store");
+      response.json({
+        ...getReleaseMetadata(),
+        databaseBranchId: typeof branchId === "string" ? branchId : null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   const customAuthRouter = express.Router();
   if (env.ADMIN_AUTH_MODE === "database") {

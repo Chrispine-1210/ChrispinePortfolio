@@ -14,7 +14,9 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:push": "drizzle-kit push",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
-    "verify:release": "npm run check && npm test && npm run build && npm run verify:runtime && npm run audit:release",
+    "verify:release": "npm run check && npm run check:certification && npm test && npm run build && npm run verify:runtime && npm run audit:release",
+    "certify:treasury-preview": "node scripts/certify-treasury-preview.mjs",
+    "check:certification": "node --check scripts/certify-treasury-preview.mjs",
     "preview:engineering:qa": "node scripts/qa/engineering-preview.mjs",
     "audit:release": "node scripts/audit-release.mjs",
     "verify:runtime": "node scripts/verify-production-imports.mjs"

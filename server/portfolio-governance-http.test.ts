@@ -66,6 +66,105 @@ const studyInput = {
 const studies = "/api/admin/case-studies";
 const projects = "/api/admin/projects";
 
+it("closes only the matching draft certification budget in Preview with approval permission", async () => {
+  const api = request(app);
+  const sourceReference = "preview-cert-2026-11-16T12-00-00-000Z-1234abcd-budget";
+  const { body: budget } = await api.post("/api/admin/capital/budgets")
+    .set("Cookie", administrator.cookie)
+    .send({
+      periodStart: "2026-10-18T12:00:00.000Z",
+      periodEnd: "2026-12-17T12:00:00.000Z",
+      currency: "XTS",
+      envelopeAmount: 20000,
+      sourceReference,
+    }).expect(201);
+  const close = (cookie = administrator.cookie) =>
+    api.post(`/api/admin/capital/budgets/${budget.id}/close`).set("Cookie", cookie);
+  const previousEnvironment = process.env.VERCEL_ENV;
+
+  try {
+    process.env.VERCEL_ENV = "production";
+    await close().send({ certificationSourceReference: sourceReference }).expect(409);
+
+    process.env.VERCEL_ENV = "preview";
+    await close().expect(409);
+    await close().send({ certificationSourceReference: sourceReference.replace("1234abcd", "ffffffff") }).expect(409);
+    await close(viewer.cookie).send({ certificationSourceReference: sourceReference }).expect(403);
+    const result = await close().send({ certificationSourceReference: sourceReference }).expect(200);
+    expect(result.body).toMatchObject({ status: "closed", approvedAt: null, approvedBy: null });
+
+    const { rows: [audit] } = await database.query<{ actor_user_id: string }>(
+      "select actor_user_id from audit_events where resource_id = $1 and action = 'capital.budget.close'",
+      [budget.id],
+    );
+    expect(audit?.actor_user_id).toBe(administrator.userId);
+  } finally {
+    if (previousEnvironment === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = previousEnvironment;
+  }
+});
+
+
+it("rolls back budget closure and evidence voiding when their audit insert fails", async () => {
+  const api = request(app);
+  const sourceReference = "preview-cert-2026-11-21T12-00-00-000Z-abcd1234-budget";
+  const { body: budget } = await api.post("/api/admin/capital/budgets")
+    .set("Cookie", administrator.cookie)
+    .send({ periodStart: "2026-09-18T12:00:00.000Z", periodEnd: "2026-10-17T12:00:00.000Z",
+      currency: "XTS", envelopeAmount: 20000, sourceReference }).expect(201);
+  const { body: account } = await api.post("/api/admin/treasury/accounts")
+    .set("Cookie", administrator.cookie)
+    .send({ name: "Cleanup audit rollback fixture", accountType: "cash", currency: "XTS",
+      sourceReference: "cleanup-audit-account" }).expect(201);
+  const { body: balance } = await api.post("/api/admin/treasury/balances")
+    .set("Cookie", administrator.cookie)
+    .send({ accountId: account.id, currency: "XTS", ledgerBalance: 10, availableBalance: 10,
+      capturedAt: new Date().toISOString(), sourceReference: "cleanup-audit-balance" }).expect(201);
+  const close = () => api.post(`/api/admin/capital/budgets/${budget.id}/close`)
+    .set("Cookie", administrator.cookie).send({ certificationSourceReference: sourceReference });
+  const voidBalance = () => api.post(`/api/admin/treasury/evidence/balance/${balance.id}/void`)
+    .set("Cookie", administrator.cookie).send({ reason: "Cleanup audit rollback verification" });
+  const previousEnvironment = process.env.VERCEL_ENV;
+  try {
+    process.env.VERCEL_ENV = "preview";
+    await database.exec(`
+      create function reject_cleanup_audit_test() returns trigger language plpgsql as $$
+      begin
+        if new.action in ('capital.budget.close', 'treasury_balance_snapshot.void') then
+          raise exception 'Deliberate cleanup audit persistence failure';
+        end if;
+        return new;
+      end; $$;
+      create trigger reject_cleanup_audit_test before insert on audit_events
+        for each row execute function reject_cleanup_audit_test();
+    `);
+    await close().expect(500);
+    await voidBalance().expect(500);
+    const { rows: [remaining] } = await database.query<{ status: string; voided_at: null }>(
+      `select b.status, s.voided_at from capital_budget_cycles b, treasury_balance_snapshots s
+       where b.id = $1 and s.id = $2`, [budget.id, balance.id],
+    );
+    expect(remaining).toEqual({ status: "draft", voided_at: null });
+    const { rows: [failedAudits] } = await database.query<{ count: number }>(
+      `select count(*)::integer as count from audit_events where resource_id in ($1,$2)
+       and action in ('capital.budget.close','treasury_balance_snapshot.void')`, [budget.id, balance.id],
+    );
+    expect(failedAudits.count).toBe(0);
+    await database.exec("drop trigger reject_cleanup_audit_test on audit_events; drop function reject_cleanup_audit_test();");
+    await close().expect(200);
+    await voidBalance().expect(200);
+    const { rows: [committed] } = await database.query<{ count: number }>(
+      `select count(*)::integer as count from audit_events where resource_id in ($1,$2)
+       and action in ('capital.budget.close','treasury_balance_snapshot.void')`, [budget.id, balance.id],
+    );
+    expect(committed.count).toBe(2);
+  } finally {
+    await database.exec("drop trigger if exists reject_cleanup_audit_test on audit_events; drop function if exists reject_cleanup_audit_test();");
+    if (previousEnvironment === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = previousEnvironment;
+  }
+});
+
 describe("portfolio governance HTTP routes", () => {
   it("requires a session and evaluates database permissions on reads and writes", async () => {
     await request(app).get(projects).expect(401);
