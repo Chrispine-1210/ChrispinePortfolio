@@ -13,7 +13,7 @@
     "exact structural baseline adopted once with source checksums; repeated adoption did not replay data",
     "runtime DML allowed; DDL, role creation, financial deletion, audit mutation, truncate and journal reads denied",
     "wrong role and actual branch identity denied",
-    "second real session could not migrate while operator held the lock",
+    "separate migration and role-policy sessions refused while operator held the shared lock",
     "failed post-migration verification rolled schema and history back atomically",
     "pending source migration applied atomically and subsequent complete adoption was a no-op",
     "new migration-owned tables inherited runtime read/write privileges",

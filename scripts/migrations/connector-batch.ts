@@ -149,7 +149,9 @@ export function databaseRolePolicy(t: BatchTarget) {
     "blog_posts",
   ];
   return `DO ${sqlValue(`DECLARE r record; BEGIN
+ SET LOCAL search_path=pg_catalog,public; SET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='60s';
  IF current_database()<>${sqlValue(t.database)} OR current_setting('neon.branch_id',true) IS DISTINCT FROM ${sqlValue(t.branchId)} THEN RAISE EXCEPTION 'TARGET_MISMATCH'; END IF;
+ IF NOT pg_catalog.pg_try_advisory_xact_lock(1129337650,1296648018) THEN RAISE EXCEPTION 'MIGRATION_BUSY'; END IF;
  IF (SELECT count(*) FROM pg_roles WHERE rolname IN (${sqlValue(t.runtimeRole)},${sqlValue(t.migrationRole)}) AND NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolbypassrls)<>2 THEN RAISE EXCEPTION 'ROLE_SEPARATION_REQUIRED'; END IF;
  IF pg_has_role(${sqlValue(t.runtimeRole)},${sqlValue(t.migrationRole)},'MEMBER') THEN RAISE EXCEPTION 'ROLE_SEPARATION_REQUIRED'; END IF;
  GRANT ${migrator} TO CURRENT_USER;

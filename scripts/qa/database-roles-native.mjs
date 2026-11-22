@@ -126,6 +126,7 @@ try {
   );
   const migrator = await connect(target.migrationRole),
     runtime = await connect(target.runtimeRole);
+  const secondOperator = await connect("postgres");
   assert.deepEqual(await schemaObjects(adapter(migrator)), before);
   const adopt = adoptionBatch(target, files.slice(0, -1), prefix, before);
   await migrator.query(adopt);
@@ -180,11 +181,12 @@ try {
   );
   try {
     await assert.rejects(migrator.query(adopt), /MIGRATION_BUSY/);
+    await assert.rejects(secondOperator.query(databaseRolePolicy(target)), /MIGRATION_BUSY/);
   } finally {
     await owner.query("ROLLBACK");
   }
   checks.push(
-    "second real session could not migrate while operator held the lock",
+    "separate migration and role-policy sessions refused while operator held the shared lock",
   );
   await assert.rejects(
     migrator.query(
