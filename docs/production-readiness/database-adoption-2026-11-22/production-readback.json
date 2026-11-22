@@ -1,0 +1,33 @@
+{
+  "rows": [
+    {
+      "database": "neondb",
+      "branch": "br-misty-wave-bb79bj7l",
+      "history_entries": 12,
+      "baseline_entries": 12,
+      "roles": [
+        {
+          "name": "portfolio_runtime",
+          "superuser": false,
+          "createDatabase": false,
+          "createRole": false,
+          "bypassRls": false
+        },
+        {
+          "name": "portfolio_migrator",
+          "superuser": false,
+          "createDatabase": false,
+          "createRole": false,
+          "bypassRls": false
+        }
+      ],
+      "runtime_inherits_migrator": false,
+      "runtime_schema_create": false,
+      "runtime_database_create": false,
+      "runtime_financial_delete": false,
+      "runtime_audit_update": false
+    }
+  ],
+  "totalRowCount": 1,
+  "truncated": false
+}

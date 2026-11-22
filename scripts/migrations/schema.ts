@@ -4,7 +4,7 @@ import type { MigrationClient } from "./runner.js";
 // Read definitions only. User rows, sequence current values, role ownership and
 // credentials are excluded. Provider/extension-owned objects and schemas outside
 // the application's public schema are outside this structural baseline.
-const catalogSql = `
+export const schemaCatalogSql = `
 WITH relations AS (
  SELECT c.* FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
  WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','S','f')
@@ -64,7 +64,7 @@ export function canonicalJson(value: unknown): string {
 export function sha256(value: string): string { return createHash("sha256").update(value).digest("hex"); }
 
 export async function schemaObjects(client: MigrationClient) {
-  const { rows } = await client.query(catalogSql);
+  const { rows } = await client.query(schemaCatalogSql);
   return rows;
 }
 

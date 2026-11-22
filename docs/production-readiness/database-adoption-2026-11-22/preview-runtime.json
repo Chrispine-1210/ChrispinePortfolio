@@ -1,0 +1,182 @@
+{
+  "decision": "PASS",
+  "exactHead": "c22953678347447c90831065c45fa26ec49112cf",
+  "databaseBranchId": "br-restless-credit-bb387cat",
+  "databaseRole": "portfolio_runtime",
+  "applicationAuthentication": "normal password login; finance_manager",
+  "fixture": {
+    "marker": "runtime-role-613c3441-1570-4f11-9946-861b32cc80fb",
+    "userId": "4a12864c-50a4-4db2-a6fb-1187f37c6717",
+    "leadId": "68207c5f-fdf0-4d7b-b49c-6c7a1bbb9c35",
+    "expenseId": "e645c473-45d2-4eee-a6f5-a5c33da4b984",
+    "invoiceId": "3fa968c6-e09f-4613-bfde-6274268793b7",
+    "collectionId": "8fbadffc-1bb8-42d1-bf3e-5794726e8b47"
+  },
+  "checks": [
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "294853b5-7ec7-48cc-af0a-232c808f31c7"
+    },
+    {
+      "path": "/api/auth/me",
+      "method": "GET",
+      "status": 401,
+      "requestId": "f692b560-4b89-42e8-af08-90f2efc2d5df"
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "requestId": "47e70a3d-d1fb-4b07-ba57-f003c9a0a245"
+    },
+    {
+      "path": "/api/auth/me",
+      "method": "GET",
+      "status": 200,
+      "requestId": "42c86b5c-9706-4d93-ba5e-2d4ab1dfc075"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "24aee5c7-5846-4b52-9d7e-99c591cd858d"
+    },
+    {
+      "path": "/api/admin/capital/budgets/2b7379dd-cd71-408c-a14a-0e791aeddd2f/approve",
+      "method": "POST",
+      "status": 403,
+      "requestId": "7435f477-90b4-48e3-a601-0d21cd376218"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "f7989e45-764b-4cbd-91e9-6fb13fffa128"
+    },
+    {
+      "path": "/api/admin/treasury/operating-expenses",
+      "method": "POST",
+      "status": 201,
+      "requestId": "c1b136f2-72ff-4762-808b-0ccea4aaa713"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "50b282d3-212c-491c-92df-a7a3664ec147"
+    },
+    {
+      "path": "/api/admin/capital/invoices",
+      "method": "POST",
+      "status": 201,
+      "requestId": "9718ca62-1524-4bdd-9bab-45f0d66eaf51"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "2d70c42f-2559-46e3-a0a3-43722a0b7cfd"
+    },
+    {
+      "path": "/api/admin/capital/collections",
+      "method": "POST",
+      "status": 201,
+      "requestId": "04e7cf76-456d-4a33-98d7-0a216480a71b"
+    },
+    {
+      "path": "/api/admin/capital/invoices",
+      "method": "GET",
+      "status": 200,
+      "requestId": "df2f9ea0-92b0-4fd1-8d6a-6b6b670c985b"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "7cde6200-62ee-4433-ba36-7a2d55324d92"
+    },
+    {
+      "path": "/api/admin/capital/invoices/3fa968c6-e09f-4613-bfde-6274268793b7/void",
+      "method": "POST",
+      "status": 409,
+      "requestId": "709fd99e-c575-401f-939a-1918c09915e6"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "9bc09ce5-439c-43b3-a528-dfca4873cfd2"
+    },
+    {
+      "path": "/api/admin/capital/collections/8fbadffc-1bb8-42d1-bf3e-5794726e8b47/void",
+      "method": "POST",
+      "status": 200,
+      "requestId": "6fd5f5f9-aae7-4668-8410-f0c2b0a0db5e"
+    },
+    {
+      "path": "/api/admin/capital/invoices",
+      "method": "GET",
+      "status": 200,
+      "requestId": "7e170bf8-fae3-4b8d-89d9-382e7e739812"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "07f4f023-38ce-44d7-8e22-3d2d4c1cf28f"
+    },
+    {
+      "path": "/api/admin/capital/invoices/3fa968c6-e09f-4613-bfde-6274268793b7/void",
+      "method": "POST",
+      "status": 200,
+      "requestId": "2c56343a-4ae0-41bb-b639-6ac4a73e4370"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "96180143-eada-453a-91f7-2ebec47b190b"
+    },
+    {
+      "path": "/api/admin/treasury/evidence/opex/e645c473-45d2-4eee-a6f5-a5c33da4b984/void",
+      "method": "POST",
+      "status": 200,
+      "requestId": "21b0a34e-2f9b-46cd-b2d2-ce9f5c55b0f0"
+    },
+    {
+      "path": "/api/admin/treasury/intelligence",
+      "method": "GET",
+      "status": 200,
+      "requestId": "fb7e6576-4879-47c8-9b92-dcd8d3b77c84"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "4155a68b-2f16-4e98-865d-9b5c2cfe77fc"
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "status": 200,
+      "requestId": "416a111a-ac58-45f2-9fa7-71effdce1219"
+    },
+    {
+      "path": "/api/auth/me",
+      "method": "GET",
+      "status": 401,
+      "requestId": "409e53e8-2bc5-4d05-b89d-2ebd2d0f42f5"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "0147da54-2527-4891-97be-ba667a29bca2"
+    }
+  ],
+  "fixturesVoided": true,
+  "identityRetirementPending": false,
+  "retirementReadback": "preview-retirement.json"
+}
