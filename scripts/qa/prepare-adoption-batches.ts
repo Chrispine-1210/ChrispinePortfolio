@@ -19,7 +19,7 @@ if (!["preview", "production"].includes(environment) || !destination)
 const root = "docs/production-readiness/database-adoption-2026-11-22/";
 const read = async (name: string) =>
   JSON.parse(await readFile(root + name + ".json", "utf8"));
-const files = await loadMigrations("migrations");
+const allFiles = await loadMigrations("migrations");
 const t: BatchTarget = {
   environment: environment as BatchTarget["environment"],
   branchId,
@@ -29,6 +29,7 @@ const t: BatchTarget = {
 };
 const baseline = await read("reference-baseline"),
   catalog = await read("reference-catalog");
+const files = allFiles.filter(f => baseline.migrations.some((m: {file:string}) => m.file === f.file));
 const currentAdoption = adoptionBatch(t, files, baseline, catalog);
 await mkdir(destination, { recursive: true });
 async function save(name: string, sql: string) {

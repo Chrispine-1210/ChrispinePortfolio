@@ -5,9 +5,10 @@ import type { Express } from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as schema from "../shared/schema.js";
+import { contextualDatabase } from "./database-context.js";
 
 const database = new PGlite();
-vi.mock("./db.js", () => ({ db: drizzle(database, { schema }) }));
+vi.mock("./db.js", () => ({ db: contextualDatabase(drizzle(database, { schema })) }));
 let app: Express;
 const contact = { name: "Commercial intake fixture", email: "intake@test.invalid", projectType: "development", message: "We need a supported business operations platform." };
 const consultation = { name: contact.name, email: contact.email, organization: "Fixture business", industry: "Retail / Distribution", serviceInterest: "business-systems", challenge: contact.message, consent: true };

@@ -1,4 +1,4 @@
-import { asyncHandler } from "../middleware.js";
+import { financialHandler as asyncHandler } from "../financial-requests.js";
 import {
   and,
   desc,

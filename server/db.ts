@@ -4,6 +4,7 @@ import ws from "ws";
 import * as schema from "../shared/schema.js";
 import { env } from "./env.js";
 import { runtimeDatabaseUrl } from "../shared/database-target.js";
+import { contextualDatabase } from "./database-context.js";
 
 neonConfig.webSocketConstructor = ws;
 
@@ -16,4 +17,4 @@ if (!connectionString) {
 }
 
 export const pool = new Pool({ connectionString });
-export const db = drizzle({ client: pool, schema });
+export const db = contextualDatabase(drizzle({ client: pool, schema }));

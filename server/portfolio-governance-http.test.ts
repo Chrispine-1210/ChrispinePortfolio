@@ -2,12 +2,13 @@ import { readFile, readdir } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import type { Express } from "express";
-import request from "supertest";
+import request from "./test-support/financial-client.js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as schema from "../shared/schema.js";
+import { contextualDatabase } from "./database-context.js";
 
 const database = new PGlite();
-vi.mock("./db.js", () => ({ db: drizzle(database, { schema }) }));
+vi.mock("./db.js", () => ({ db: contextualDatabase(drizzle(database, { schema })) }));
 
 let app: Express;
 let administrator: { cookie: string; userId: string; sessionId: string };

@@ -17,7 +17,7 @@ describe("safe request failure guidance", () => {
     const fetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
     vi.stubGlobal("fetch", fetch);
     try {
-      await expect(apiRequest("POST", "/api/admin/revenue/agreements", {})).rejects.toThrow("Check the record");
+      await expect(apiRequest("POST", "/api/admin/content/posts", {})).rejects.toThrow("Check the record");
       expect(fetch).toHaveBeenCalledTimes(1);
     } finally { vi.unstubAllGlobals(); }
   });

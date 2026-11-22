@@ -98,6 +98,13 @@ const navigation = [
     live: true,
   },
   {
+    label: "Financial requests",
+    path: "/admin/financial-requests",
+    icon: FileCheck2,
+    permission: "pipeline.financial.read",
+    live: true,
+  },
+  {
     label: "Audience",
     path: "/admin/audience",
     icon: Users,

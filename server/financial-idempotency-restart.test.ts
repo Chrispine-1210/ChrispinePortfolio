@@ -1,0 +1,32 @@
+import { afterAll, beforeAll, expect, it, vi } from "vitest";
+import request from "supertest";
+import type { Express } from "express";
+import * as schema from "../shared/schema.js";
+import { contextualDatabase } from "./database-context.js";
+const enabled = process.env.FINANCIAL_NATIVE_REOPEN === "1";
+let pool: any, engine: any, app: Express;
+vi.mock("./db.js", () => ({ db: contextualDatabase(engine) }));
+beforeAll(async () => {
+  if (!enabled) return;
+  const port = Number(process.env.FINANCIAL_NATIVE_PORT);
+  if (!Number.isInteger(port) || port < 1024 || port > 65535 || !process.env.FINANCIAL_NATIVE_QA) throw Error("Native reopen boundary refused");
+  vi.stubEnv("ADMIN_AUTH_MODE", "database"); vi.stubEnv("DATABASE_URL", "postgresql://fixture:fixture@localhost/fixture");
+  vi.stubEnv("AUTH_KEY_PEPPER", "local-financial-idempotency-fixture-pepper");
+  const pg = (await import("pg")).default;
+  pool = new pg.Pool({ host: "127.0.0.1", port, user: "postgres", database: "financial_qa" });
+  engine = (await import("drizzle-orm/node-postgres")).drizzle({ client: pool, schema });
+  ({ app } = await import("./app.js"));
+});
+afterAll(async () => { await pool?.end(); vi.unstubAllEnvs(); });
+it.runIf(enabled)("replays a persisted financial result in a fresh application process", async () => {
+  const { rows: [receipt] } = await pool.query("SELECT r.*,u.security_version FROM financial_request_receipts r JOIN users u ON u.id=r.actor_user_id WHERE r.path='/api/admin/treasury/operating-expenses' AND r.response_status=201 AND EXISTS(SELECT 1 FROM user_roles ur WHERE ur.user_id=u.id) ORDER BY r.created_at LIMIT 1");
+  expect(receipt).toBeDefined();
+  const { getDatabaseAuthRuntime } = await import("./security/database-auth-routes.js");
+  const session = await getDatabaseAuthRuntime().sessions.issue({ userId: receipt.actor_user_id, userSecurityVersion: receipt.security_version });
+  const result = receipt.response_body;
+  const body = { currency: result.currency, amount: Number(result.amount), category: result.category, occurredAt: result.occurredAt, sourceReference: result.sourceReference };
+  const before = (await pool.query("SELECT count(*)::int AS total FROM operating_expense_entries")).rows[0].total;
+  const replay = await request(app).post(receipt.path).set("Cookie", `admin_session=${session.token}`).set("Idempotency-Key", receipt.request_key).send(body).expect(receipt.response_status);
+  expect(replay.body).toEqual(result); expect(replay.headers["idempotency-replayed"]).toBe("true");
+  expect((await pool.query("SELECT count(*)::int AS total FROM operating_expense_entries")).rows[0].total).toBe(before);
+});

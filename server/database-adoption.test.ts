@@ -27,6 +27,7 @@ beforeAll(async () => {
   baseline = JSON.parse(
     await readFile(root + "reference-baseline.json", "utf8"),
   );
+  files = files.filter(f => baseline.migrations.some(m => m.file === f.file));
   catalog = JSON.parse(await readFile(root + "reference-catalog.json", "utf8"));
 });
 describe("connector migration operation boundaries", () => {

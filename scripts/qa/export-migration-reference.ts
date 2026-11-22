@@ -20,6 +20,7 @@ try {
     },
   };
   const files = await loadMigrations("migrations");
+  if (files.length > 12 && !process.argv[2]) throw Error("Supply a new evidence directory; historical baselines must remain unchanged");
   const target = {
     connectionString: "local-reference-only",
     environment: "test" as const,

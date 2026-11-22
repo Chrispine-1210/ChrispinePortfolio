@@ -61,7 +61,7 @@ function parseJson(text) {
   try { return JSON.parse(text); } catch { return null; }
 }
 
-function runRequest(path, { method = "GET", body, cookie } = {}) {
+function runRequest(path, { method = "GET", body, cookie, financialKey } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "portfolio-cert-"));
   const headerFile = join(dir, "headers.txt");
   const bodyFile = join(dir, "body.txt");
@@ -79,6 +79,7 @@ function runRequest(path, { method = "GET", body, cookie } = {}) {
       "-H", "Accept: application/json",
     ];
     if (method !== "GET") args.push("-X", method);
+    if (financialKey) args.push("-H", `Idempotency-Key: ${financialKey}`);
     // Request secrets must never appear in process arguments on a shared host.
     if (cookie) {
       const cookieFile = join(dir, "request-cookie.txt");
@@ -156,7 +157,7 @@ function assertReleaseIdentity() {
 
 function runFinancialWrite(path, options) {
   assertReleaseIdentity();
-  return runRequest(path, options);
+  return runRequest(path, { ...options, financialKey: randomUUID() });
 }
 
 const marker = `preview-cert-${new Date().toISOString().replace(/[:.]/g, "-")}-${randomUUID().slice(0, 8)}`;

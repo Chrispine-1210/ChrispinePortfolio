@@ -63,6 +63,7 @@ const CapitalOperatingSystem = lazy(
   () => import("@/pages/admin/CapitalOperatingSystem"),
 );
 const TreasuryRoic = lazy(() => import("@/pages/admin/TreasuryRoic"));
+const FinancialRequests = lazy(() => import("@/pages/admin/FinancialRequests"));
 const SecurityManagement = lazy(
   () => import("@/pages/admin/SecurityManagement"),
 );
@@ -175,6 +176,9 @@ function Router() {
             </Route>
             <Route path="/admin/treasury">
               <AdminProtectedRoute component={TreasuryRoic} />
+            </Route>
+            <Route path="/admin/financial-requests">
+              <AdminProtectedRoute component={FinancialRequests} />
             </Route>
             <Route path="/admin/security">
               <AdminProtectedRoute component={SecurityManagement} />

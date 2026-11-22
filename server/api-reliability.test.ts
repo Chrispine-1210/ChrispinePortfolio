@@ -6,11 +6,12 @@ import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as schema from "../shared/schema.js";
+import { contextualDatabase } from "./database-context.js";
 import { ApiError, asyncHandler } from "./middleware.js";
 import { requestContext, safeApiError } from "./security/http-boundary.js";
 
 const database = new PGlite();
-vi.mock("./db.js", () => ({ db: drizzle(database, { schema }) }));
+vi.mock("./db.js", () => ({ db: contextualDatabase(drizzle(database, { schema })) }));
 let app: Express;
 let cookie: string;
 
