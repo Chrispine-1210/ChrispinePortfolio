@@ -52,3 +52,5 @@ The first successful Preview (`5fd3f59a8a62882df9a0004bd83fbce39fc719e2`, deploy
 ## Responsive navigation correction
 
 At 340 CSS px, a pointer click on a nested mobile navigation item closed the sheet without navigating; keyboard Enter on the link navigated while leaving the sheet open. Moving the close callback from the nested animated element onto the actual router link unifies both paths. TypeScript and client/server build passed after this small follow-up; live exact-head pointer and keyboard verification remains required before merge.
+
+The same 340px inspection exposed horizontal overflow in About's connected-work cards: their two minimum-content columns reached 387px. Capability/connected-work grids now use shrinkable columns and stack below 640px. The updated client/server build passed. This changes layout only; live verification is recorded on the PR.
