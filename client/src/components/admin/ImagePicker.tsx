@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ChangeEvent } from "react";
+import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { ImagePlus, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,8 +57,18 @@ export function ImagePicker({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [value]);
+  const selection = useRef(0);
+  useEffect(() => {
+    selection.current++;
+    setFailed(false);
+    setBusy(false);
+    return () => {
+      selection.current++;
+    };
+  }, [value]);
   function select(src: string) {
+    selection.current++;
+    setBusy(false);
     onChange(src);
     setFailed(false);
     setError("");
@@ -66,15 +76,18 @@ export function ImagePicker({
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    const input = event.target;
+    const current = ++selection.current;
     setBusy(true);
     setError("");
     try {
-      select(await optimize(file));
+      const result = await optimize(file);
+      if (selection.current === current) select(result);
     } catch (e) {
-      setError((e as Error).message);
+      if (selection.current === current) setError((e as Error).message);
     } finally {
-      setBusy(false);
-      event.target.value = "";
+      if (selection.current === current) setBusy(false);
+      input.value = "";
     }
   }
   return (

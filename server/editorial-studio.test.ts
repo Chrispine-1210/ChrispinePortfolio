@@ -12,6 +12,7 @@ import * as schema from "../shared/schema.js";
 import {
   EDITORIAL_PREFIX,
   MAX_IMAGE_BYTES,
+  MAX_EDITORIAL_LENGTH,
   authorResearch,
   encodeEditorial,
   hasEditorialBody,
@@ -23,6 +24,8 @@ import {
   type RichNode,
 } from "../shared/editorial.js";
 import { RichContent } from "../client/src/components/editorial/RichContent.js";
+import { WritingMetadata } from "../client/src/components/admin/WritingMetadata.js";
+import { publicationInput } from "../shared/engineering.js";
 import { publicWritingPost, publishedImage } from "./editorial-media.js";
 
 const png =
@@ -79,6 +82,108 @@ const content = encodeEditorial(doc, {
 });
 
 describe("safe editorial documents", () => {
+  it("accepts default link attributes emitted by the studio schema", () => {
+    const schema = getSchema(createStudioExtensions());
+    const link = schema.marks.link
+      .create({ href: "https://example.com" })
+      .toJSON();
+    expect(link.attrs).toHaveProperty("title", null);
+    const linked: RichNode = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            { type: "text", text: "A linked reference", marks: [link] },
+          ],
+        },
+      ],
+    };
+    expect(readEditorial(encodeEditorial(linked))).not.toBeNull();
+  });
+  it("keeps safe legacy relative links and image references", () => {
+    const html = renderToStaticMarkup(
+      createElement(RichContent, {
+        content:
+          "[Note](./other-note)\n\n![Diagram](../diagram.png)\n\n[HTTPS](https://example.com)",
+      }),
+    );
+    expect(html).toContain('href="./other-note"');
+    expect(html).toContain('src="../diagram.png"');
+    expect(html).toContain('href="https://example.com"');
+  });
+  it("preserves unreadable and oversized drafts when reference controls change", () => {
+    const oversized = encodeEditorial("x".repeat(MAX_EDITORIAL_LENGTH), {
+      kind: "research",
+      citation: "Retain this citation",
+    });
+    expect(readEditorial(oversized, true)).toBeNull();
+    expect(metadataFor(oversized)).toMatchObject({
+      kind: "research",
+      citation: "Retain this citation",
+    });
+    expect(updateEditorialMetadata(oversized, { kind: "article" })).toBe(
+      oversized,
+    );
+    const malformed = EDITORIAL_PREFIX + '{"broken":';
+    expect(updateEditorialMetadata(malformed, { kind: "note" })).toBe(
+      malformed,
+    );
+  });
+  it("keeps invalid publication fields visible after changing writing type", () => {
+    const invalid = updateEditorialMetadata(content, {
+      kind: "article",
+      publicationUrl: "http://example.com",
+    });
+    const html = renderToStaticMarkup(
+      createElement(WritingMetadata, { content: invalid, onChange: () => {} }),
+    );
+    expect(html).toContain("Publication or repository URL");
+    expect(html).toContain('aria-invalid="true"');
+    expect(html).toContain("Use an HTTPS publication URL.");
+  });
+  it("rejects invisible root text in an empty rich document", () => {
+    expect(
+      readEditorial(
+        encodeEditorial({
+          type: "doc",
+          text: "x".repeat(80),
+          content: [{ type: "paragraph" }],
+        }),
+      ),
+    ).toBeNull();
+  });
+  it("budgets complete field-note requests in UTF-8 bytes before submission", () => {
+    const payload = {
+      slug: "synthetic-size-check",
+      title: "Synthetic size check",
+      summary: "A synthetic fixture for serialized request capacity.",
+      body: encodeEditorial("界".repeat(50_000)),
+      learning: "Only a test fixture; no operational claim.",
+      topic: "networking",
+      mediaUrl: "",
+      imageUrl: "",
+      imageAlt: "",
+      evidenceLevel: "self_reported",
+      evidenceUrls: [],
+      limitations: "Synthetic fixture only; never a published note.",
+      disclosureReviewed: true,
+      expectedVersion: 1,
+      requestKey: "11111111-1111-4111-8111-111111111111",
+    };
+    const result = publicationInput.safeParse(payload);
+    expect(result.success).toBe(false);
+    if (!result.success)
+      expect(
+        result.error.issues.some((i) => i.message.includes("128 KB")),
+      ).toBe(true);
+    expect(
+      publicationInput.safeParse({
+        ...payload,
+        body: encodeEditorial("界".repeat(20_000)),
+      }).success,
+    ).toBe(true);
+  });
   it("accepts the actual editor schema including default image geometry", () => {
     const normalized = getSchema(createStudioExtensions())
       .nodeFromJSON(doc)
@@ -310,6 +415,9 @@ describe("authenticated studio persistence and public image boundaries", () => {
       featuredImage: "https://example.invalid/cover.webp",
     };
     expect(publishedImage(other, hash)).toBeNull();
+    expect(publishedImage(other, hash, true)?.bytes).toEqual(
+      Buffer.from(png.split(",")[1], "base64"),
+    );
   });
   it("allows authenticated long documents while public forms retain 10 KB", async () => {
     expect(

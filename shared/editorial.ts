@@ -37,6 +37,8 @@ export const fontSizes = [
 export function safeLink(value: string): boolean {
   if (value.length > 2000 || /[\u0000-\u0020\\]/.test(value)) return false;
   if (/^\/(?!\/)/.test(value)) return true;
+  if (/^(?:\.\.?\/|[?#])/.test(value)) return true;
+  if (value && !/^[^/?#]*:/.test(value) && !value.startsWith("//")) return true;
   try {
     const url = new URL(value);
     return url.protocol === "https:" && !url.username && !url.password;
@@ -168,7 +170,7 @@ const attributes: Record<string, string[]> = {
   ],
   tableCell: ["colspan", "rowspan", "colwidth"],
   tableHeader: ["colspan", "rowspan", "colwidth"],
-  link: ["href", "target", "rel", "class"],
+  link: ["href", "target", "rel", "class", "title"],
   textStyle: ["fontFamily", "fontSize"],
 };
 function validAttributes(type: string, attrs: Record<string, unknown> = {}) {
@@ -244,7 +246,11 @@ function validTree(root: unknown): root is RichNode {
       return false;
     if (n.type === "text" && (typeof n.text !== "string" || !n.text.length))
       return false;
-    if (n.text !== undefined && typeof n.text !== "string") return false;
+    if (
+      n.text !== undefined &&
+      (n.type !== "text" || typeof n.text !== "string")
+    )
+      return false;
     if (
       n.content !== undefined &&
       (!Array.isArray(n.content) ||
@@ -318,13 +324,30 @@ export function encodeEditorial(
   );
 }
 export function metadataFor(content: string): EditorialMetadata {
-  return readEditorial(content, true)?.metadata ?? metadataFields.parse({});
+  // Metadata must survive temporary body-size/formatting errors during editing.
+  try {
+    if (content.startsWith(EDITORIAL_PREFIX)) {
+      const value = JSON.parse(content.slice(EDITORIAL_PREFIX.length));
+      if (
+        value.version === 1 &&
+        ["richtext", "markdown"].includes(value.format)
+      ) {
+        const metadata = metadataFields.safeParse(value.metadata);
+        if (metadata.success) return metadata.data;
+      }
+    }
+  } catch {
+    /* Preserve an unreadable source; do not reinterpret it as Markdown. */
+  }
+  return metadataFields.parse({});
 }
 export function updateEditorialMetadata(
   content: string,
   patch: Partial<EditorialMetadata>,
 ) {
-  return encodeEditorial(readEditorial(content, true)?.content ?? content, {
+  const parsed = readEditorial(content, true);
+  if (content.startsWith(EDITORIAL_PREFIX) && !parsed) return content;
+  return encodeEditorial(parsed?.content ?? content, {
     ...metadataFor(content),
     ...patch,
   });

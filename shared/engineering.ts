@@ -1,4 +1,9 @@
-import { EDITORIAL_PREFIX, editorialContent, editorialPlainText, imageSource } from "./editorial.js";
+import {
+  EDITORIAL_PREFIX,
+  editorialContent,
+  editorialPlainText,
+  imageSource,
+} from "./editorial.js";
 import { z } from "zod";
 
 export const contexts = ["personal", "aothothe", "sudern"] as const;
@@ -321,9 +326,7 @@ export type Publication = {
   limitations: string;
 };
 
-export function mediaReference(
-  value: string,
-): {
+export function mediaReference(value: string): {
   provider: "youtube" | "vimeo" | "link";
   url: string;
   embedUrl?: string;
@@ -387,11 +390,31 @@ export const publicationInput = z
       .max(180),
     title: z.string().trim().min(3).max(200),
     summary: z.string().trim().min(20).max(600),
-    body: editorialContent.refine(value=>value.length<=100_000&&(value.startsWith(EDITORIAL_PREFIX)||value.length<=5000),"Field notes must fit within the document limit.").refine(value=>editorialPlainText(value).trim().length>=80,"Write at least 80 characters."),
+    body: editorialContent
+      .refine(
+        (value) =>
+          value.length <= 100_000 &&
+          (value.startsWith(EDITORIAL_PREFIX) || value.length <= 5000),
+        "Field notes must fit within the document limit.",
+      )
+      .refine(
+        (value) => editorialPlainText(value).trim().length >= 80,
+        "Write at least 80 characters.",
+      ),
     learning: z.string().trim().min(10).max(1200),
     topic: z.enum(topics),
     mediaUrl: evidenceUrl,
-    imageUrl: z.union([z.literal(""),imageSource.refine(value=>!value.startsWith("data:"),"Use a library image or a hosted image URL.")]).transform(value=>value||null).nullable().optional(),
+    imageUrl: z
+      .union([
+        z.literal(""),
+        imageSource.refine(
+          (value) => !value.startsWith("data:"),
+          "Use a library image or a hosted image URL.",
+        ),
+      ])
+      .transform((value) => value || null)
+      .nullable()
+      .optional(),
     imageAlt: z.string().trim().max(240),
     evidenceLevel: z.enum([
       "self_reported",
@@ -406,6 +429,13 @@ export const publicationInput = z
   })
   .strict()
   .superRefine((x, ctx) => {
+    if (new TextEncoder().encode(JSON.stringify(x)).byteLength > 128 * 1024)
+      ctx.addIssue({
+        code: "custom",
+        path: ["body"],
+        message:
+          "The complete field note exceeds 128 KB. Reduce its text or image URLs before publishing.",
+      });
     if (x.mediaUrl && !mediaReference(x.mediaUrl))
       ctx.addIssue({
         code: "custom",

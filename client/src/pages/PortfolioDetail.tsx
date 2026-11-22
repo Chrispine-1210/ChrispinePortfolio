@@ -14,7 +14,9 @@ import { Button } from "@/components/ui/button";
 import { CaseStudyCover } from "@/components/CaseStudyCover";
 import type { PublicPortfolioProject } from "@shared/schema";
 
-function Editorial({ text }: { text: string }) { return <RichContent content={text} className="editorial-prose"/>; }
+function Editorial({ text }: { text: string }) {
+  return <RichContent content={text} className="editorial-prose" />;
+}
 
 export default function PortfolioDetail() {
   const { slug } = useParams();
@@ -98,9 +100,12 @@ export default function PortfolioDetail() {
     {
       id: "role",
       title: "My contribution & collaboration",
-      text: [d?.roleDescription, d?.teamDescription]
-        .filter(Boolean)
-        .join("\n\n"),
+      text: d?.roleDescription,
+    },
+    {
+      id: "collaboration",
+      title: "Collaboration & attribution",
+      text: d?.teamDescription,
     },
     {
       id: "results",

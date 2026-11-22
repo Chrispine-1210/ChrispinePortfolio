@@ -355,6 +355,7 @@ export default function ContentManagement() {
                 onChange={(content) => setForm((f) => ({ ...f, content }))}
               />
               <ImagePicker
+                key={editingId ?? "new"}
                 value={form.featuredImage}
                 onChange={(featuredImage) =>
                   setForm((f) => ({ ...f, featuredImage }))

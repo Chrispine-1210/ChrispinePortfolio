@@ -1,5 +1,8 @@
 import {
   metadataFor,
+  editorialMetadata,
+  EDITORIAL_PREFIX,
+  readEditorial,
   updateEditorialMetadata,
   writingKinds,
   writingLabels,
@@ -16,6 +19,10 @@ export function WritingMetadata({
   onChange: (v: string) => void;
 }) {
   const metadata = metadataFor(content);
+  const validation = editorialMetadata.safeParse(metadata);
+  const errors = validation.success ? [] : validation.error.issues;
+  const unreadable =
+    content.startsWith(EDITORIAL_PREFIX) && !readEditorial(content, true);
   const set = (patch: Partial<EditorialMetadata>) =>
     onChange(updateEditorialMetadata(content, patch));
   return (
@@ -23,6 +30,12 @@ export function WritingMetadata({
       className="studio-metadata"
       aria-label="Writing type and publication reference"
     >
+      {unreadable && (
+        <p role="alert" className="studio-error">
+          Correct the document formatting or size before editing its publication
+          reference. The original source is preserved.
+        </p>
+      )}
       <div className="grid gap-4 md:grid-cols-2">
         <label>
           Writing type
@@ -49,7 +62,8 @@ export function WritingMetadata({
           />
         </label>
       </div>
-      {["research", "publication"].includes(metadata.kind) && (
+      {(["research", "publication"].includes(metadata.kind) ||
+        errors.length > 0) && (
         <>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <label>
@@ -90,7 +104,15 @@ export function WritingMetadata({
                 }}
                 placeholder="10.1234/example"
                 maxLength={300}
+                aria-invalid={errors.some((e) => e.path[0] === "doi")}
               />
+              {errors
+                .filter((e) => e.path[0] === "doi")
+                .map((e) => (
+                  <span role="alert" className="studio-error" key={e.message}>
+                    {e.message}
+                  </span>
+                ))}
             </label>
             <label>
               Publication or repository URL
@@ -99,7 +121,17 @@ export function WritingMetadata({
                 onChange={(e) => set({ publicationUrl: e.target.value })}
                 placeholder="https://…"
                 maxLength={2000}
+                aria-invalid={errors.some(
+                  (e) => e.path[0] === "publicationUrl",
+                )}
               />
+              {errors
+                .filter((e) => e.path[0] === "publicationUrl")
+                .map((e) => (
+                  <span role="alert" className="studio-error" key={e.message}>
+                    {e.message}
+                  </span>
+                ))}
             </label>
           </div>
           <label className="mt-4">

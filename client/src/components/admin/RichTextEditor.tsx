@@ -58,11 +58,14 @@ export default function RichTextEditor({
     valueRef = useRef(value),
     onChangeRef = useRef(onChange),
     position = useRef(0),
-    editingImage = useRef(false);
+    editingImage = useRef(false),
+    openedDocument = useRef<unknown>(null);
   valueRef.current = value;
   onChangeRef.current = onChange;
   const [mode, setMode] = useState<"visual" | "markdown" | "preview">(
-    value && !initial ? "markdown" : "visual",
+    value && (!initial || initial.format === "markdown")
+      ? "markdown"
+      : "visual",
   );
   const [imageOpen, setImageOpen] = useState(false),
     [image, setImage] = useState(emptyImage),
@@ -114,16 +117,31 @@ export default function RichTextEditor({
       );
       return;
     }
-    if (editor)
+    if (editor) {
       editor.commands.setContent(parsed?.content ?? value, {
         contentType: parsed?.format === "richtext" ? "json" : "markdown",
         emitUpdate: false,
       });
+      if (parsed?.format !== "richtext") {
+        const converted = encodeEditorial(
+          editor.getJSON() as RichNode,
+          metadataFor(value),
+        );
+        if (!readEditorial(converted, true)) {
+          setError(
+            "Visual conversion needs valid image descriptions and formatting. Your Markdown source is preserved; correct it in Markdown before converting.",
+          );
+          return;
+        }
+        onChangeRef.current(converted);
+      }
+    }
     setMode("visual");
   }
   function imagePanel() {
     if (!editor) return;
     position.current = editor.state.selection.from;
+    openedDocument.current = editor.state.doc;
     editingImage.current = editor.isActive("image");
     const current = editingImage.current ? editor.getAttributes("image") : null;
     setImage(current ? { ...emptyImage, ...current } : emptyImage);
@@ -131,6 +149,13 @@ export default function RichTextEditor({
   }
   function insertImage() {
     if (!editor || !safeImage(image.src) || !image.alt.trim()) return;
+    if (editor.state.doc !== openedDocument.current) {
+      setError(
+        "The document changed while this image panel was open. Select the image or insertion point again.",
+      );
+      setImageOpen(false);
+      return;
+    }
     const match = Object.values(editorialPhotos).find(
       (p) => p.src === image.src,
     );
@@ -423,7 +448,19 @@ export default function RichTextEditor({
                 allowUploads={allowUploads}
                 label="Inline image"
                 value={image.src}
-                onChange={(src) => setImage((i) => ({ ...i, src }))}
+                onChange={(src) => {
+                  const photo = Object.values(editorialPhotos).find(
+                    (p) => p.src === src,
+                  );
+                  setImage((i) => ({
+                    ...i,
+                    src,
+                    credit: photo?.author ?? "",
+                    creditUrl: photo
+                      ? `https://unsplash.com/photos/${photo.slug}`
+                      : "",
+                  }));
+                }}
                 alt={image.alt}
                 onAltChange={(alt) => setImage((i) => ({ ...i, alt }))}
               />

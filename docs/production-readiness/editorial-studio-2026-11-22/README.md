@@ -20,7 +20,7 @@ Cover/image selectors provide a visible empty state, preview, broken-image state
 
 New documents use a versioned envelope inside the existing text fields. Formatting, images and citation metadata therefore commit with the same existing immutable revision and audit transaction. No database migration or new storage provider is required. This bounded approach suits small editorial assets; a dedicated object store remains appropriate for a large media library. There is no server filesystem upload pretending to be durable on Vercel.
 
-Public writing collections omit full bodies and expose safe editorial metadata. Uploaded cover/inline images in writing are served through a published-record media endpoint, so list payloads do not inline base64 documents. Draft/archived records cannot expose their images. Premium inline assets are excluded from public lookup; a public cover remains visible. Existing private/publication/evidence permissions are retained.
+Public writing collections omit full bodies and expose safe editorial metadata. Uploaded cover/inline images in writing are served through a published-record media endpoint, so list payloads do not inline base64 documents. Draft/archived records cannot expose their images. Premium inline assets require the same existing reader identity check as the detail route and use private, no-store caching; anonymous lookup remains denied and a public cover remains visible. Existing private/publication/evidence permissions are retained.
 
 ## Validation boundaries
 
@@ -31,7 +31,7 @@ Public writing collections omit full bodies and expose safe editorial metadata. 
 
 ## Release verification
 
-`npm run verify:release`: PASS, **244 tests in 18 files**, including 18 new editorial/media cases; TypeScript, client/server build, production import checks and dependency policy pass. Production audit: zero findings. Full tree: six moderate, zero high/critical; no exception. The final run uses two database-test workers and skips no tests.
+`npm run verify:release`: PASS, **250 tests in 18 files**, including 24 new editorial/media cases; TypeScript, client/server build, production import checks and dependency policy pass. Production audit: zero findings. Full tree: six moderate, zero high/critical; no exception. The final run uses two database-test workers and skips no tests.
 
 ## Preview build timing correction
 
@@ -40,3 +40,11 @@ The initial Vercel Preview ran all 244 checks: 242 passed and two existing migra
 ## Live certification
 
 Live Preview browser/API evidence will be recorded against the exact PR head in the pull request. A managed local preview could not launch because its TypeScript CLI IPC socket was denied; the working application launch command was preserved. Local test/build evidence and live Preview evidence must be reported separately. No production financial fixtures or external provider messages are used.
+
+## Review corrections and component proof
+
+CodeRabbit's 15 inline findings were checked against the source. Corrected link-title defaults, document-relative legacy references, root-text validation, unreadable/oversized draft metadata preservation, visible reference errors, safe Markdown conversion, stale image-panel edits, photo-credit replacement, asynchronous upload ownership, case-study draft remounting and deferred editors, complete request byte budgets, independent role/team rendering and authorized premium-image delivery. No approval, financial or evidence gate was removed.
+
+A static, API-disconnected component fixture loaded the actual editor, metadata and image-picker components through the supported preview daemon. Browser readback confirms Georgia 24px, bold, a real link command, attributed library-image insertion and right-aligned 50% image rendering. Changing a Research draft with an invalid HTTP source URL to Article keeps that field visible with its error. This is component evidence, not a signed-in admin browser certification.
+
+The first successful Preview (`5fd3f59a8a62882df9a0004bd83fbce39fc719e2`, deployment `dpl_36szMWUuVJCguSv1J9tH46bVwH83`) returned READY and `/api/release` verified isolated branch `br-restless-credit-bb387cat`. Its public browser loaded all homepage photographs at 1363px without overflow. Writing shows actual zero counts, all requested formats and the exact ORCID. At 340 CSS px (browser zoom; no device emulation), mobile navigation opens and no horizontal overflow was observed. Subsequent corrections require a new exact-head Preview before merge.

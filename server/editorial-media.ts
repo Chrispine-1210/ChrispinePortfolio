@@ -54,10 +54,14 @@ export function publicWritingPost(post: BlogPost, includeContent = false) {
       : {}),
   };
 }
-export function publishedImage(post: BlogPost, hash: string) {
+export function publishedImage(
+  post: BlogPost,
+  hash: string,
+  premiumAccess = false,
+) {
   const candidates: string[] = [post.featuredImage ?? ""];
   const parsed = readEditorial(post.content);
-  if (!post.isPremium && parsed?.format === "richtext") {
+  if ((!post.isPremium || premiumAccess) && parsed?.format === "richtext") {
     const visit = (n: RichNode) => {
       if (n.type === "image") candidates.push(String(n.attrs?.src ?? ""));
       n.content?.forEach(visit);
