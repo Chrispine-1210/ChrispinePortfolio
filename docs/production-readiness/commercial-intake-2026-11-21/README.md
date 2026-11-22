@@ -1,6 +1,6 @@
 # Durable commercial intake
 
-Depends on the API failure boundary in PR #35 (`19e986bc4aa29dc85b2050c004426f06cb055178`). Addresses the orphaned-contact and notification-persistence findings in B11. It does not close request idempotency or external delivery acceptance.
+Depends on the API failure boundary in PR #35. The branch now includes its follow-up `fb884f9abacd95b8d05bc3c0c216e861ea5014dd`, preserving uncertain-write guidance alongside the intake transaction. Addresses the orphaned-contact and notification-persistence findings in B11. It does not close request idempotency or external delivery acceptance. Combined verification is recorded in `../combined-intake-2026-11-22/README.md`.
 
 Contact capture now commits the contact, lead, creation activity and configured acknowledgement/operator outbox and inbox records in one transaction. Consultation capture also queues its configured notifications within its existing transaction. A lead/activity/outbox/inbox failure returns a safe failure and rolls back the whole intake; a clean retry then records one complete enquiry. No provider call occurs during intake.
 

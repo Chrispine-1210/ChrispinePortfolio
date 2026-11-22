@@ -39,8 +39,11 @@ export const safeApiError: ErrorRequestHandler = (error, req, res, next) => {
     Number.isInteger(declared) && declared >= 400 && declared <= 599
       ? declared
       : 500);
+  const writeUnconfirmed = status >= 500 && !["GET", "HEAD", "OPTIONS"].includes(req.method);
   const trusted = error instanceof ApiError && status < 500;
-  const message = trusted
+  const message = writeUnconfirmed
+    ? "The change could not be confirmed. Check the record before submitting again."
+    : trusted
     ? error.message
     : status === 413
       ? "Request body is too large"
@@ -51,7 +54,9 @@ export const safeApiError: ErrorRequestHandler = (error, req, res, next) => {
         : status === 503
           ? "Service temporarily unavailable"
           : "The request could not be completed";
-  const code = trusted
+  const code = writeUnconfirmed
+    ? "WRITE_OUTCOME_UNKNOWN"
+    : trusted
     ? error.code
     : database?.code ?? (status === 413
       ? "PAYLOAD_TOO_LARGE"
@@ -68,7 +73,7 @@ export const safeApiError: ErrorRequestHandler = (error, req, res, next) => {
     type: validation ? "ValidationError" : database ? "DatabaseError" : trusted ? "ApiError" : "Error",
   });
   res.setHeader("Cache-Control", "no-store");
-  if (status === 429 || status === 503) res.setHeader("Retry-After", "60");
+  if (status === 429 || (status === 503 && !writeUnconfirmed)) res.setHeader("Retry-After", "60");
   res
     .status(status)
     .json({

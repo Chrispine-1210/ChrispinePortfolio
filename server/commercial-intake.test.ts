@@ -50,6 +50,9 @@ describe("durable enquiry acceptance", () => {
       const failed = await request(app).post("/api/contact").send(contact)
         .timeout({ response: 1500, deadline: 3000 }).expect(500);
       expect(JSON.stringify(failed.body)).not.toMatch(/fixture-secret|password|insert into|params:/i);
+      expect(failed.body.code).toBe("WRITE_OUTCOME_UNKNOWN");
+      expect(failed.body.message).toContain("Check the record before submitting again");
+      expect(failed.headers["retry-after"]).toBeUndefined();
       expect(await counts()).toEqual(before);
     } finally {
       await database.exec(`drop trigger reject_intake_fixture on ${table}; drop function reject_intake_fixture();`);
@@ -71,7 +74,9 @@ describe("durable enquiry acceptance", () => {
       begin raise exception 'notification unavailable'; end; $$;
       create trigger reject_intake_fixture before insert on email_outbox for each row execute function reject_intake_fixture();`);
     try {
-      await request(app).post("/api/consultation").send(consultation).expect(500);
+      const failed = await request(app).post("/api/consultation").send(consultation).expect(500);
+      expect(failed.body.code).toBe("WRITE_OUTCOME_UNKNOWN");
+      expect(failed.headers["retry-after"]).toBeUndefined();
       expect(await counts()).toEqual(before);
     } finally {
       await database.exec("drop trigger reject_intake_fixture on email_outbox; drop function reject_intake_fixture();");

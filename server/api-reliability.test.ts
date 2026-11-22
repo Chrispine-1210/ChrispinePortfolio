@@ -106,6 +106,17 @@ describe("application failure completion", () => {
 });
 
 describe("bounded error classification", () => {
+  it.each(["post", "put", "patch", "delete"] as const)("does not advise retrying an unconfirmed %s", async method => {
+    const fixture = express();
+    fixture.use(requestContext);
+    fixture[method]("/", asyncHandler(async () => { throw Object.assign(new Error("connection lost after a possible write"), { code: "08006" }); }));
+    fixture.use(safeApiError);
+    const response = await request(fixture)[method]("/").expect(503);
+    expectSafeFailure(response, "WRITE_OUTCOME_UNKNOWN");
+    expect(response.headers["retry-after"]).toBeUndefined();
+    expect(response.body.message).toContain("Check the record before submitting again");
+  });
+
   it.each([
     ["23505", 409, "CONFLICT"], ["23503", 409, "CONFLICT"],
     ["23502", 400, "INVALID_REQUEST"], ["23514", 400, "INVALID_REQUEST"],

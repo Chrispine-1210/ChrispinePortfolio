@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { unconfirmedWriteMessage } from "@/lib/request-error";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -62,8 +63,8 @@ export function ContactForm({ embedded = false }: { embedded?: boolean }) {
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to send message",
-        description: error.message || "Please try again later.",
+        title: "Request not confirmed",
+        description: error.message || unconfirmedWriteMessage,
         variant: "destructive",
       });
     },
