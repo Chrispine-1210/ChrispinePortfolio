@@ -1,3 +1,4 @@
+import { asyncHandler } from "./middleware.js";
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { storage } from "./storage.js";
@@ -81,7 +82,7 @@ function logRouteFailure(context: string, error: unknown) {
 const router = Router();
 
 // Blog routes - with caching headers
-router.get("/api/blog", async (req: Request, res: Response) => {
+router.get("/api/blog", asyncHandler(async (req: Request, res: Response) => {
   try {
     // Set cache headers for better performance
     res.setHeader("Cache-Control", "public, max-age=300"); // 5 min cache
@@ -129,9 +130,9 @@ router.get("/api/blog", async (req: Request, res: Response) => {
     console.error("Error fetching blog posts:", error);
     res.status(500).json({ message: "Failed to fetch blog posts" });
   }
-});
+}));
 
-router.get("/api/blog/recent", async (req: Request, res: Response) => {
+router.get("/api/blog/recent", asyncHandler(async (req: Request, res: Response) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
     let posts = hasDatabase()
@@ -155,9 +156,9 @@ router.get("/api/blog/recent", async (req: Request, res: Response) => {
     console.error("Error fetching recent posts:", error);
     res.status(500).json({ message: "Failed to fetch recent posts" });
   }
-});
+}));
 
-router.get("/api/blog/:slug", async (req: Request, res: Response) => {
+router.get("/api/blog/:slug", asyncHandler(async (req: Request, res: Response) => {
   try {
     const post = hasDatabase()
       ? await storage.getPublishedBlogPostBySlug(req.params.slug)
@@ -181,36 +182,36 @@ router.get("/api/blog/:slug", async (req: Request, res: Response) => {
     console.error("Error fetching blog post:", error);
     res.status(500).json({ message: "Failed to fetch blog post" });
   }
-});
+}));
 
-router.post("/api/blog", createContent, async (req: Request, res: Response) => {
+router.post("/api/blog", createContent, asyncHandler(async (req: Request, res: Response) => {
   res
     .status(410)
     .json({ message: "This endpoint has moved to /api/admin/content/posts" });
-});
+}));
 
 router.put(
   "/api/blog/:id",
   updateContent,
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     res
       .status(410)
       .json({
         message: "This endpoint has moved to /api/admin/content/posts/:id",
       });
-  },
+  }),
 );
 
 router.delete(
   "/api/blog/:id",
   requireAdminPermission("content.delete"),
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     res.status(410).json({ message: "Permanent deletion is disabled; archive the post through the content workflow" });
-  },
+  }),
 );
 
 // Public case-study routes. Only published, evidence-approved case studies are returned.
-router.get("/api/portfolio", async (req: Request, res: Response) => {
+router.get("/api/portfolio", asyncHandler(async (req: Request, res: Response) => {
   res.setHeader("Cache-Control", "no-store");
   try {
     let projects = await listPublicCaseStudies();
@@ -233,9 +234,9 @@ router.get("/api/portfolio", async (req: Request, res: Response) => {
     logRouteFailure("Error fetching public case studies", error);
     res.status(500).json({ message: "Failed to fetch case studies" });
   }
-});
+}));
 
-router.get("/api/portfolio/featured", async (_req: Request, res: Response) => {
+router.get("/api/portfolio/featured", asyncHandler(async (_req: Request, res: Response) => {
   res.setHeader("Cache-Control", "no-store");
   try {
     const projects = (await listPublicCaseStudies()).filter((project) => project.featured);
@@ -244,9 +245,9 @@ router.get("/api/portfolio/featured", async (_req: Request, res: Response) => {
     logRouteFailure("Error fetching featured case studies", error);
     res.status(500).json({ message: "Failed to fetch featured case studies" });
   }
-});
+}));
 
-router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
+router.get("/api/portfolio/:slug", asyncHandler(async (req: Request, res: Response) => {
   res.setHeader("Cache-Control", "no-store");
   try {
     const project = await getPublicCaseStudyBySlug(req.params.slug);
@@ -256,7 +257,7 @@ router.get("/api/portfolio/:slug", async (req: Request, res: Response) => {
     logRouteFailure("Error fetching case study", error);
     res.status(500).json({ message: "Failed to fetch case study" });
   }
-});
+}));
 
 // Legacy portfolio mutations are disabled. Internal projects and public case
 // studies now have separate governed administrative endpoints.
@@ -273,7 +274,7 @@ router.delete("/api/portfolio/:id", requireAdminPermission("portfolio.manage"), 
 // Newsletter routes
 router.post(
   "/api/newsletter/subscribe",
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const data = insertNewsletterSubscriberSchema.parse(req.body);
 
@@ -308,7 +309,7 @@ router.post(
       }
       res.status(500).json({ message: "Failed to subscribe" });
     }
-  },
+  }),
 );
 
 const acquisitionTouchSchema = z.object({
@@ -383,7 +384,7 @@ const consultationInputSchema = z.object({
 }).strict();
 
 // Contact routes
-router.post("/api/contact", async (req: Request, res: Response) => {
+router.post("/api/contact", asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = insertContactRequestSchema.parse(req.body);
     const request = await storage.createContactRequest(data);
@@ -406,9 +407,9 @@ router.post("/api/contact", async (req: Request, res: Response) => {
     }
     res.status(500).json({ message: "Failed to submit contact request" });
   }
-});
+}));
 
-router.post("/api/consultation", async (req: Request, res: Response) => {
+router.post("/api/consultation", asyncHandler(async (req: Request, res: Response) => {
   try {
     const { consent: _consent, ...input } = consultationInputSchema.parse(req.body);
     const result = await createLeadFromConsultation(
@@ -428,24 +429,24 @@ router.post("/api/consultation", async (req: Request, res: Response) => {
     }
     res.status(500).json({ message: "Failed to submit consultation request" });
   }
-});
+}));
 
 // Blog Engagement Routes
-router.get("/api/blog/:id/likes", async (req, res) => {
+router.get("/api/blog/:id/likes", asyncHandler(async (req, res) => {
   const count = await storage.getBlogLikes(req.params.id);
   const user = (req as any).user;
   let isLiked = false;
   // Likes remain readable without requiring a platform-specific identity provider.
   res.json({ count, isLiked });
-});
+}));
 
-router.get("/api/blog/:id/comments", async (req, res) => {
+router.get("/api/blog/:id/comments", asyncHandler(async (req, res) => {
   const comments = await storage.getBlogComments(req.params.id);
   res.json(comments);
-});
+}));
 
 // Admin Routes
-router.get("/api/admin/stats", readAnalytics, async (_req, res) => {
+router.get("/api/admin/stats", readAnalytics, asyncHandler(async (_req, res) => {
   const posts = await storage.getAllBlogPosts();
   const subscribers = await storage.getNewsletterSubscribers();
   const contacts = await storage.getAllContactRequests();
@@ -455,11 +456,11 @@ router.get("/api/admin/stats", readAnalytics, async (_req, res) => {
     totalSubscribers: subscribers.length,
     totalContacts: contacts.length,
   });
-});
+}));
 
 router.post(
   "/api/create-payment-intent",
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       if (!process.env.STRIPE_SECRET_KEY) {
         return res.status(500).json({ message: "Stripe not configured" });
@@ -484,14 +485,14 @@ router.post(
       console.error("Error creating payment intent:", error);
       res.status(500).json({ message: "Failed to create payment intent" });
     }
-  },
+  }),
 );
 
 // Email Templates routes
 router.get(
   "/api/email-templates",
   readContent,
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const templates = await storage.getActiveEmailTemplates();
       res.json(templates);
@@ -499,13 +500,13 @@ router.get(
       console.error("Error fetching email templates:", error);
       res.status(500).json({ message: "Failed to fetch templates" });
     }
-  },
+  }),
 );
 
 router.post(
   "/api/email-templates",
   createContent,
-  async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response) => {
     try {
       const data = insertEmailTemplateSchema.parse(req.body);
       const template = await storage.createEmailTemplate(data);
@@ -518,11 +519,11 @@ router.post(
       }
       res.status(500).json({ message: "Failed to create template" });
     }
-  },
+  }),
 );
 
 // External Posts routes (returns mock data until table exists)
-router.get("/api/external-posts", async (req: Request, res: Response) => {
+router.get("/api/external-posts", asyncHandler(async (req: Request, res: Response) => {
   try {
     const mockPosts = [
       {
@@ -547,10 +548,10 @@ router.get("/api/external-posts", async (req: Request, res: Response) => {
     console.error("Error fetching external posts:", error);
     res.json([]);
   }
-});
+}));
 
 // Webhook to handle successful payments (raw body required)
-router.post("/api/stripe-webhook", async (req: Request, res: Response) => {
+router.post("/api/stripe-webhook", asyncHandler(async (req: Request, res: Response) => {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
       return res.status(500).json({ message: "Stripe not configured" });
@@ -582,6 +583,6 @@ router.post("/api/stripe-webhook", async (req: Request, res: Response) => {
     console.error("Webhook error:", error);
     res.status(400).send("Webhook error");
   }
-});
+}));
 
 export default router;

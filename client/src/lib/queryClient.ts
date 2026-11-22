@@ -1,12 +1,10 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { requestFailureMessage, unconfirmedWriteMessage } from "./request-error";
 
-async function throwIfResNotOk(res: Response) {
+async function throwIfResNotOk(res: Response, method = "GET") {
   if (!res.ok) {
     const payload = await res.json().catch(() => null);
-    const requestId = res.headers.get("X-Request-Id") ?? payload?.requestId;
-    const fields = Array.isArray(payload?.fields) ? payload.fields.map((v: {message?:string}) => v.message).filter(Boolean).slice(0,3).join(". ") : "";
-    const message = res.status >= 500 ? "Service temporarily unavailable. Please retry." : fields || payload?.message || payload?.error?.message || `Request failed (${res.status})`;
-    throw new Error(`${message}${requestId ? ` Reference: ${requestId}` : ""}`);
+    throw new Error(requestFailureMessage(res.status, payload, res.headers.get("X-Request-Id"), method));
   }
 }
 
@@ -15,14 +13,20 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: data ? { "Content-Type": "application/json" } : {},
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
+  } catch (error) {
+    if (!["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase())) throw new Error(unconfirmedWriteMessage);
+    throw error;
+  }
 
-  await throwIfResNotOk(res);
+  await throwIfResNotOk(res, method);
   return res;
 }
 

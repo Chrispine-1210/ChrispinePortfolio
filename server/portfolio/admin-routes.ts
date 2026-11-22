@@ -174,8 +174,7 @@ const handleGovernanceError: ErrorRequestHandler = (error, request, response, ne
   if (code === "22003") {
     return response.status(400).json({ message: "Numeric value is out of range" });
   }
-  console.error("Portfolio governance request failed", { requestId: request.requestId, code });
-  response.status(500).json({ message: "Portfolio operation failed" });
+  next(error);
 };
 
 export function createPortfolioGovernanceRouter() {

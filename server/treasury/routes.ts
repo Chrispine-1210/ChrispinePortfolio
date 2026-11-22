@@ -1,3 +1,4 @@
+import { asyncHandler } from "../middleware.js";
 import {
   and,
   desc,
@@ -258,18 +259,18 @@ export function createTreasuryRoicRouter() {
   router.get(
     "/api/admin/treasury/accounts",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(treasuryAccounts)
         .orderBy(treasuryAccounts.currency, treasuryAccounts.name);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/accounts",
     requireAdminPermission("treasury.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = accountSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid treasury account", errors: parsed.error.issues });
       const input = parsed.data;
@@ -291,13 +292,13 @@ export function createTreasuryRoicRouter() {
       }).returning();
       await audit(request, "treasury.account.create", "treasury_account", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/balances",
     requireAdminPermission("treasury.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = balanceSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid treasury balance snapshot", errors: parsed.error.issues });
       const input = parsed.data;
@@ -325,13 +326,13 @@ export function createTreasuryRoicRouter() {
       }).returning();
       await audit(request, "treasury.balance.create", "treasury_balance_snapshot", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/disbursements",
     requireAdminPermission("treasury.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = disbursementSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid treasury cash disbursement", errors: parsed.error.issues });
       const input = parsed.data;
@@ -362,13 +363,13 @@ export function createTreasuryRoicRouter() {
       }).returning();
       await audit(request, "treasury.disbursement.create", "treasury_cash_disbursement", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/operating-expenses",
     requireAdminPermission("roic.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = operatingExpenseSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid operating expense", errors: parsed.error.issues });
       const input = parsed.data;
@@ -388,13 +389,13 @@ export function createTreasuryRoicRouter() {
       }).returning();
       await audit(request, "roic.opex.create", "operating_expense_entry", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/tax-provisions",
     requireAdminPermission("roic.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = taxSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid operating tax provision", errors: parsed.error.issues });
       const input = parsed.data;
@@ -424,13 +425,13 @@ export function createTreasuryRoicRouter() {
       }).returning();
       await audit(request, "roic.tax.create", "operating_tax_provision", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/invested-capital",
     requireAdminPermission("roic.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = investedCapitalSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid invested capital snapshot", errors: parsed.error.issues });
       const input = parsed.data;
@@ -450,13 +451,13 @@ export function createTreasuryRoicRouter() {
       }).returning();
       await audit(request, "roic.invested_capital.create", "invested_capital_snapshot", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/deployments",
     requireAdminPermission("capital.deployment.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = deploymentSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid capital deployment", errors: parsed.error.issues });
       const input = parsed.data;
@@ -528,13 +529,13 @@ export function createTreasuryRoicRouter() {
         }
         throw error;
       }
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/attestations",
     requireAdminPermission("roic.evidence.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = attestationSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid financial evidence attestation", errors: parsed.error.issues });
       const input = parsed.data;
@@ -552,13 +553,13 @@ export function createTreasuryRoicRouter() {
       }).returning();
       await audit(request, "roic.attestation.create", "financial_evidence_attestation", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/hurdle-policies",
     requireAdminPermission("capital.hurdle.approve"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = hurdleSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid capital hurdle policy", errors: parsed.error.issues });
       const input = parsed.data;
@@ -586,13 +587,13 @@ export function createTreasuryRoicRouter() {
       }).returning();
       await audit(request, "capital.hurdle.approve", "capital_hurdle_policy", record.id, null, record, input.rationale);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/treasury/evidence/:kind/:id/void",
     requireAdminPermission("pipeline.financial.read"),
-    async (request, response, next) => {
+    asyncHandler(async (request, response, next) => {
       try {
         const parsed = voidSchema.safeParse(request.body);
         if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
@@ -645,13 +646,13 @@ export function createTreasuryRoicRouter() {
       } catch (error) {
         next(error);
       }
-    },
+    }),
   );
 
   router.get(
     "/api/admin/treasury/evidence",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const [accounts, balances, disbursements, expenses, taxes, capital, deployments, attestations, hurdles] = await Promise.all([
         db.select().from(treasuryAccounts).orderBy(treasuryAccounts.currency, treasuryAccounts.name),
         db.select().from(treasuryBalanceSnapshots).orderBy(desc(treasuryBalanceSnapshots.capturedAt)).limit(1000),
@@ -665,13 +666,13 @@ export function createTreasuryRoicRouter() {
       ]);
       response.setHeader("Cache-Control", "no-store");
       response.json({ accounts, balances, disbursements, expenses, taxes, investedCapital: capital, deployments, attestations, hurdles });
-    },
+    }),
   );
 
   router.get(
     "/api/admin/treasury/intelligence",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const now = new Date();
       const ttmStart = new Date(now.getTime() - TTM_DAYS * DAY_MS);
       const priorStart = new Date(now.getTime() - PRIOR_TTM_DAYS * DAY_MS);
@@ -1065,7 +1066,7 @@ export function createTreasuryRoicRouter() {
           note: "Treasury/ROIC postures do not authorize transfers or spending. Existing approved capital-budget controls remain the authorization layer.",
         },
       });
-    },
+    }),
   );
 
   return router;

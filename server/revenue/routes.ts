@@ -1,3 +1,4 @@
+import { asyncHandler } from "../middleware.js";
 import {
   and,
   desc,
@@ -170,7 +171,7 @@ export function createRevenueIntelligenceRouter() {
   router.get(
     "/api/admin/revenue/agreements",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db
         .select()
         .from(recurringRevenueAgreements)
@@ -178,13 +179,13 @@ export function createRevenueIntelligenceRouter() {
         .limit(1000);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/agreements",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = agreementInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({
         message: "Invalid recurring revenue agreement",
@@ -216,13 +217,13 @@ export function createRevenueIntelligenceRouter() {
         .returning();
       await audit(request, "revenue.agreement.create", "recurring_revenue_agreement", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/agreements/:id/end",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = endAgreementSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({
         message: "Invalid agreement close request",
@@ -264,13 +265,13 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "closed") return response.status(409).json({ message: "Agreement is already closed" });
       if (result.outcome === "invalid_end") return response.status(400).json({ message: "Agreement end cannot precede its start" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/agreements/:id/void",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
@@ -307,23 +308,23 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "missing") return response.status(404).json({ message: "Agreement not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Agreement is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/revenue/events",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(revenueEvents).orderBy(desc(revenueEvents.occurredAt)).limit(1500);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/events",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = revenueInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({
         message: "Invalid revenue evidence",
@@ -351,13 +352,13 @@ export function createRevenueIntelligenceRouter() {
       }).returning();
       await audit(request, "revenue.event.create", "revenue_event", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/events/:id/void",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
@@ -387,23 +388,23 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "missing") return response.status(404).json({ message: "Revenue event not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Revenue event is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/revenue/costs",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(directCostEntries).orderBy(desc(directCostEntries.occurredAt)).limit(1500);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/costs",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = costInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({
         message: "Invalid direct-cost evidence",
@@ -430,13 +431,13 @@ export function createRevenueIntelligenceRouter() {
       }).returning();
       await audit(request, "revenue.cost.create", "direct_cost_entry", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/costs/:id/void",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
@@ -466,24 +467,24 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "missing") return response.status(404).json({ message: "Direct-cost entry not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Direct-cost entry is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/revenue/cost-attestations",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(costEvidenceAttestations)
         .orderBy(desc(costEvidenceAttestations.throughAt)).limit(1500);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/cost-attestations",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = z.object({
         leadId: z.string().uuid(),
         serviceInterest: z.string().trim().min(1).max(180),
@@ -517,13 +518,13 @@ export function createRevenueIntelligenceRouter() {
       }).returning();
       await audit(request, "revenue.cost_attestation.create", "cost_evidence_attestation", record.id, null, record);
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/cost-attestations/:id/void",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
@@ -553,13 +554,13 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "missing") return response.status(404).json({ message: "Cost attestation not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Cost attestation is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/revenue/intelligence",
     requireAdminPermission("pipeline.financial.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const requested =
         typeof request.query.window === "string" ? request.query.window : "90d";
       const windowValue = (supportedWindows as readonly string[]).includes(requested)
@@ -1194,7 +1195,7 @@ export function createRevenueIntelligenceRouter() {
             String(a.service).localeCompare(String(b.service));
         }),
       });
-    },
+    }),
   );
 
   return router;
