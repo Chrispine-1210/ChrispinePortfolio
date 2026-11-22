@@ -15,26 +15,32 @@ import {
 } from "@/components/editorial/EditorialPage";
 import { setSEO } from "@/lib/seoHelper";
 import type { PortfolioProject } from "@shared/schema";
+import { editorialPhotos, PhotoCredit } from "@/components/EditorialPhoto";
+import "@/styles/content-studio.css";
 import portrait from "@assets/portfolio-editorial/chrispine-portrait.webp";
 
 const practice = [
   {
     icon: Code2,
+    photo: "code" as const,
     title: "Software & data",
     text: "Interfaces, APIs, relational records and the rules that turn a workflow into a working system.",
   },
   {
     icon: Network,
+    photo: "network" as const,
     title: "Networks & infrastructure",
     text: "Connectivity, troubleshooting, servers and the discipline of keeping connected systems dependable.",
   },
   {
     icon: Wrench,
+    photo: "hardware" as const,
     title: "Hardware & repair",
     text: "Fault isolation, practical maintenance and learning what happens beneath the software.",
   },
   {
     icon: Briefcase,
+    photo: "planning" as const,
     title: "Business & operations",
     text: "The people, stock, money, communication and accountability a technical solution has to serve.",
   },
@@ -119,6 +125,13 @@ export default function Landing() {
         </div>
         <div className="universe-principles">
           <article>
+            <img
+              className="principle-photo"
+              src={editorialPhotos.planning.src}
+              alt={editorialPhotos.planning.alt}
+              loading="lazy"
+              decoding="async"
+            />
             <span className="editorial-eyebrow">Hands-on beginnings</span>
             <h3>Learn the operation.</h3>
             <p className="editorial-copy">
@@ -128,6 +141,13 @@ export default function Landing() {
             </p>
           </article>
           <article>
+            <img
+              className="principle-photo"
+              src={editorialPhotos.network.src}
+              alt={editorialPhotos.network.alt}
+              loading="lazy"
+              decoding="async"
+            />
             <span className="editorial-eyebrow">Building with constraints</span>
             <h3>Make the decisions count.</h3>
             <p className="editorial-copy">
@@ -137,6 +157,13 @@ export default function Landing() {
             </p>
           </article>
           <article>
+            <img
+              className="principle-photo"
+              src={editorialPhotos.writing.src}
+              alt={editorialPhotos.writing.alt}
+              loading="lazy"
+              decoding="async"
+            />
             <span className="editorial-eyebrow">Pride in the process</span>
             <h3>Keep the evidence.</h3>
             <p className="editorial-copy">
@@ -199,8 +226,21 @@ export default function Landing() {
           </p>
         </div>
         <div className="editorial-capabilities">
-          {practice.map(({ icon: Icon, title, text }) => (
+          {practice.map(({ icon: Icon, title, text, photo }) => (
             <article key={title}>
+              <figure className="practice-photo">
+                <img
+                  src={editorialPhotos[photo].src}
+                  alt={editorialPhotos[photo].alt}
+                  loading="lazy"
+                  decoding="async"
+                  width="600"
+                  height="375"
+                />
+                <figcaption>
+                  <PhotoCredit photo={photo} />
+                </figcaption>
+              </figure>
               <Icon size={25} strokeWidth={1.5} />
               <h3>{title}</h3>
               <p className="editorial-copy">{text}</p>
@@ -223,6 +263,13 @@ export default function Landing() {
         </div>
         <div className="universe-path">
           <Link href="/journey">
+            <img
+              className="path-photo"
+              src={editorialPhotos.writing.src}
+              alt={editorialPhotos.writing.alt}
+              loading="lazy"
+              decoding="async"
+            />
             <span className="editorial-eyebrow">
               Field journal <ArrowUpRight size={17} />
             </span>
@@ -233,6 +280,13 @@ export default function Landing() {
             </p>
           </Link>
           <Link href="/blog">
+            <img
+              className="path-photo"
+              src={editorialPhotos.reading.src}
+              alt={editorialPhotos.reading.alt}
+              loading="lazy"
+              decoding="async"
+            />
             <span className="editorial-eyebrow">
               Writing <ArrowUpRight size={17} />
             </span>
@@ -243,6 +297,13 @@ export default function Landing() {
             </p>
           </Link>
           <Link href="/github">
+            <img
+              className="path-photo"
+              src={editorialPhotos.code.src}
+              alt={editorialPhotos.code.alt}
+              loading="lazy"
+              decoding="async"
+            />
             <span className="editorial-eyebrow">
               Source & resources <ArrowUpRight size={17} />
             </span>
@@ -252,6 +313,11 @@ export default function Landing() {
             </p>
           </Link>
         </div>
+        <p className="editorial-copy" style={{ marginTop: 20, fontSize: 14 }}>
+          Editorial photographs illustrate the areas of practice. Photo credits:{" "}
+          <PhotoCredit photo="writing" />; <PhotoCredit photo="reading" />;{" "}
+          <PhotoCredit photo="code" />.
+        </p>
       </section>
       <section className="editorial-bridge">
         <div>

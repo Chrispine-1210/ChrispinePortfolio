@@ -3,6 +3,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { storage } from "./storage.js";
 import { requireAdminPermission } from "./custom-auth.js";
+import { publicWritingPost, publishedImage } from "./editorial-media.js";
 
 const createContent = requireAdminPermission("content.create");
 const updateContent = requireAdminPermission("content.update");
@@ -112,19 +113,7 @@ router.get("/api/blog", asyncHandler(async (req: Request, res: Response) => {
       posts = posts.filter((p) => !p.isPremium);
     }
 
-    // For premium posts in collection, omit content entirely (use excerpt for preview)
-    const user = (req as any).user;
-    if (!user?.claims?.sub) {
-      posts = posts.map((post) => {
-        if (post.isPremium) {
-          const { content, ...postWithoutContent } = post;
-          return postWithoutContent as any; // Omit full content, excerpt is preview
-        }
-        return post;
-      });
-    }
-
-    res.json(posts);
+    res.json(posts.map(post=>publicWritingPost(post)));
   } catch (error) {
     console.error("Error fetching blog posts:", error);
     res.status(500).json({ message: "Failed to fetch blog posts" });
@@ -138,19 +127,7 @@ router.get("/api/blog/recent", asyncHandler(async (req: Request, res: Response) 
       ? await storage.getRecentBlogPosts(limit)
       : fallbackBlogPosts.slice(0, limit);
 
-    // For premium posts, omit content entirely (use excerpt for preview)
-    const user = (req as any).user;
-    if (!user?.claims?.sub) {
-      posts = posts.map((post) => {
-        if (post.isPremium) {
-          const { content, ...postWithoutContent } = post;
-          return postWithoutContent as any; // Omit full content, excerpt is preview
-        }
-        return post;
-      });
-    }
-
-    res.json(posts);
+    res.json(posts.map(post=>publicWritingPost(post)));
   } catch (error) {
     console.error("Error fetching recent posts:", error);
     res.status(500).json({ message: "Failed to fetch recent posts" });
@@ -176,11 +153,19 @@ router.get("/api/blog/:slug", asyncHandler(async (req: Request, res: Response) =
       });
     }
 
-    res.json(post);
+    res.json(publicWritingPost(post,true));
   } catch (error) {
     console.error("Error fetching blog post:", error);
     res.status(500).json({ message: "Failed to fetch blog post" });
   }
+}));
+
+router.get("/api/writing-media/:slug/:digest",asyncHandler(async(req:Request,res:Response)=>{
+  if(!/^[a-f0-9]{64}$/.test(req.params.digest))return res.status(404).end();
+  const post=hasDatabase()?await storage.getPublishedBlogPostBySlug(req.params.slug):fallbackBlogPosts.find(p=>p.slug===req.params.slug);
+  const image=post?publishedImage(post,req.params.digest):null;
+  if(!image)return res.status(404).end();
+  res.setHeader("Cache-Control","public, max-age=300");res.type(image.type).send(image.bytes);
 }));
 
 router.post("/api/blog", createContent, asyncHandler(async (req: Request, res: Response) => {

@@ -28,3 +28,14 @@ Use case: photorealistic-natural. Create a premium landscape editorial image for
 ### Internal operations
 
 Use case: photorealistic-natural. Create a premium landscape editorial image for a Malawian software portfolio illustrating internal operations and accountable software delivery. Close three-quarter still life of a modern laptop showing abstract, softly defocused interface elements, a small closed notebook, and daylight falling across a charcoal desk. Restrained navy, graphite and warm neutral tones with a subtle cool-blue accent, believable materials, polished magazine photography, a clearly defined composition and enough contrast for a dark website. Wide landscape 3:2, central framing suitable for a 16:9 crop. No legible text, brands, people, flags, watermarks, specific metrics, or recognizable interface. This is a conceptual illustration, not a product screenshot.
+
+## Practice and publishing photographs added 22 November 2026
+
+These are subject illustrations, not documentary images of Chrispine's own premises, customers or repair jobs. Local WebP copies are optimized to a maximum width of 1200px. Existing portrait photographs and recorded project evidence remain separate.
+
+| Public asset | Photographer and checked source | License |
+| --- | --- | --- |
+| `/media/editorial/network.webp` | [Yuriy Vertikov](https://unsplash.com/photos/a-rack-of-servers-with-wires-and-wires-attached-to-them-c-lSQecD9oI) | Unsplash License; free-download source checked |
+| `/media/editorial/hardware.webp` | [Fotografia Lui Vlad](https://unsplash.com/photos/circuit-board-being-repaired-with-a-screwdriver-HpoYaT9-9aE) | Unsplash License; free-download source checked |
+
+The photo library also reuses the individually attributed photographs above. Architecture diagrams remain in project detail views; an editorial photograph on a project card does not establish a running interface or completed delivery.

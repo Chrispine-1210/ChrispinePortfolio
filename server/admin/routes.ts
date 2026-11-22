@@ -39,6 +39,7 @@ import {
 import { requireAdminPermission } from "../custom-auth.js";
 import { db } from "../db.js";
 import { env } from "../env.js";
+import { editorialContent, hasEditorialBody, imageSource } from "../../shared/editorial.js";
 
 const count = sql<number>`count(*)::int`;
 const leadStages = [
@@ -69,10 +70,10 @@ const contentInputSchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
       .max(240),
     excerpt: z.string().trim().min(1).max(2000),
-    content: z.string().min(1).max(1_000_000),
+    content: editorialContent.refine(hasEditorialBody,"Write the document body before saving."),
     category: z.string().trim().min(1).max(120),
     tags: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
-    featuredImage: z.string().url().nullable().optional(),
+    featuredImage: imageSource.nullable().optional(),
     isPremium: z.boolean().default(false),
     readTimeMinutes: z.number().int().min(1).max(240).default(5),
     seoTitle: z.string().trim().max(70).nullable().optional(),

@@ -1,3 +1,4 @@
+import { EDITORIAL_PREFIX, editorialContent, editorialPlainText, imageSource } from "./editorial.js";
 import { z } from "zod";
 
 export const contexts = ["personal", "aothothe", "sudern"] as const;
@@ -386,11 +387,11 @@ export const publicationInput = z
       .max(180),
     title: z.string().trim().min(3).max(200),
     summary: z.string().trim().min(20).max(600),
-    body: z.string().trim().min(80).max(5000),
+    body: editorialContent.refine(value=>value.length<=100_000&&(value.startsWith(EDITORIAL_PREFIX)||value.length<=5000),"Field notes must fit within the document limit.").refine(value=>editorialPlainText(value).trim().length>=80,"Write at least 80 characters."),
     learning: z.string().trim().min(10).max(1200),
     topic: z.enum(topics),
     mediaUrl: evidenceUrl,
-    imageUrl: evidenceUrl,
+    imageUrl: z.union([z.literal(""),imageSource.refine(value=>!value.startsWith("data:"),"Use a library image or a hosted image URL.")]).transform(value=>value||null).nullable().optional(),
     imageAlt: z.string().trim().max(240),
     evidenceLevel: z.enum([
       "self_reported",

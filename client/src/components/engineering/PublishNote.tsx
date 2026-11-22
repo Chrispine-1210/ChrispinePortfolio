@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
+import { ImagePicker } from "@/components/admin/ImagePicker";
+const RichTextEditor=lazy(()=>import("@/components/admin/RichTextEditor"));
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
@@ -151,15 +153,7 @@ export function PublishNote({
                 onChange={(e) => change("summary", e.target.value)}
               />
             </label>
-            <label className="block space-y-2 text-sm font-medium">
-              Public write-up, at least 80 characters
-              <Textarea
-                className={cls}
-                rows={8}
-                value={form.body}
-                onChange={(e) => change("body", e.target.value)}
-              />
-            </label>
+            <Suspense fallback={<p role="status">Loading the field note editor…</p>}><RichTextEditor label="Public write-up (at least 80 characters)" value={form.body} onChange={value=>change("body",value)} allowUploads={false}/></Suspense>
             <label className="block space-y-2 text-sm font-medium">
               What did you learn?
               <Textarea
@@ -198,8 +192,6 @@ export function PublishNote({
             {(
               [
                 ["mediaUrl", "YouTube, Vimeo or supported social post URL"],
-                ["imageUrl", "Approved cover image URL (optional)"],
-                ["imageAlt", "Description of the image"],
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="block space-y-2 text-sm font-medium">
@@ -211,6 +203,7 @@ export function PublishNote({
                 />
               </label>
             ))}
+            <ImagePicker allowUploads={false} label="Field note cover" value={form.imageUrl} onChange={value=>change("imageUrl",value)} alt={form.imageAlt} onAltChange={value=>change("imageAlt",value)}/>
             <label className="block space-y-2 text-sm font-medium">
               Public supporting evidence links, one per line
               <Textarea

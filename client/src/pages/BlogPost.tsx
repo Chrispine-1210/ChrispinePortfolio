@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useRoute } from "wouter";
-import ReactMarkdown from "react-markdown";
+import { RichContent } from "@/components/editorial/RichContent";
+import { PublicationReference } from "@/components/editorial/PublicationReference";
+import { metadataFor, type EditorialMetadata } from "@shared/editorial";
 import { ArrowLeft, ArrowUpRight, Share2 } from "lucide-react";
 import type { BlogPost as Article } from "@shared/schema";
 import { EditorialPage } from "@/components/editorial/EditorialPage";
@@ -9,6 +11,7 @@ import {
   articlePhoto,
   editorialPhotoSource,
   PhotoCredit,
+  PhotoCreditForSource,
 } from "@/components/EditorialPhoto";
 import { setSEO } from "@/lib/seoHelper";
 
@@ -128,29 +131,36 @@ export default function BlogPost() {
                   article.featuredImage ||
                   editorialPhotoSource(articlePhoto(article.category))
                 }
-                alt={article.title}
+                alt={
+                  (
+                    article as Article & {
+                      editorialMetadata?: EditorialMetadata;
+                    }
+                  ).editorialMetadata?.coverAlt || article.title
+                }
               />
+              {article.featuredImage && (
+                <figcaption>
+                  <PhotoCreditForSource src={article.featuredImage} />
+                </figcaption>
+              )}
               {!article.featuredImage && (
                 <figcaption>
                   <PhotoCredit photo={articlePhoto(article.category)} />
                 </figcaption>
               )}
             </figure>
+            <PublicationReference
+              metadata={
+                (article as Article & { editorialMetadata?: EditorialMetadata })
+                  .editorialMetadata ?? metadataFor(article.content ?? "")
+              }
+            />
             {article.content ? (
-              <div className="editorial-prose">
-                <ReactMarkdown
-                  skipHtml
-                  components={{
-                    a: ({ href, children }) => (
-                      <a href={href} target="_blank" rel="noopener noreferrer">
-                        {children}
-                      </a>
-                    ),
-                  }}
-                >
-                  {article.content}
-                </ReactMarkdown>
-              </div>
+              <RichContent
+                className="editorial-prose"
+                content={article.content}
+              />
             ) : (
               <div className="editorial-empty">
                 <h2>
