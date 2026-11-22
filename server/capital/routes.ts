@@ -171,8 +171,8 @@ async function audit(
   resourceId: string,
   previousState: unknown,
   newState: unknown,
-  justification?: string,
-  writer: Pick<typeof db, "insert"> = db,
+  justification: string | undefined,
+  writer: Pick<typeof db, "insert">,
 ) {
   await writer.insert(auditEvents).values({
     actorUserId: request.securityPrincipal?.userId ?? null,
@@ -203,22 +203,24 @@ async function validateWonLead(leadId: string, serviceInterest: string) {
   return { outcome: "ok" as const, lead };
 }
 
-async function activeInvoiceCollections(invoiceId: string) {
-  return db.select().from(cashCollections).where(and(
+type FinancialTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+async function activeInvoiceCollections(transaction: FinancialTransaction, invoiceId: string) {
+  return transaction.select().from(cashCollections).where(and(
     eq(cashCollections.invoiceId, invoiceId),
     isNull(cashCollections.voidedAt),
   ));
 }
 
-async function refreshInvoiceStatus(invoiceId: string) {
-  const [invoice] = await db.select().from(commercialInvoices)
+async function refreshInvoiceStatus(transaction: FinancialTransaction, invoiceId: string) {
+  const [invoice] = await transaction.select().from(commercialInvoices)
     .where(eq(commercialInvoices.id, invoiceId)).limit(1);
   if (!invoice || invoice.voidedAt) return invoice;
-  const collections = await activeInvoiceCollections(invoiceId);
+  const collections = await activeInvoiceCollections(transaction, invoiceId);
   const collected = collections.reduce((sum, row) => sum + Number(row.amount), 0);
   const amount = Number(invoice.amount);
   const status = collected <= 0 ? "issued" : collected + 0.005 >= amount ? "paid" : "partially_paid";
-  const [updated] = await db.update(commercialInvoices).set({ status })
+  const [updated] = await transaction.update(commercialInvoices).set({ status })
     .where(eq(commercialInvoices.id, invoiceId)).returning();
   return updated;
 }
@@ -278,20 +280,23 @@ export function createCapitalOperatingRouter() {
         }
       }
 
-      const [record] = await db.insert(commercialInvoices).values({
-        leadId: input.leadId,
-        revenueEventId: input.revenueEventId || null,
-        serviceInterest: input.serviceInterest,
-        invoiceNumber: input.invoiceNumber,
-        currency: input.currency,
-        amount: String(input.amount),
-        issuedAt,
-        dueAt,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "cash.invoice.create", "commercial_invoice", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(commercialInvoices).values({
+          leadId: input.leadId,
+          revenueEventId: input.revenueEventId || null,
+          serviceInterest: input.serviceInterest,
+          invoiceNumber: input.invoiceNumber,
+          currency: input.currency,
+          amount: String(input.amount),
+          issuedAt,
+          dueAt,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "cash.invoice.create", "commercial_invoice", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -302,22 +307,26 @@ export function createCapitalOperatingRouter() {
     asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid invoice void request", errors: parsed.error.issues });
-      const [previous] = await db.select().from(commercialInvoices)
-        .where(eq(commercialInvoices.id, request.params.id)).limit(1);
-      if (!previous) return response.status(404).json({ message: "Invoice not found" });
-      if (previous.voidedAt) return response.status(409).json({ message: "Invoice is already voided" });
-      const activeCollections = await activeInvoiceCollections(previous.id);
-      if (activeCollections.length) {
-        return response.status(409).json({ message: "Void active collections before voiding the invoice" });
-      }
-      const [record] = await db.update(commercialInvoices).set({
-        status: "void",
-        voidedAt: new Date(),
-        voidedBy: request.securityPrincipal?.userId ?? null,
-        voidReason: parsed.data.reason,
-      }).where(eq(commercialInvoices.id, previous.id)).returning();
-      await audit(request, "cash.invoice.void", "commercial_invoice", previous.id, previous, record, parsed.data.reason);
-      response.json(record);
+      const result = await db.transaction(async (transaction) => {
+        const [previous] = await transaction.select().from(commercialInvoices)
+          .where(eq(commercialInvoices.id, request.params.id)).limit(1).for("update");
+        if (!previous) return { outcome: "missing" as const };
+        if (previous.voidedAt) return { outcome: "voided" as const };
+        const activeCollections = await activeInvoiceCollections(transaction, previous.id);
+        if (activeCollections.length) return { outcome: "collections" as const };
+        const [record] = await transaction.update(commercialInvoices).set({
+          status: "void",
+          voidedAt: new Date(),
+          voidedBy: request.securityPrincipal?.userId ?? null,
+          voidReason: parsed.data.reason,
+        }).where(eq(commercialInvoices.id, previous.id)).returning();
+        await audit(request, "cash.invoice.void", "commercial_invoice", previous.id, previous, record, parsed.data.reason, transaction);
+        return { outcome: "ok" as const, record };
+      });
+      if (result.outcome === "missing") return response.status(404).json({ message: "Invoice not found" });
+      if (result.outcome === "voided") return response.status(409).json({ message: "Invoice is already voided" });
+      if (result.outcome === "collections") return response.status(409).json({ message: "Void active collections before voiding the invoice" });
+      response.json(result.record);
     }),
   );
 
@@ -400,18 +409,29 @@ export function createCapitalOperatingRouter() {
     asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid collection void request", errors: parsed.error.issues });
-      const [previous] = await db.select().from(cashCollections)
-        .where(eq(cashCollections.id, request.params.id)).limit(1);
-      if (!previous) return response.status(404).json({ message: "Collection not found" });
-      if (previous.voidedAt) return response.status(409).json({ message: "Collection is already voided" });
-      const [record] = await db.update(cashCollections).set({
-        voidedAt: new Date(),
-        voidedBy: request.securityPrincipal?.userId ?? null,
-        voidReason: parsed.data.reason,
-      }).where(eq(cashCollections.id, previous.id)).returning();
-      await refreshInvoiceStatus(previous.invoiceId);
-      await audit(request, "cash.collection.void", "cash_collection", previous.id, previous, record, parsed.data.reason);
-      response.json(record);
+      const result = await db.transaction(async (transaction) => {
+        const [link] = await transaction.select({ invoiceId: cashCollections.invoiceId }).from(cashCollections)
+          .where(eq(cashCollections.id, request.params.id)).limit(1);
+        if (!link) return { outcome: "missing" as const };
+        // Collection creation and invoice voiding take the same parent lock.
+        await transaction.select({ id: commercialInvoices.id }).from(commercialInvoices)
+          .where(eq(commercialInvoices.id, link.invoiceId)).limit(1).for("update");
+        const [previous] = await transaction.select().from(cashCollections)
+          .where(eq(cashCollections.id, request.params.id)).limit(1).for("update");
+        if (!previous) return { outcome: "missing" as const };
+        if (previous.voidedAt) return { outcome: "voided" as const };
+        const [record] = await transaction.update(cashCollections).set({
+          voidedAt: new Date(),
+          voidedBy: request.securityPrincipal?.userId ?? null,
+          voidReason: parsed.data.reason,
+        }).where(eq(cashCollections.id, previous.id)).returning();
+        await refreshInvoiceStatus(transaction, previous.invoiceId);
+        await audit(request, "cash.collection.void", "cash_collection", previous.id, previous, record, parsed.data.reason, transaction);
+        return { outcome: "ok" as const, record };
+      });
+      if (result.outcome === "missing") return response.status(404).json({ message: "Collection not found" });
+      if (result.outcome === "voided") return response.status(409).json({ message: "Collection is already voided" });
+      response.json(result.record);
     }),
   );
 
@@ -593,19 +613,22 @@ export function createCapitalOperatingRouter() {
       const periodEnd = new Date(input.periodEnd);
       if (periodEnd.getTime() < periodStart.getTime()) return response.status(400).json({ message: "Capacity period end cannot precede start" });
       if (input.billableHours > input.deliveryHours + 0.005) return response.status(400).json({ message: "Billable hours cannot exceed delivery hours" });
-      const [record] = await db.insert(deliveryCapacityRecords).values({
-        serviceInterest: input.serviceInterest,
-        capacityScope: input.capacityScope,
-        periodStart,
-        periodEnd,
-        availableHours: String(input.availableHours),
-        deliveryHours: String(input.deliveryHours),
-        billableHours: String(input.billableHours),
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "delivery.capacity.create", "delivery_capacity_record", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(deliveryCapacityRecords).values({
+          serviceInterest: input.serviceInterest,
+          capacityScope: input.capacityScope,
+          periodStart,
+          periodEnd,
+          availableHours: String(input.availableHours),
+          deliveryHours: String(input.deliveryHours),
+          billableHours: String(input.billableHours),
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "delivery.capacity.create", "delivery_capacity_record", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -616,17 +639,22 @@ export function createCapitalOperatingRouter() {
     asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid capacity void request", errors: parsed.error.issues });
-      const [previous] = await db.select().from(deliveryCapacityRecords)
-        .where(eq(deliveryCapacityRecords.id, request.params.id)).limit(1);
-      if (!previous) return response.status(404).json({ message: "Capacity record not found" });
-      if (previous.voidedAt) return response.status(409).json({ message: "Capacity record is already voided" });
-      const [record] = await db.update(deliveryCapacityRecords).set({
-        voidedAt: new Date(),
-        voidedBy: request.securityPrincipal?.userId ?? null,
-        voidReason: parsed.data.reason,
-      }).where(eq(deliveryCapacityRecords.id, previous.id)).returning();
-      await audit(request, "delivery.capacity.void", "delivery_capacity_record", previous.id, previous, record, parsed.data.reason);
-      response.json(record);
+      const result = await db.transaction(async (transaction) => {
+        const [previous] = await transaction.select().from(deliveryCapacityRecords)
+          .where(eq(deliveryCapacityRecords.id, request.params.id)).limit(1).for("update");
+        if (!previous) return { outcome: "missing" as const };
+        if (previous.voidedAt) return { outcome: "voided" as const };
+        const [record] = await transaction.update(deliveryCapacityRecords).set({
+          voidedAt: new Date(),
+          voidedBy: request.securityPrincipal?.userId ?? null,
+          voidReason: parsed.data.reason,
+        }).where(eq(deliveryCapacityRecords.id, previous.id)).returning();
+        await audit(request, "delivery.capacity.void", "delivery_capacity_record", previous.id, previous, record, parsed.data.reason, transaction);
+        return { outcome: "ok" as const, record };
+      });
+      if (result.outcome === "missing") return response.status(404).json({ message: "Capacity record not found" });
+      if (result.outcome === "voided") return response.status(409).json({ message: "Capacity record is already voided" });
+      response.json(result.record);
     }),
   );
 
@@ -662,16 +690,19 @@ export function createCapitalOperatingRouter() {
         eq(capitalBudgetCycles.currency, input.currency),
       )).limit(1);
       if (existing) return response.status(409).json({ message: "A budget already exists for this period and currency" });
-      const [record] = await db.insert(capitalBudgetCycles).values({
-        periodStart,
-        periodEnd,
-        currency: input.currency,
-        envelopeAmount: String(input.envelopeAmount),
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "capital.budget.create", "capital_budget", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(capitalBudgetCycles).values({
+          periodStart,
+          periodEnd,
+          currency: input.currency,
+          envelopeAmount: String(input.envelopeAmount),
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "capital.budget.create", "capital_budget", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );

@@ -213,8 +213,8 @@ async function audit(
   resourceId: string,
   previousState: unknown,
   newState: unknown,
-  justification?: string,
-  writer: Pick<typeof db, "insert"> = db,
+  justification: string | undefined,
+  writer: Pick<typeof db, "insert">,
 ) {
   await writer.insert(auditEvents).values({
     actorUserId: request.securityPrincipal?.userId ?? null,
@@ -280,17 +280,20 @@ export function createTreasuryRoicRouter() {
         isNull(treasuryAccounts.archivedAt),
       )).limit(1);
       if (existing) return response.status(409).json({ message: "Active treasury account name already exists in this currency" });
-      const [record] = await db.insert(treasuryAccounts).values({
-        name: input.name,
-        institution: input.institution || null,
-        accountType: input.accountType,
-        currency: input.currency,
-        status: input.status,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "treasury.account.create", "treasury_account", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(treasuryAccounts).values({
+          name: input.name,
+          institution: input.institution || null,
+          accountType: input.accountType,
+          currency: input.currency,
+          status: input.status,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "treasury.account.create", "treasury_account", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -313,18 +316,21 @@ export function createTreasuryRoicRouter() {
         .where(eq(treasuryAccounts.id, input.accountId)).limit(1);
       if (!account || account.archivedAt) return response.status(404).json({ message: "Treasury account not found" });
       if (account.currency !== input.currency) return response.status(409).json({ message: "Balance currency must match treasury account" });
-      const [record] = await db.insert(treasuryBalanceSnapshots).values({
-        accountId: input.accountId,
-        currency: input.currency,
-        ledgerBalance: String(input.ledgerBalance),
-        availableBalance: String(input.availableBalance),
-        restrictedBalance: String(input.restrictedBalance),
-        capturedAt,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "treasury.balance.create", "treasury_balance_snapshot", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(treasuryBalanceSnapshots).values({
+          accountId: input.accountId,
+          currency: input.currency,
+          ledgerBalance: String(input.ledgerBalance),
+          availableBalance: String(input.availableBalance),
+          restrictedBalance: String(input.restrictedBalance),
+          capturedAt,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "treasury.balance.create", "treasury_balance_snapshot", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -349,19 +355,22 @@ export function createTreasuryRoicRouter() {
         if (!account || account.archivedAt) return response.status(404).json({ message: "Treasury account not found" });
         if (account.currency !== input.currency) return response.status(409).json({ message: "Disbursement currency must match treasury account" });
       }
-      const [record] = await db.insert(treasuryCashDisbursements).values({
-        accountId: input.accountId || null,
-        currency: input.currency,
-        amount: String(input.amount),
-        cashUseType: input.cashUseType,
-        category: input.category,
-        serviceInterest: input.serviceInterest || null,
-        occurredAt,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "treasury.disbursement.create", "treasury_cash_disbursement", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(treasuryCashDisbursements).values({
+          accountId: input.accountId || null,
+          currency: input.currency,
+          amount: String(input.amount),
+          cashUseType: input.cashUseType,
+          category: input.category,
+          serviceInterest: input.serviceInterest || null,
+          occurredAt,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "treasury.disbursement.create", "treasury_cash_disbursement", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -377,17 +386,20 @@ export function createTreasuryRoicRouter() {
       try { assertNotFuture(occurredAt, "Operating expense"); } catch (error) {
         return response.status(400).json({ message: (error as Error).message });
       }
-      const [record] = await db.insert(operatingExpenseEntries).values({
-        currency: input.currency,
-        amount: String(input.amount),
-        category: input.category,
-        serviceInterest: input.serviceInterest || null,
-        occurredAt,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "roic.opex.create", "operating_expense_entry", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(operatingExpenseEntries).values({
+          currency: input.currency,
+          amount: String(input.amount),
+          category: input.category,
+          serviceInterest: input.serviceInterest || null,
+          occurredAt,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "roic.opex.create", "operating_expense_entry", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -413,17 +425,20 @@ export function createTreasuryRoicRouter() {
         gt(operatingTaxProvisions.periodEnd, new Date(periodStart.getTime() - 1)),
       )).limit(1);
       if (overlapping.length) return response.status(409).json({ message: "Operating tax period overlaps existing active evidence" });
-      const [record] = await db.insert(operatingTaxProvisions).values({
-        currency: input.currency,
-        amount: String(input.amount),
-        periodStart,
-        periodEnd,
-        recognizedAt,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "roic.tax.create", "operating_tax_provision", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(operatingTaxProvisions).values({
+          currency: input.currency,
+          amount: String(input.amount),
+          periodStart,
+          periodEnd,
+          recognizedAt,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "roic.tax.create", "operating_tax_provision", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -439,17 +454,20 @@ export function createTreasuryRoicRouter() {
       try { assertNotFuture(capturedAt, "Invested capital snapshot"); } catch (error) {
         return response.status(400).json({ message: (error as Error).message });
       }
-      const [record] = await db.insert(investedCapitalSnapshots).values({
-        currency: input.currency,
-        operatingAssets: String(input.operatingAssets),
-        operatingLiabilities: String(input.operatingLiabilities),
-        capturedAt,
-        components: input.components,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "roic.invested_capital.create", "invested_capital_snapshot", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(investedCapitalSnapshots).values({
+          currency: input.currency,
+          operatingAssets: String(input.operatingAssets),
+          operatingLiabilities: String(input.operatingLiabilities),
+          capturedAt,
+          components: input.components,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "roic.invested_capital.create", "invested_capital_snapshot", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -505,19 +523,22 @@ export function createTreasuryRoicRouter() {
       }
 
       try {
-        const [record] = await db.insert(capitalDeploymentEntries).values({
-          budgetAllocationId: input.budgetAllocationId || null,
-          currency: input.currency,
-          amount: String(input.amount),
-          category: input.category,
-          serviceInterest: input.serviceInterest || null,
-          occurredAt,
-          sourceReference: input.sourceReference,
-          approvalReference: input.approvalReference,
-          notes: input.notes || null,
-          createdBy: request.securityPrincipal?.userId ?? null,
-        }).returning();
-        await audit(request, "capital.deployment.create", "capital_deployment_entry", record.id, null, record);
+        const record = await db.transaction(async (transaction) => {
+          const [record] = await transaction.insert(capitalDeploymentEntries).values({
+            budgetAllocationId: input.budgetAllocationId || null,
+            currency: input.currency,
+            amount: String(input.amount),
+            category: input.category,
+            serviceInterest: input.serviceInterest || null,
+            occurredAt,
+            sourceReference: input.sourceReference,
+            approvalReference: input.approvalReference,
+            notes: input.notes || null,
+            createdBy: request.securityPrincipal?.userId ?? null,
+          }).returning();
+          await audit(request, "capital.deployment.create", "capital_deployment_entry", record.id, null, record, undefined, transaction);
+          return record;
+        });
         return response.status(201).json(record);
       } catch (error) {
         const cause = error instanceof Error
@@ -543,15 +564,18 @@ export function createTreasuryRoicRouter() {
       if (throughAt.getTime() > Date.now() + 10 * 60 * 1000) {
         return response.status(400).json({ message: "Attestation cannot be materially future-dated" });
       }
-      const [record] = await db.insert(financialEvidenceAttestations).values({
-        currency: input.currency,
-        evidenceType: input.evidenceType,
-        throughAt,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "roic.attestation.create", "financial_evidence_attestation", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(financialEvidenceAttestations).values({
+          currency: input.currency,
+          evidenceType: input.evidenceType,
+          throughAt,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "roic.attestation.create", "financial_evidence_attestation", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -576,16 +600,19 @@ export function createTreasuryRoicRouter() {
         return effectiveFrom.getTime() <= existingEnd && policy.effectiveFrom.getTime() <= nextEnd;
       });
       if (overlaps) return response.status(409).json({ message: "Capital hurdle policy overlaps an existing policy for this currency" });
-      const [record] = await db.insert(capitalHurdlePolicies).values({
-        currency: input.currency,
-        annualHurdleRatePct: String(input.annualHurdleRatePct),
-        effectiveFrom,
-        effectiveTo,
-        rationale: input.rationale,
-        approvedBy: request.securityPrincipal!.userId,
-        approvedAt: new Date(),
-      }).returning();
-      await audit(request, "capital.hurdle.approve", "capital_hurdle_policy", record.id, null, record, input.rationale);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(capitalHurdlePolicies).values({
+          currency: input.currency,
+          annualHurdleRatePct: String(input.annualHurdleRatePct),
+          effectiveFrom,
+          effectiveTo,
+          rationale: input.rationale,
+          approvedBy: request.securityPrincipal!.userId,
+          approvedAt: new Date(),
+        }).returning();
+        await audit(request, "capital.hurdle.approve", "capital_hurdle_policy", record.id, null, record, input.rationale, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
