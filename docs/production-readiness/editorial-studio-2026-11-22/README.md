@@ -48,3 +48,7 @@ CodeRabbit's 15 inline findings were checked against the source. Corrected link-
 A static, API-disconnected component fixture loaded the actual editor, metadata and image-picker components through the supported preview daemon. Browser readback confirms Georgia 24px, bold, a real link command, attributed library-image insertion and right-aligned 50% image rendering. Changing a Research draft with an invalid HTTP source URL to Article keeps that field visible with its error. This is component evidence, not a signed-in admin browser certification.
 
 The first successful Preview (`5fd3f59a8a62882df9a0004bd83fbce39fc719e2`, deployment `dpl_36szMWUuVJCguSv1J9tH46bVwH83`) returned READY and `/api/release` verified isolated branch `br-restless-credit-bb387cat`. Its public browser loaded all homepage photographs at 1363px without overflow. Writing shows actual zero counts, all requested formats and the exact ORCID. At 340 CSS px (browser zoom; no device emulation), mobile navigation opens and no horizontal overflow was observed. Subsequent corrections require a new exact-head Preview before merge.
+
+## Responsive navigation correction
+
+At 340 CSS px, a pointer click on a nested mobile navigation item closed the sheet without navigating; keyboard Enter on the link navigated while leaving the sheet open. Moving the close callback from the nested animated element onto the actual router link unifies both paths. TypeScript and client/server build passed after this small follow-up; live exact-head pointer and keyboard verification remains required before merge.
