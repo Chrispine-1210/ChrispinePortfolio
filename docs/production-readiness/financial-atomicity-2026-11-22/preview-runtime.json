@@ -1,0 +1,221 @@
+{
+  "decision": "PASS",
+  "exactHead": "28d0d8c8af8e96b9f9eb06f680f5df1c86dd81ad",
+  "environment": "preview",
+  "databaseBranchId": "br-restless-credit-bb387cat",
+  "deployment": "https://chrispine-portfolio-5p5cey4rc-chrispine-1210s-projects.vercel.app",
+  "applicationAuthentication": "normal password login; finance_manager",
+  "financeRoleApprovalsDenied": 403,
+  "fixture": {
+    "marker": "preview-atomicity-5591bcb9-5518-4a93-897a-e3e10ad4166f",
+    "userId": "9dfed8eb-f448-48bf-96e0-2cd7980eee7e",
+    "leadId": "3a69a211-1d37-4627-9786-f1ae922d16f4",
+    "expenseId": "1d0882b0-90d0-4f2c-b36a-94cb5feaa6ac",
+    "invoiceId": "45d5a1ba-148d-4303-b87e-c7c9ccd917dd",
+    "collectionId": "6c0e77ea-9949-45a9-9850-0fb70d18a212"
+  },
+  "checks": [
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "8f7e174f-1dc3-493f-83c1-d7bc117c8e3f"
+    },
+    {
+      "path": "/api/auth/me",
+      "method": "GET",
+      "status": 401,
+      "requestId": "a84b89cf-e146-4d8c-ac6b-77b91fc6478f"
+    },
+    {
+      "path": "/api/auth/login",
+      "method": "POST",
+      "status": 200,
+      "requestId": "5d3c8c78-2f8e-46d6-8345-eae06093f84a"
+    },
+    {
+      "path": "/api/auth/me",
+      "method": "GET",
+      "status": 200,
+      "requestId": "428a835a-f235-4460-8fbd-db01d0a377a4"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "99c1b12a-2b94-4fdd-af7e-62fddbff943a"
+    },
+    {
+      "path": "/api/admin/capital/budgets/e1136096-dbb8-4850-9340-84fdf13ecff3/approve",
+      "method": "POST",
+      "status": 403,
+      "requestId": "7aca4911-8d20-45bc-93d3-1ff3590cf1ed"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "c584cf86-4690-4a1e-9148-285b6edcb16d"
+    },
+    {
+      "path": "/api/admin/treasury/hurdle-policies",
+      "method": "POST",
+      "status": 403,
+      "requestId": "ded6f33b-5c57-4f84-9fca-50a91c1400db"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "bf0e4b99-95af-4c7a-8be8-430dad517f2a"
+    },
+    {
+      "path": "/api/admin/treasury/operating-expenses",
+      "method": "POST",
+      "status": 201,
+      "requestId": "65705f99-522b-4cff-959b-762363fab807"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "0b6db056-595d-403a-a533-2aa802424ce9"
+    },
+    {
+      "path": "/api/admin/capital/invoices",
+      "method": "POST",
+      "status": 201,
+      "requestId": "17eb41ec-9a56-4288-9f70-fd6f26bf3706"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "f601d1c9-db76-481f-b264-80f03eca986b"
+    },
+    {
+      "path": "/api/admin/capital/collections",
+      "method": "POST",
+      "status": 201,
+      "requestId": "a444f4fc-9095-40f7-9651-2ea07005db70"
+    },
+    {
+      "path": "/api/admin/capital/invoices",
+      "method": "GET",
+      "status": 200,
+      "requestId": "dcd12058-6a8f-42fb-98b7-b945bfd9eb19"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "c71db064-fe39-4f52-a9b5-9584ef39bf92"
+    },
+    {
+      "path": "/api/admin/capital/invoices/45d5a1ba-148d-4303-b87e-c7c9ccd917dd/void",
+      "method": "POST",
+      "status": 409,
+      "requestId": "7ee46e98-b1bd-4865-8811-ac0f29f07348"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "22a9c092-8aba-422e-b763-e14ee633de24"
+    },
+    {
+      "path": "/api/admin/capital/collections/6c0e77ea-9949-45a9-9850-0fb70d18a212/void",
+      "method": "POST",
+      "status": 200,
+      "requestId": "5e9e9d00-2874-424c-939c-9fddba3f2429"
+    },
+    {
+      "path": "/api/admin/capital/invoices",
+      "method": "GET",
+      "status": 200,
+      "requestId": "ed8ee248-a159-4008-9131-c60171548536"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "4edd9a62-034a-42a4-88dc-c9a05e62fcab"
+    },
+    {
+      "path": "/api/admin/capital/invoices/45d5a1ba-148d-4303-b87e-c7c9ccd917dd/void",
+      "method": "POST",
+      "status": 200,
+      "requestId": "fa2419d5-f1fd-4439-abd5-78c3269e665b"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "a1361af1-426b-4cd4-b169-3a58ba4eed7c"
+    },
+    {
+      "path": "/api/admin/treasury/evidence/opex/1d0882b0-90d0-4f2c-b36a-94cb5feaa6ac/void",
+      "method": "POST",
+      "status": 200,
+      "requestId": "9554551a-27d6-4d9e-a522-8b468f3e1faf"
+    },
+    {
+      "path": "/api/admin/treasury/evidence",
+      "method": "GET",
+      "status": 200,
+      "requestId": "8d88ea13-2020-4c26-9d69-727f6b6ebedf"
+    },
+    {
+      "path": "/api/admin/capital/collections",
+      "method": "GET",
+      "status": 200,
+      "requestId": "1675e1d5-6059-4b15-aec2-168b32d516da"
+    },
+    {
+      "path": "/api/admin/capital/invoices",
+      "method": "GET",
+      "status": 200,
+      "requestId": "5607e1e0-635b-4e85-89e3-6a01a5e8ef8d"
+    },
+    {
+      "path": "/api/admin/treasury/intelligence",
+      "method": "GET",
+      "status": 200,
+      "requestId": "1050eb08-d4e6-4ac1-b42a-9458b90ec4d9"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "463d6d8f-31f7-4a6a-9657-11f74d135af8"
+    },
+    {
+      "path": "/api/auth/logout",
+      "method": "POST",
+      "status": 200,
+      "requestId": "6cd1599e-a926-4c66-99cd-8c55aad6a71c"
+    },
+    {
+      "path": "/api/auth/me",
+      "method": "GET",
+      "status": 401,
+      "requestId": "a30fc0e7-a80b-478d-9749-affbdc4b3ec9"
+    },
+    {
+      "path": "/api/release",
+      "method": "GET",
+      "status": 200,
+      "requestId": "e6a0dbcb-1deb-4764-a862-4e0ef3a8fb69"
+    }
+  ],
+  "allFinancialFixturesVoided": true,
+  "logoutConfirmed": true,
+  "evidenceBoundary": "Normal-password HTTP lifecycle proof on the reviewed application source; audit failure injection remains local.",
+  "retirement": {
+    "userDisabled": true,
+    "passwordRemoved": true,
+    "sessionsRevoked": true,
+    "syntheticLeadArchived": true,
+    "temporaryHostingShareRevoked": true
+  }
+}

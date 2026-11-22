@@ -160,6 +160,10 @@ describe("financial mutation/audit transaction matrix", () => {
     const accepted = await request(app).post(operation.path).set("Cookie", cookie).send(operation.body as object);
     expect(accepted.status, JSON.stringify(accepted.body)).toBe(operation.status ?? 201);
     const record = accepted.body.record ?? accepted.body;
+    if (operation.action === "cash.collection.void") {
+      const invoice = await database.query<{ status: string }>("SELECT status FROM commercial_invoices WHERE id=$1", [record.invoiceId]);
+      expect(invoice.rows).toEqual([{ status: "issued" }]);
+    }
     const audit = await database.query<{ action: string; resource_id: string }>("SELECT action,resource_id FROM audit_events WHERE request_id=$1", [accepted.headers["x-request-id"]]);
     expect(audit.rows).toEqual([{ action: operation.action, resource_id: record.id }]);
   });

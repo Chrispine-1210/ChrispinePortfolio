@@ -24,8 +24,8 @@ npm warn Unknown env config "http-proxy". This will stop working in the next maj
 
  Test Files  17 passed (17)
       Tests  226 passed (226)
-   Start at  06:33:07
-   Duration  30.59s (transform 3.37s, setup 0ms, import 7.04s, tests 89.90s, environment 2ms)
+   Start at  06:48:12
+   Duration  32.67s (transform 3.83s, setup 0ms, import 8.39s, tests 93.80s, environment 2ms)
 
 npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
 
@@ -144,11 +144,11 @@ dist/public/assets/schemas-D5Q2wQCu.js                                138.41 kB 
 dist/public/assets/index-D4A9HmtJ.js                                  245.51 kB │ gzip: 81.46 kB
 dist/public/assets/Contact-DtpK6p0e.js                                392.58 kB │ gzip: 92.58 kB
 
-✓ built in 1.41s
+✓ built in 1.60s
 
   dist/index.js  464.5kb
 
-⚡ Done in 11ms
+⚡ Done in 12ms
 npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
 
 > chrispine-portfolio@1.0.0 verify:runtime
