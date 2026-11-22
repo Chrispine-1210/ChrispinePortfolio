@@ -9,6 +9,8 @@ import writing from "@assets/portfolio-editorial/photo-writing.webp";
 import { cn } from "@/lib/utils";
 
 const photos = {
+  network: { src: "/media/editorial/network.webp", alt: "Ethernet patch leads connected to switches in a network rack", author: "Yuriy Vertikov", slug: "a-rack-of-servers-with-wires-and-wires-attached-to-them-c-lSQecD9oI" },
+  hardware: { src: "/media/editorial/hardware.webp", alt: "Circuit board and precision screwdriver on a blue repair mat", author: "Fotografia Lui Vlad", slug: "circuit-board-being-repaired-with-a-screwdriver-HpoYaT9-9aE" },
   code: { src: code, alt: "Close-up of a computer display showing code", author: "Bernd Dittrich", slug: "computer-screen-displaying-code-and-text-XIpm0bnYOQE" },
   collaboration: { src: collaboration, alt: "A person using a smartphone beside an open laptop", author: "Christina @ wocintechchat.com", slug: "person-using-smartphone-and-macbook-UTw3j_aoIKM" },
   contact: { src: contact, alt: "A smartphone resting on a patterned notebook on a wooden table", author: "Swello", slug: "smartphone-on-notebook-and-laptop-on-table-CGvC8yWgC-g" },
@@ -18,15 +20,18 @@ const photos = {
   workspace: { src: workspace, alt: "A desktop monitor and accessories on a workspace desk", author: "Slava Keyzman", slug: "turned-on-flat-screen-monitor-white-wooden-desk-ZG4Y6lLPARw" },
   writing: { src: writing, alt: "A hand writing notes with a pen", author: "Alexander Mass", slug: "a-person-writing-in-a-notebook-with-a-pen-5Nqc_YugFao" },
 };
+export const editorialPhotos = photos;
 
 export function articlePhoto(category: string): keyof typeof photos {
   switch (category.toLowerCase()) {
     case "programming":
     case "ai & data":
-    case "networking":
-    case "hardware engineering":
-    case "infrastructure":
       return "code";
+    case "networking":
+    case "infrastructure":
+      return "network";
+    case "hardware engineering":
+      return "hardware";
     case "leadership":
     case "career":
       return "planning";
@@ -39,6 +44,11 @@ export function articlePhoto(category: string): keyof typeof photos {
 
 export function editorialPhotoSource(photo: keyof typeof photos) {
   return photos[photo].src;
+}
+
+export function PhotoCreditForSource({src}:{src:string}) {
+  const match=Object.entries(photos).find(([,photo])=>photo.src===src);
+  return match?<PhotoCredit photo={match[0] as keyof typeof photos}/>:null;
 }
 
 export function PhotoCredit({ photo }: { photo: keyof typeof photos }) {

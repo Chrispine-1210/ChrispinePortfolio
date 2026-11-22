@@ -253,11 +253,11 @@ export function Navigation() {
                       <Link
                         key={item.path}
                         href={item.path}
+                        onClick={() => setMobileMenuOpen(false)}
                         onPointerEnter={() => preloadPublicRoute(item.path)}
                         onFocus={() => preloadPublicRoute(item.path)}
                       >
                         <motion.div
-                          onClick={() => setMobileMenuOpen(false)}
                           className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${
                             active
                               ? "bg-primary/10 text-white"

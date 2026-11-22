@@ -1,6 +1,6 @@
 import { asyncHandler } from "./middleware.js";
 import express from "express";
-import { setupAuthRoutes } from "./custom-auth.js";
+import { requireAdminPermission, setupAuthRoutes } from "./custom-auth.js";
 import { analyticsMiddleware } from "./analytics.js";
 import { setupAnalyticsRoutes } from "./api-analytics.js";
 import { setupSeedRoutes } from "./content-seeder.js";
@@ -33,6 +33,14 @@ export function createApp() {
 
   app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
   setupPostmarkWebhookRoute(app);
+  // Only authenticated editorial writes receive the larger, bounded document
+  // parser. Public intake, webhooks and financial routes keep their 10 KB limit.
+  const editorialJson=express.json({limit:"1250kb"});
+  app.post("/api/admin/content/posts",requireAdminPermission("content.create"),editorialJson);
+  app.patch("/api/admin/content/posts/:id",requireAdminPermission("content.update"),editorialJson);
+  app.post("/api/admin/case-studies",requireAdminPermission("portfolio.manage"),editorialJson);
+  app.patch("/api/admin/case-studies/:id",requireAdminPermission("portfolio.manage"),editorialJson);
+  app.post("/api/admin/engineering/records/:id/publish",requireAdminPermission("engineering.publish"),express.json({limit:"128kb"}));
   app.use(express.json({
     verify: (req: any, _res, buf) => {
       req.rawBody = buf;

@@ -60,7 +60,9 @@ async function fixture() {
 }
 async function journalExists(db: PGlite) { return (await db.query("SELECT to_regclass('chrispine_migrations.history') AS journal")).rows[0]; }
 
-describe("transactional migration history", () => {
+// Fixture startup includes a PostgreSQL WASM engine; allow for cold shared-build CPUs.
+// This changes no migration/HTTP timeout or assertion.
+describe("transactional migration history", {timeout:15_000}, () => {
   it("refuses malformed filenames or duplicate versions rather than silently omitting SQL", async () => {
     for (const names of [["0000_valid.sql", "12_omitted.sql"], ["0000_first.sql", "0000_second.sql"]]) {
       const directory = await mkdtemp(join(tmpdir(), "portfolio-migration-files-"));
@@ -149,7 +151,7 @@ describe("transactional migration history", () => {
   });
 });
 
-describe("reviewed adoption of existing schema", () => {
+describe("reviewed adoption of existing schema", {timeout:15_000}, () => {
   it("refuses blind replay and never self-certifies an unjournaled database", async () => {
     const { database, client, target } = await fixture();
     for (const migration of files) await client.exec(migration.sql);

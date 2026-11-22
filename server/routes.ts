@@ -3,6 +3,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { storage } from "./storage.js";
 import { requireAdminPermission } from "./custom-auth.js";
+import { publicWritingPost, publishedImage } from "./editorial-media.js";
 
 const createContent = requireAdminPermission("content.create");
 const updateContent = requireAdminPermission("content.update");
@@ -18,11 +19,15 @@ import {
 } from "../shared/schema.js";
 import Stripe from "stripe";
 import { seedBlogPosts } from "./seed-data.js";
+import { enqueueNewsletterWelcome } from "./email/automations.js";
 import {
-  enqueueNewsletterWelcome,
-} from "./email/automations.js";
-import { createContactWithLead, createLeadFromConsultation } from "./crm/lead-service.js";
-import { getPublicCaseStudyBySlug, listPublicCaseStudies } from "./portfolio/public-case-study-service.js";
+  createContactWithLead,
+  createLeadFromConsultation,
+} from "./crm/lead-service.js";
+import {
+  getPublicCaseStudyBySlug,
+  listPublicCaseStudies,
+} from "./portfolio/public-case-study-service.js";
 
 const fallbackBlogPosts: BlogPost[] = seedBlogPosts.map((post, index) => ({
   ...post,
@@ -51,27 +56,36 @@ const fallbackBlogPosts: BlogPost[] = seedBlogPosts.map((post, index) => ({
 const hasDatabase = () => Boolean(process.env.DATABASE_URL);
 
 function logRouteFailure(context: string, error: unknown) {
-  const record = error && typeof error === "object" ? error as {
-    name?: unknown;
-    message?: unknown;
-    code?: unknown;
-    cause?: unknown;
-  } : {};
-  const cause = record.cause && typeof record.cause === "object" ? record.cause as {
-    name?: unknown;
-    message?: unknown;
-    code?: unknown;
-  } : {};
-  console.error(context, JSON.stringify({
-    name: typeof record.name === "string" ? record.name : undefined,
-    message: typeof record.message === "string" ? record.message : undefined,
-    code: typeof record.code === "string" ? record.code : undefined,
-    cause: {
-      name: typeof cause.name === "string" ? cause.name : undefined,
-      message: typeof cause.message === "string" ? cause.message : undefined,
-      code: typeof cause.code === "string" ? cause.code : undefined,
-    },
-  }));
+  const record =
+    error && typeof error === "object"
+      ? (error as {
+          name?: unknown;
+          message?: unknown;
+          code?: unknown;
+          cause?: unknown;
+        })
+      : {};
+  const cause =
+    record.cause && typeof record.cause === "object"
+      ? (record.cause as {
+          name?: unknown;
+          message?: unknown;
+          code?: unknown;
+        })
+      : {};
+  console.error(
+    context,
+    JSON.stringify({
+      name: typeof record.name === "string" ? record.name : undefined,
+      message: typeof record.message === "string" ? record.message : undefined,
+      code: typeof record.code === "string" ? record.code : undefined,
+      cause: {
+        name: typeof cause.name === "string" ? cause.name : undefined,
+        message: typeof cause.message === "string" ? cause.message : undefined,
+        code: typeof cause.code === "string" ? cause.code : undefined,
+      },
+    }),
+  );
 }
 
 // Note: Middleware utilities created but router uses standard patterns for now
@@ -81,123 +95,133 @@ function logRouteFailure(context: string, error: unknown) {
 const router = Router();
 
 // Blog routes - with caching headers
-router.get("/api/blog", asyncHandler(async (req: Request, res: Response) => {
-  try {
-    // Set cache headers for better performance
-    res.setHeader("Cache-Control", "public, max-age=300"); // 5 min cache
-    let posts = hasDatabase()
-      ? await storage.getPublishedBlogPosts()
-      : fallbackBlogPosts;
+router.get(
+  "/api/blog",
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      // Set cache headers for better performance
+      res.setHeader("Cache-Control", "public, max-age=300"); // 5 min cache
+      let posts = hasDatabase()
+        ? await storage.getPublishedBlogPosts()
+        : fallbackBlogPosts;
 
-    // Apply filters
-    const { category, search, premium } = req.query;
+      // Apply filters
+      const { category, search, premium } = req.query;
 
-    if (category && typeof category === "string") {
-      posts = posts.filter((p) => p.category === category);
+      if (category && typeof category === "string") {
+        posts = posts.filter((p) => p.category === category);
+      }
+
+      if (search && typeof search === "string") {
+        const searchLower = search.toLowerCase();
+        posts = posts.filter(
+          (p) =>
+            p.title.toLowerCase().includes(searchLower) ||
+            p.excerpt.toLowerCase().includes(searchLower) ||
+            (p.tags || []).some((tag) =>
+              tag.toLowerCase().includes(searchLower),
+            ),
+        );
+      }
+
+      if (premium === "true") {
+        posts = posts.filter((p) => p.isPremium);
+      } else if (premium === "false") {
+        posts = posts.filter((p) => !p.isPremium);
+      }
+
+      res.json(posts.map((post) => publicWritingPost(post)));
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
     }
+  }),
+);
 
-    if (search && typeof search === "string") {
-      const searchLower = search.toLowerCase();
-      posts = posts.filter(
-        (p) =>
-          p.title.toLowerCase().includes(searchLower) ||
-          p.excerpt.toLowerCase().includes(searchLower) ||
-          (p.tags || []).some((tag) => tag.toLowerCase().includes(searchLower)),
-      );
+router.get(
+  "/api/blog/recent",
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
+      let posts = hasDatabase()
+        ? await storage.getRecentBlogPosts(limit)
+        : fallbackBlogPosts.slice(0, limit);
+
+      res.json(posts.map((post) => publicWritingPost(post)));
+    } catch (error) {
+      console.error("Error fetching recent posts:", error);
+      res.status(500).json({ message: "Failed to fetch recent posts" });
     }
+  }),
+);
 
-    if (premium === "true") {
-      posts = posts.filter((p) => p.isPremium);
-    } else if (premium === "false") {
-      posts = posts.filter((p) => !p.isPremium);
+router.get(
+  "/api/blog/:slug",
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const post = hasDatabase()
+        ? await storage.getPublishedBlogPostBySlug(req.params.slug)
+        : fallbackBlogPosts.find((item) => item.slug === req.params.slug);
+      if (!post) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+
+      // Enforce premium content access control
+      const user = (req as any).user;
+      if (post.isPremium && !user?.claims?.sub) {
+        return res.status(403).json({
+          message: "Premium subscription required to access this content",
+          isPremium: true,
+          excerpt: post.excerpt,
+        });
+      }
+
+      if (post.isPremium) res.setHeader("Cache-Control", "private, no-store");
+      res.json(publicWritingPost(post, true));
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      res.status(500).json({ message: "Failed to fetch blog post" });
     }
+  }),
+);
 
-    // For premium posts in collection, omit content entirely (use excerpt for preview)
-    const user = (req as any).user;
-    if (!user?.claims?.sub) {
-      posts = posts.map((post) => {
-        if (post.isPremium) {
-          const { content, ...postWithoutContent } = post;
-          return postWithoutContent as any; // Omit full content, excerpt is preview
-        }
-        return post;
-      });
-    }
-
-    res.json(posts);
-  } catch (error) {
-    console.error("Error fetching blog posts:", error);
-    res.status(500).json({ message: "Failed to fetch blog posts" });
-  }
-}));
-
-router.get("/api/blog/recent", asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
-    let posts = hasDatabase()
-      ? await storage.getRecentBlogPosts(limit)
-      : fallbackBlogPosts.slice(0, limit);
-
-    // For premium posts, omit content entirely (use excerpt for preview)
-    const user = (req as any).user;
-    if (!user?.claims?.sub) {
-      posts = posts.map((post) => {
-        if (post.isPremium) {
-          const { content, ...postWithoutContent } = post;
-          return postWithoutContent as any; // Omit full content, excerpt is preview
-        }
-        return post;
-      });
-    }
-
-    res.json(posts);
-  } catch (error) {
-    console.error("Error fetching recent posts:", error);
-    res.status(500).json({ message: "Failed to fetch recent posts" });
-  }
-}));
-
-router.get("/api/blog/:slug", asyncHandler(async (req: Request, res: Response) => {
-  try {
+router.get(
+  "/api/writing-media/:slug/:digest",
+  asyncHandler(async (req: Request, res: Response) => {
+    if (!/^[a-f0-9]{64}$/.test(req.params.digest)) return res.status(404).end();
     const post = hasDatabase()
       ? await storage.getPublishedBlogPostBySlug(req.params.slug)
-      : fallbackBlogPosts.find((item) => item.slug === req.params.slug);
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
+      : fallbackBlogPosts.find((p) => p.slug === req.params.slug);
+    const premiumAccess = Boolean((req as any).user?.claims?.sub);
+    const image = post
+      ? publishedImage(post, req.params.digest, premiumAccess)
+      : null;
+    if (!image) return res.status(404).end();
+    res.setHeader(
+      "Cache-Control",
+      post?.isPremium ? "private, no-store" : "public, max-age=300",
+    );
+    res.type(image.type).send(image.bytes);
+  }),
+);
 
-    // Enforce premium content access control
-    const user = (req as any).user;
-    if (post.isPremium && !user?.claims?.sub) {
-      return res.status(403).json({
-        message: "Premium subscription required to access this content",
-        isPremium: true,
-        excerpt: post.excerpt,
-      });
-    }
-
-    res.json(post);
-  } catch (error) {
-    console.error("Error fetching blog post:", error);
-    res.status(500).json({ message: "Failed to fetch blog post" });
-  }
-}));
-
-router.post("/api/blog", createContent, asyncHandler(async (req: Request, res: Response) => {
-  res
-    .status(410)
-    .json({ message: "This endpoint has moved to /api/admin/content/posts" });
-}));
+router.post(
+  "/api/blog",
+  createContent,
+  asyncHandler(async (req: Request, res: Response) => {
+    res
+      .status(410)
+      .json({ message: "This endpoint has moved to /api/admin/content/posts" });
+  }),
+);
 
 router.put(
   "/api/blog/:id",
   updateContent,
   asyncHandler(async (req: Request, res: Response) => {
-    res
-      .status(410)
-      .json({
-        message: "This endpoint has moved to /api/admin/content/posts/:id",
-      });
+    res.status(410).json({
+      message: "This endpoint has moved to /api/admin/content/posts/:id",
+    });
   }),
 );
 
@@ -205,70 +229,117 @@ router.delete(
   "/api/blog/:id",
   requireAdminPermission("content.delete"),
   asyncHandler(async (req: Request, res: Response) => {
-    res.status(410).json({ message: "Permanent deletion is disabled; archive the post through the content workflow" });
+    res
+      .status(410)
+      .json({
+        message:
+          "Permanent deletion is disabled; archive the post through the content workflow",
+      });
   }),
 );
 
 // Public case-study routes. Only published, evidence-approved case studies are returned.
-router.get("/api/portfolio", asyncHandler(async (req: Request, res: Response) => {
-  res.setHeader("Cache-Control", "no-store");
-  try {
-    let projects = await listPublicCaseStudies();
-    const { category, search, featured } = req.query;
-    if (category && typeof category === "string") {
-      projects = projects.filter((project) => project.category === category);
+router.get(
+  "/api/portfolio",
+  asyncHandler(async (req: Request, res: Response) => {
+    res.setHeader("Cache-Control", "no-store");
+    try {
+      let projects = await listPublicCaseStudies();
+      const { category, search, featured } = req.query;
+      if (category && typeof category === "string") {
+        projects = projects.filter((project) => project.category === category);
+      }
+      if (search && typeof search === "string") {
+        const query = search.toLowerCase();
+        projects = projects.filter(
+          (project) =>
+            project.title.toLowerCase().includes(query) ||
+            project.description.toLowerCase().includes(query) ||
+            (project.techStack || []).some((technology) =>
+              technology.toLowerCase().includes(query),
+            ),
+        );
+      }
+      if (featured === "true")
+        projects = projects.filter((project) => project.featured);
+      if (featured === "false")
+        projects = projects.filter((project) => !project.featured);
+      res.json(projects);
+    } catch (error) {
+      logRouteFailure("Error fetching public case studies", error);
+      res.status(500).json({ message: "Failed to fetch case studies" });
     }
-    if (search && typeof search === "string") {
-      const query = search.toLowerCase();
-      projects = projects.filter((project) =>
-        project.title.toLowerCase().includes(query) ||
-        project.description.toLowerCase().includes(query) ||
-        (project.techStack || []).some((technology) => technology.toLowerCase().includes(query))
+  }),
+);
+
+router.get(
+  "/api/portfolio/featured",
+  asyncHandler(async (_req: Request, res: Response) => {
+    res.setHeader("Cache-Control", "no-store");
+    try {
+      const projects = (await listPublicCaseStudies()).filter(
+        (project) => project.featured,
       );
+      res.json(projects);
+    } catch (error) {
+      logRouteFailure("Error fetching featured case studies", error);
+      res
+        .status(500)
+        .json({ message: "Failed to fetch featured case studies" });
     }
-    if (featured === "true") projects = projects.filter((project) => project.featured);
-    if (featured === "false") projects = projects.filter((project) => !project.featured);
-    res.json(projects);
-  } catch (error) {
-    logRouteFailure("Error fetching public case studies", error);
-    res.status(500).json({ message: "Failed to fetch case studies" });
-  }
-}));
+  }),
+);
 
-router.get("/api/portfolio/featured", asyncHandler(async (_req: Request, res: Response) => {
-  res.setHeader("Cache-Control", "no-store");
-  try {
-    const projects = (await listPublicCaseStudies()).filter((project) => project.featured);
-    res.json(projects);
-  } catch (error) {
-    logRouteFailure("Error fetching featured case studies", error);
-    res.status(500).json({ message: "Failed to fetch featured case studies" });
-  }
-}));
-
-router.get("/api/portfolio/:slug", asyncHandler(async (req: Request, res: Response) => {
-  res.setHeader("Cache-Control", "no-store");
-  try {
-    const project = await getPublicCaseStudyBySlug(req.params.slug);
-    if (!project) return res.status(404).json({ message: "Case study not found" });
-    res.json(project);
-  } catch (error) {
-    logRouteFailure("Error fetching case study", error);
-    res.status(500).json({ message: "Failed to fetch case study" });
-  }
-}));
+router.get(
+  "/api/portfolio/:slug",
+  asyncHandler(async (req: Request, res: Response) => {
+    res.setHeader("Cache-Control", "no-store");
+    try {
+      const project = await getPublicCaseStudyBySlug(req.params.slug);
+      if (!project)
+        return res.status(404).json({ message: "Case study not found" });
+      res.json(project);
+    } catch (error) {
+      logRouteFailure("Error fetching case study", error);
+      res.status(500).json({ message: "Failed to fetch case study" });
+    }
+  }),
+);
 
 // Legacy portfolio mutations are disabled. Internal projects and public case
 // studies now have separate governed administrative endpoints.
-router.post("/api/portfolio", requireAdminPermission("portfolio.manage"), (_req, res) => {
-  res.status(410).json({ message: "Use /api/admin/projects or /api/admin/case-studies" });
-});
-router.put("/api/portfolio/:id", requireAdminPermission("portfolio.manage"), (_req, res) => {
-  res.status(410).json({ message: "Use /api/admin/projects/:id or /api/admin/case-studies/:id" });
-});
-router.delete("/api/portfolio/:id", requireAdminPermission("portfolio.manage"), (_req, res) => {
-  res.status(410).json({ message: "Permanent deletion is disabled; archive governed records instead" });
-});
+router.post(
+  "/api/portfolio",
+  requireAdminPermission("portfolio.manage"),
+  (_req, res) => {
+    res
+      .status(410)
+      .json({ message: "Use /api/admin/projects or /api/admin/case-studies" });
+  },
+);
+router.put(
+  "/api/portfolio/:id",
+  requireAdminPermission("portfolio.manage"),
+  (_req, res) => {
+    res
+      .status(410)
+      .json({
+        message: "Use /api/admin/projects/:id or /api/admin/case-studies/:id",
+      });
+  },
+);
+router.delete(
+  "/api/portfolio/:id",
+  requireAdminPermission("portfolio.manage"),
+  (_req, res) => {
+    res
+      .status(410)
+      .json({
+        message:
+          "Permanent deletion is disabled; archive governed records instead",
+      });
+  },
+);
 
 // Newsletter routes
 router.post(
@@ -311,140 +382,176 @@ router.post(
   }),
 );
 
-const acquisitionTouchSchema = z.object({
-  source: z.string().trim().max(160),
-  medium: z.string().trim().max(120),
-  campaign: z.string().trim().max(180),
-  term: z.string().trim().max(240),
-  content: z.string().trim().max(240),
-  referrer: z.string().trim().max(2048),
-  landingPage: z.string().trim().min(1).max(2048),
-  capturedAt: z.string().datetime().superRefine((value, context) => {
-    const captured = new Date(value).getTime();
-    const now = Date.now();
-    const oldest = now - 180 * 24 * 60 * 60 * 1000;
-    const newest = now + 10 * 60 * 1000;
-    if (!Number.isFinite(captured) || captured < oldest || captured > newest) {
-      context.addIssue({
-        code: "custom",
-        message: "Attribution timestamp is outside the accepted 180-day lookback window",
-      });
-    }
-  }),
-}).strict();
+const acquisitionTouchSchema = z
+  .object({
+    source: z.string().trim().max(160),
+    medium: z.string().trim().max(120),
+    campaign: z.string().trim().max(180),
+    term: z.string().trim().max(240),
+    content: z.string().trim().max(240),
+    referrer: z.string().trim().max(2048),
+    landingPage: z.string().trim().min(1).max(2048),
+    capturedAt: z
+      .string()
+      .datetime()
+      .superRefine((value, context) => {
+        const captured = new Date(value).getTime();
+        const now = Date.now();
+        const oldest = now - 180 * 24 * 60 * 60 * 1000;
+        const newest = now + 10 * 60 * 1000;
+        if (
+          !Number.isFinite(captured) ||
+          captured < oldest ||
+          captured > newest
+        ) {
+          context.addIssue({
+            code: "custom",
+            message:
+              "Attribution timestamp is outside the accepted 180-day lookback window",
+          });
+        }
+      }),
+  })
+  .strict();
 
-const consultationInputSchema = z.object({
-  name: z.string().trim().min(2).max(180),
-  email: z.string().trim().email().max(320),
-  phone: z.string().trim().max(80).optional().or(z.literal("")),
-  organization: z.string().trim().min(2).max(220),
-  industry: z.enum([
-    "Education",
-    "NGO / Development",
-    "Healthcare",
-    "Agriculture",
-    "Financial Services",
-    "Government",
-    "Retail / Distribution",
-    "Professional Services",
-    "Other",
-  ]),
-  serviceInterest: z.enum([
-    "network-infrastructure",
-    "managed-it",
-    "enterprise-software",
-    "business-systems",
-    "data-analytics",
-    "technology-advisory",
-  ]),
-  challenge: z.string().trim().min(20).max(5000),
-  currentTech: z.string().trim().max(3000).optional().or(z.literal("")),
-  budgetRange: z.enum([
-    "Below MWK 1,000,000",
-    "MWK 1,000,000 – 5,000,000",
-    "MWK 5,000,000 – 15,000,000",
-    "MWK 15,000,000+",
-    "Discuss first",
-    "",
-  ]).optional(),
-  expectedTimeline: z.enum([
-    "Urgent / under 1 month",
-    "1–3 months",
-    "3–6 months",
-    "6–12 months",
-    "Flexible",
-    "",
-  ]).optional(),
-  consent: z.literal(true),
-  attribution: z.object({
-    firstTouch: acquisitionTouchSchema.optional(),
-    lastTouch: acquisitionTouchSchema.optional(),
-  }).strict().optional(),
-}).strict();
+const consultationInputSchema = z
+  .object({
+    name: z.string().trim().min(2).max(180),
+    email: z.string().trim().email().max(320),
+    phone: z.string().trim().max(80).optional().or(z.literal("")),
+    organization: z.string().trim().min(2).max(220),
+    industry: z.enum([
+      "Education",
+      "NGO / Development",
+      "Healthcare",
+      "Agriculture",
+      "Financial Services",
+      "Government",
+      "Retail / Distribution",
+      "Professional Services",
+      "Other",
+    ]),
+    serviceInterest: z.enum([
+      "network-infrastructure",
+      "managed-it",
+      "enterprise-software",
+      "business-systems",
+      "data-analytics",
+      "technology-advisory",
+    ]),
+    challenge: z.string().trim().min(20).max(5000),
+    currentTech: z.string().trim().max(3000).optional().or(z.literal("")),
+    budgetRange: z
+      .enum([
+        "Below MWK 1,000,000",
+        "MWK 1,000,000 – 5,000,000",
+        "MWK 5,000,000 – 15,000,000",
+        "MWK 15,000,000+",
+        "Discuss first",
+        "",
+      ])
+      .optional(),
+    expectedTimeline: z
+      .enum([
+        "Urgent / under 1 month",
+        "1–3 months",
+        "3–6 months",
+        "6–12 months",
+        "Flexible",
+        "",
+      ])
+      .optional(),
+    consent: z.literal(true),
+    attribution: z
+      .object({
+        firstTouch: acquisitionTouchSchema.optional(),
+        lastTouch: acquisitionTouchSchema.optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 // Contact routes
-router.post("/api/contact", asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const data = insertContactRequestSchema.parse(req.body);
-    const result = await createContactWithLead(
-      data,
-      req.get("referer") || "/contact",
-    );
-    res.json(result.contact);
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ message: "Invalid data", errors: error.issues });
+router.post(
+  "/api/contact",
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const data = insertContactRequestSchema.parse(req.body);
+      const result = await createContactWithLead(
+        data,
+        req.get("referer") || "/contact",
+      );
+      res.json(result.contact);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res
+          .status(400)
+          .json({ message: "Invalid data", errors: error.issues });
+      }
+      throw error;
     }
-    throw error;
-  }
-}));
+  }),
+);
 
-router.post("/api/consultation", asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const { consent: _consent, ...input } = consultationInputSchema.parse(req.body);
-    await createLeadFromConsultation(
-      input,
-      req.get("referer") || "/hire",
-    );
-    res.status(201).json({
-      message: "Consultation request received",
-    });
-  } catch (error: any) {
-    if (error.name === "ZodError") {
-      return res.status(400).json({ message: "Invalid data", errors: error.issues });
+router.post(
+  "/api/consultation",
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const { consent: _consent, ...input } = consultationInputSchema.parse(
+        req.body,
+      );
+      await createLeadFromConsultation(input, req.get("referer") || "/hire");
+      res.status(201).json({
+        message: "Consultation request received",
+      });
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        return res
+          .status(400)
+          .json({ message: "Invalid data", errors: error.issues });
+      }
+      throw error;
     }
-    throw error;
-  }
-}));
+  }),
+);
 
 // Blog Engagement Routes
-router.get("/api/blog/:id/likes", asyncHandler(async (req, res) => {
-  const count = await storage.getBlogLikes(req.params.id);
-  const user = (req as any).user;
-  let isLiked = false;
-  // Likes remain readable without requiring a platform-specific identity provider.
-  res.json({ count, isLiked });
-}));
+router.get(
+  "/api/blog/:id/likes",
+  asyncHandler(async (req, res) => {
+    const count = await storage.getBlogLikes(req.params.id);
+    const user = (req as any).user;
+    let isLiked = false;
+    // Likes remain readable without requiring a platform-specific identity provider.
+    res.json({ count, isLiked });
+  }),
+);
 
-router.get("/api/blog/:id/comments", asyncHandler(async (req, res) => {
-  const comments = await storage.getBlogComments(req.params.id);
-  res.json(comments);
-}));
+router.get(
+  "/api/blog/:id/comments",
+  asyncHandler(async (req, res) => {
+    const comments = await storage.getBlogComments(req.params.id);
+    res.json(comments);
+  }),
+);
 
 // Admin Routes
-router.get("/api/admin/stats", readAnalytics, asyncHandler(async (_req, res) => {
-  const posts = await storage.getAllBlogPosts();
-  const subscribers = await storage.getNewsletterSubscribers();
-  const contacts = await storage.getAllContactRequests();
+router.get(
+  "/api/admin/stats",
+  readAnalytics,
+  asyncHandler(async (_req, res) => {
+    const posts = await storage.getAllBlogPosts();
+    const subscribers = await storage.getNewsletterSubscribers();
+    const contacts = await storage.getAllContactRequests();
 
-  res.json({
-    totalPosts: posts.length,
-    totalSubscribers: subscribers.length,
-    totalContacts: contacts.length,
-  });
-}));
+    res.json({
+      totalPosts: posts.length,
+      totalSubscribers: subscribers.length,
+      totalContacts: contacts.length,
+    });
+  }),
+);
 
 router.post(
   "/api/create-payment-intent",
@@ -511,66 +618,72 @@ router.post(
 );
 
 // External Posts routes (returns mock data until table exists)
-router.get("/api/external-posts", asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const mockPosts = [
-      {
-        id: "1",
-        title: "Building Scalable MEL Systems",
-        source: "LinkedIn",
-        url: "https://linkedin.com",
-        excerpt:
-          "Insights on designing robust monitoring and evaluation frameworks.",
-        featuredImage:
-          "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
-        publishedAt: new Date(),
-        category: "MEL",
-        embedCode: null,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ];
-    res.json(mockPosts);
-  } catch (error) {
-    console.error("Error fetching external posts:", error);
-    res.json([]);
-  }
-}));
+router.get(
+  "/api/external-posts",
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const mockPosts = [
+        {
+          id: "1",
+          title: "Building Scalable MEL Systems",
+          source: "LinkedIn",
+          url: "https://linkedin.com",
+          excerpt:
+            "Insights on designing robust monitoring and evaluation frameworks.",
+          featuredImage:
+            "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
+          publishedAt: new Date(),
+          category: "MEL",
+          embedCode: null,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+      res.json(mockPosts);
+    } catch (error) {
+      console.error("Error fetching external posts:", error);
+      res.json([]);
+    }
+  }),
+);
 
 // Webhook to handle successful payments (raw body required)
-router.post("/api/stripe-webhook", asyncHandler(async (req: Request, res: Response) => {
-  try {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ message: "Stripe not configured" });
+router.post(
+  "/api/stripe-webhook",
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      if (!process.env.STRIPE_SECRET_KEY) {
+        return res.status(500).json({ message: "Stripe not configured" });
+      }
+
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+      const sig = req.headers["stripe-signature"];
+
+      if (!sig) {
+        return res.status(400).send("Missing signature");
+      }
+
+      const event = stripe.webhooks.constructEvent(
+        (req as any).rawBody,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET || "",
+      );
+
+      if (event.type === "payment_intent.succeeded") {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const userId = paymentIntent.metadata.userId;
+
+        // Upgrade user to premium
+        await storage.updateUserPremiumStatus(userId, true);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(400).send("Webhook error");
     }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const sig = req.headers["stripe-signature"];
-
-    if (!sig) {
-      return res.status(400).send("Missing signature");
-    }
-
-    const event = stripe.webhooks.constructEvent(
-      (req as any).rawBody,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET || "",
-    );
-
-    if (event.type === "payment_intent.succeeded") {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      const userId = paymentIntent.metadata.userId;
-
-      // Upgrade user to premium
-      await storage.updateUserPremiumStatus(userId, true);
-    }
-
-    res.json({ received: true });
-  } catch (error) {
-    console.error("Webhook error:", error);
-    res.status(400).send("Webhook error");
-  }
-}));
+  }),
+);
 
 export default router;
