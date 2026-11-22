@@ -33,6 +33,10 @@ Public writing collections omit full bodies and expose safe editorial metadata. 
 
 `npm run verify:release`: PASS, **244 tests in 18 files**, including 18 new editorial/media cases; TypeScript, client/server build, production import checks and dependency policy pass. Production audit: zero findings. Full tree: six moderate, zero high/critical; no exception. The final run uses two database-test workers and skips no tests.
 
+## Preview build timing correction
+
+The initial Vercel Preview ran all 244 checks: 242 passed and two existing migration-fixture cases exceeded the default 5-second test timeout. They reported no assertion finding. The two migration fixture suites now allow 15 seconds for PostgreSQL-WASM cold startup and catalog work on shared build CPUs; their assertions, database guards, and financial HTTP deadlines remain unchanged. The failed deployment is retained as historical evidence and a subsequent source commit must obtain its own passing build.
+
 ## Live certification
 
 Live Preview browser/API evidence will be recorded against the exact PR head in the pull request. A managed local preview could not launch because its TypeScript CLI IPC socket was denied; the working application launch command was preserved. Local test/build evidence and live Preview evidence must be reported separately. No production financial fixtures or external provider messages are used.
