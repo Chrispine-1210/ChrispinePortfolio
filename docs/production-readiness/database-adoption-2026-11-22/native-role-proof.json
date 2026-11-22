@@ -1,0 +1,23 @@
+{
+  "decision": "PASS",
+  "postgres": "PostgreSQL 18.7 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+  "target": {
+    "environment": "test",
+    "branchId": "br-native-role-proof",
+    "database": "neondb",
+    "migrationRole": "portfolio_migrator",
+    "runtimeRole": "portfolio_runtime"
+  },
+  "checks": [
+    "separate role policy configured without superuser/create-role/create-db authority",
+    "exact structural baseline adopted once with source checksums; repeated adoption did not replay data",
+    "runtime DML allowed; DDL, role creation, financial deletion, audit mutation, truncate and journal reads denied",
+    "wrong role and actual branch identity denied",
+    "second real session could not migrate while operator held the lock",
+    "failed post-migration verification rolled schema and history back atomically",
+    "pending source migration applied atomically and subsequent complete adoption was a no-op",
+    "new migration-owned tables inherited runtime read/write privileges",
+    "new immutable history tables excluded from runtime mutation privileges"
+  ],
+  "productionDataUsed": false
+}

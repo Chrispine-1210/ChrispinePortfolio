@@ -17,7 +17,7 @@ type History = z.infer<typeof historySchema>;
 
 // Ignore comments and quoted bodies before checking statement-leading keywords.
 // Migrations may not commit/abort the runner's enclosing transaction themselves.
-function assertTransactionalSql(sql: string) {
+export function assertTransactionalSql(sql: string) {
   let visible = "";
   for (let i = 0; i < sql.length;) {
     if (sql.startsWith("--", i)) { const end = sql.slice(i).search(/[\r\n]/); i = end < 0 ? sql.length : i + end; visible += " "; }

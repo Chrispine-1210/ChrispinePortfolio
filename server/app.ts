@@ -55,13 +55,14 @@ export function createApp() {
   app.get("/api/release", asyncHandler(async (_request, response, next) => {
     try {
       const databaseIdentity = await pool.query(
-        "select current_setting('neon.branch_id', true) as branch_id",
+        "select current_setting('neon.branch_id', true) as branch_id, current_user as database_role",
       );
       const branchId = databaseIdentity.rows?.[0]?.branch_id ?? null;
       response.setHeader("Cache-Control", "no-store");
       response.json({
         ...getReleaseMetadata(),
         databaseBranchId: typeof branchId === "string" ? branchId : null,
+        databaseRole: typeof databaseIdentity.rows?.[0]?.database_role === "string" ? databaseIdentity.rows[0].database_role : null,
       });
     } catch (error) {
       next(error);
