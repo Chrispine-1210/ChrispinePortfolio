@@ -19,10 +19,9 @@ import {
 import Stripe from "stripe";
 import { seedBlogPosts } from "./seed-data.js";
 import {
-  enqueueContactAutomation,
   enqueueNewsletterWelcome,
 } from "./email/automations.js";
-import { createLeadFromContact, createLeadFromConsultation } from "./crm/lead-service.js";
+import { createContactWithLead, createLeadFromConsultation } from "./crm/lead-service.js";
 import { getPublicCaseStudyBySlug, listPublicCaseStudies } from "./portfolio/public-case-study-service.js";
 
 const fallbackBlogPosts: BlogPost[] = seedBlogPosts.map((post, index) => ({
@@ -387,47 +386,36 @@ const consultationInputSchema = z.object({
 router.post("/api/contact", asyncHandler(async (req: Request, res: Response) => {
   try {
     const data = insertContactRequestSchema.parse(req.body);
-    const request = await storage.createContactRequest(data);
-    await createLeadFromContact(
-      request,
+    const result = await createContactWithLead(
+      data,
       req.get("referer") || "/contact",
-    ).catch((error) =>
-      console.error("Failed to create CRM lead from contact request", error),
     );
-    await enqueueContactAutomation(request).catch((error) =>
-      console.error("Failed to enqueue contact automation", error),
-    );
-    res.json(request);
+    res.json(result.contact);
   } catch (error: any) {
-    console.error("Error creating contact request:", error);
     if (error.name === "ZodError") {
       return res
         .status(400)
         .json({ message: "Invalid data", errors: error.issues });
     }
-    res.status(500).json({ message: "Failed to submit contact request" });
+    throw error;
   }
 }));
 
 router.post("/api/consultation", asyncHandler(async (req: Request, res: Response) => {
   try {
     const { consent: _consent, ...input } = consultationInputSchema.parse(req.body);
-    const result = await createLeadFromConsultation(
+    await createLeadFromConsultation(
       input,
       req.get("referer") || "/hire",
-    );
-    await enqueueContactAutomation(result.contact).catch((error) =>
-      console.error("Failed to enqueue consultation contact automation", error),
     );
     res.status(201).json({
       message: "Consultation request received",
     });
   } catch (error: any) {
-    console.error("Error creating consultation request:", error);
     if (error.name === "ZodError") {
       return res.status(400).json({ message: "Invalid data", errors: error.issues });
     }
-    res.status(500).json({ message: "Failed to submit consultation request" });
+    throw error;
   }
 }));
 
