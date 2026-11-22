@@ -26,10 +26,11 @@ A commit being present in GitHub does not mean that Vercel deployed it. Read [wo
 
 Use Node.js 22 or later and npm. Run `npm ci`, copy `.env.example` to `.env`, and configure the intended development database and private authentication settings. Do not commit environment files or credentials.
 
-For a real development database, review and run the migration/bootstrap scripts against that database only. With environment values in `.env`, commands can be launched with Node's environment loader:
+For a real development database, follow the [guarded migration procedure](docs/production-readiness/migrations-2026-11-22/README.md). Keep the separate migration credential in a private `.env.migrations` overlay used only by the runner; do not load that overlay into the application server. Review the read-only plan before explicitly applying it:
 
 ```sh
-node --env-file=.env --import tsx scripts/migrate.ts
+node --env-file=.env --env-file=.env.migrations --import tsx scripts/migrate.ts --plan
+node --env-file=.env --env-file=.env.migrations --import tsx scripts/migrate.ts --apply
 node --env-file=.env --import tsx scripts/bootstrap-admin.ts
 node --env-file=.env --import tsx server/index.ts
 ```
