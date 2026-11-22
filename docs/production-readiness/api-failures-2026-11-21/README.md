@@ -4,13 +4,13 @@ Baseline: `e5a4b4bef7e19d262f2940d7d231ecbf4602aa92`. Implements completion-back
 
 ## Result
 
-Express 4 now receives rejected promises from 120 previously bare route/middleware callbacks through the existing `asyncHandler`. Existing guarded handlers remain guarded. The shared boundary classifies Zod input failures, known PostgreSQL integrity/conflict errors and temporary database failures without returning SQL, credentials, driver messages or stack traces. Responses include a request identifier, `no-store`, bounded validation fields and retry guidance for temporary unavailability. Unknown portfolio failures reach the shared boundary; existing portfolio-specific client responses remain compatible.
+Express 4 now receives rejected promises from 120 previously bare route/middleware callbacks through the existing `asyncHandler`. Existing guarded handlers remain guarded. The shared boundary classifies Zod input failures, known PostgreSQL integrity/conflict errors and temporary database failures without returning SQL, credentials, driver messages or stack traces. Responses include a request identifier, `no-store`, bounded validation fields and retry guidance for temporary read unavailability. Unknown portfolio failures reach the shared boundary; existing portfolio-specific client responses remain compatible.
 
 `server/api-reliability.test.ts` covers the actual app with real database-backed sessions and isolated PGlite migrations. It exercises invalid unsubscribe input, malformed JSON, public body limits, authorization, duplicate content and injected database failures across content, portfolio, revenue, capital, treasury, email, campaigns and engineering. Requests have a 1.5-second response / 3-second total test deadline. SQLSTATE fixtures additionally verify nested-driver classification and redacted output/logs. Engineering's existing missing-schema response remains 503.
 
-The initial classification run reproduced 16 failing expectations. After correction, `npm run verify:release` passes: 134 tests / 13 files, TypeScript, certification syntax, frontend/server build, both production import graphs and dependency audit. Production audit: zero findings. Full audit: six moderate findings, zero high/critical; no exception applied. See `verification.log`.
+The initial classification run reproduced 16 failing expectations. After correction, `npm run verify:release` passes: 145 tests / 14 files, TypeScript, certification syntax, frontend/server build, both production import graphs and dependency audit. Production audit: zero findings. Full audit: six moderate findings, zero high/critical; no exception applied. See `verification.log`.
 
-No client file, style, migration, package/lockfile, production data, hosted workflow or provider configuration is changed. Database failure fixtures exist only inside local test databases. Test results establish local request behavior; Vercel Preview and production provenance are separate release gates.
+Client error messaging is now method-aware; no layout, style, migration, package/lockfile, production data, hosted workflow or provider configuration is changed. Database failure fixtures exist only inside local test databases. Test results establish local request behavior; Vercel Preview and production provenance are separate release gates.
 
 ## Remaining business completion gates
 
@@ -25,3 +25,7 @@ No client file, style, migration, package/lockfile, production data, hosted work
 | Operations | Exact-release verification and isolated Preview; safe migrations and recoverable releases | Migration history/target safeguards, executable security scan, alerts, restore/rollback objectives and final owner handover remain pending |
 
 A READY deployment, source test count or empty finance table does not establish customer receipts, real revenue or full production acceptance. Do not use production financial writes, real charges or external messages as software test fixtures.
+
+## Review correction — 22 November 2026
+
+The CodeRabbit review identified unsafe retry advice after a financial write whose outcome could be uncertain. A server failure on POST/PUT/PATCH/DELETE now reports `WRITE_OUTCOME_UNKNOWN`, omits `Retry-After`, and asks the caller to check existing records before resubmitting. Client handling uses the same guidance for server failures and lost network responses. Reads retain retry guidance; mutation auto-retries remain disabled. Eleven additional HTTP/client regressions cover this distinction. This reduces duplicate-submission risk while persistent idempotency remains a separate required correction.

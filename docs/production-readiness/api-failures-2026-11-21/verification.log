@@ -19,13 +19,13 @@ npm warn Unknown env config "http-proxy". This will stop working in the next maj
 > vitest run --config vitest.config.ts
 
 
- RUN  v4.1.12 /workspace/scratch/5eccf5b8b83c/ChrispinePortfolio
+ RUN  v4.1.12 /workspace/scratch/5eccf5b8b83c/portfolio-api-review-fix
 
 
- Test Files  13 passed (13)
-      Tests  134 passed (134)
-   Start at  17:19:55
-   Duration  16.49s (transform 3.94s, setup 0ms, import 4.32s, tests 48.02s, environment 1ms)
+ Test Files  14 passed (14)
+      Tests  145 passed (145)
+   Start at  05:29:27
+   Duration  15.28s (transform 2.92s, setup 0ms, import 4.44s, tests 39.38s, environment 12ms)
 
 npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
 
@@ -34,7 +34,7 @@ npm warn Unknown env config "http-proxy". This will stop working in the next maj
 
 vite v8.3.7 building client environment for production...
 transforming...
-✓ 2808 modules transformed.
+✓ 2809 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/public/index.html                                                  4.07 kB │ gzip:  1.35 kB
@@ -59,7 +59,7 @@ dist/public/assets/index-DTcr7Z3k.css                                 135.87 kB 
 dist/public/assets/Chrispine-Mndala-CV-2026-DOAY2qGB.js                 0.06 kB │ gzip:  0.08 kB
 dist/public/assets/plus-CLQ7O8Ix.js                                     0.15 kB │ gzip:  0.15 kB
 dist/public/assets/search-CffFO_f5.js                                   0.17 kB │ gzip:  0.16 kB
-dist/public/assets/useAuth-9Gm2aw6S.js                                  0.17 kB │ gzip:  0.16 kB
+dist/public/assets/useAuth-C5zZHzZN.js                                  0.17 kB │ gzip:  0.16 kB
 dist/public/assets/circle-check-BB3Mm_qG.js                             0.17 kB │ gzip:  0.16 kB
 dist/public/assets/chart-line-CXvM-DgM.js                               0.18 kB │ gzip:  0.17 kB
 dist/public/assets/clock-3-DdmTihGZ.js                                  0.18 kB │ gzip:  0.17 kB
@@ -99,56 +99,56 @@ dist/public/assets/badge-D8d-6NR5.js                                    0.81 kB 
 dist/public/assets/createLucideIcon-CVW4XzVj.js                         0.90 kB │ gzip:  0.54 kB
 dist/public/assets/card-CNxl1wSX.js                                     1.10 kB │ gzip:  0.42 kB
 dist/public/assets/EditorialPhoto-BGrHr6s4.js                           2.62 kB │ gzip:  1.33 kB
-dist/public/assets/Resources-BP_1b4NF.js                                2.80 kB │ gzip:  1.11 kB
-dist/public/assets/ExternalPosts-B5GtIqta.js                            3.07 kB │ gzip:  1.37 kB
-dist/public/assets/GitHubProfile-Dp2oSPoH.js                            3.27 kB │ gzip:  1.20 kB
-dist/public/assets/Login-cLM9v2RK.js                                    3.35 kB │ gzip:  1.39 kB
-dist/public/assets/ContactsManagement-CKYmVf4h.js                       3.57 kB │ gzip:  1.52 kB
+dist/public/assets/Resources-DAD9f4AN.js                                2.80 kB │ gzip:  1.11 kB
+dist/public/assets/ExternalPosts-BEbllOct.js                            3.07 kB │ gzip:  1.37 kB
+dist/public/assets/GitHubProfile-Coo8Gzqc.js                            3.27 kB │ gzip:  1.19 kB
+dist/public/assets/Login-T3EGYU96.js                                    3.35 kB │ gzip:  1.39 kB
+dist/public/assets/ContactsManagement-Cccx9DSc.js                       3.57 kB │ gzip:  1.52 kB
 dist/public/assets/button-D88ARQ9k.js                                   3.61 kB │ gzip:  1.60 kB
-dist/public/assets/AudienceManagement-Dv9iHeqn.js                       4.22 kB │ gzip:  1.61 kB
-dist/public/assets/Analytics-YhUqsNtR.js                                4.29 kB │ gzip:  1.27 kB
-dist/public/assets/BlogPost-Bw1MYjh6.js                                 4.55 kB │ gzip:  1.90 kB
-dist/public/assets/SoftwareConsultingMalawi-B3U884rX.js                 5.03 kB │ gzip:  1.95 kB
-dist/public/assets/NewsletterManagement-Yf6wrAcG.js                     5.29 kB │ gzip:  2.00 kB
-dist/public/assets/DigitalTransformationAfrica-CKthwWxE.js              6.05 kB │ gzip:  2.21 kB
-dist/public/assets/SecurityManagement-CBqiJVPO.js                       6.41 kB │ gzip:  2.04 kB
-dist/public/assets/PortfolioAdvanced-CYhtbCSR.js                        6.43 kB │ gzip:  2.20 kB
-dist/public/assets/UserManagement-CrBsrq_H.js                           6.47 kB │ gzip:  2.37 kB
-dist/public/assets/EducationTechnologySolutions-TFpFk0e8.js             6.84 kB │ gzip:  2.58 kB
-dist/public/assets/ProjectManagement-ZzB2ewWE.js                        7.37 kB │ gzip:  2.58 kB
-dist/public/assets/AdminDashboard-DQ656-mO.js                           7.54 kB │ gzip:  2.39 kB
+dist/public/assets/AudienceManagement-EoMTydqe.js                       4.22 kB │ gzip:  1.61 kB
+dist/public/assets/Analytics-B1YxuRmM.js                                4.29 kB │ gzip:  1.27 kB
+dist/public/assets/BlogPost-9lv5HG76.js                                 4.55 kB │ gzip:  1.90 kB
+dist/public/assets/SoftwareConsultingMalawi-0cotgfWa.js                 5.03 kB │ gzip:  1.95 kB
+dist/public/assets/NewsletterManagement-B_iqE8MI.js                     5.29 kB │ gzip:  2.00 kB
+dist/public/assets/DigitalTransformationAfrica-BhQiXsyd.js              6.05 kB │ gzip:  2.21 kB
+dist/public/assets/SecurityManagement-Czwzi50K.js                       6.41 kB │ gzip:  2.04 kB
+dist/public/assets/PortfolioAdvanced-vDmPAKQ5.js                        6.43 kB │ gzip:  2.20 kB
+dist/public/assets/UserManagement-veOd4ngQ.js                           6.47 kB │ gzip:  2.37 kB
+dist/public/assets/EducationTechnologySolutions-CSGorE00.js             6.84 kB │ gzip:  2.57 kB
+dist/public/assets/ProjectManagement-BF5nUQ5G.js                        7.37 kB │ gzip:  2.58 kB
+dist/public/assets/AdminDashboard-CsJyr43-.js                           7.54 kB │ gzip:  2.39 kB
 dist/public/assets/engineering-BfUJxk8A.js                              7.83 kB │ gzip:  3.12 kB
 dist/public/assets/jsx-runtime-Dn_YclF2.js                              7.96 kB │ gzip:  3.07 kB
-dist/public/assets/Blog-D5sz7jB9.js                                     7.99 kB │ gzip:  2.68 kB
-dist/public/assets/CustomSoftwareDevelopment-hW4yDU4m.js                8.26 kB │ gzip:  2.93 kB
-dist/public/assets/AdminShell-CPeM8Hez.js                               8.99 kB │ gzip:  3.27 kB
-dist/public/assets/PortfolioDetail-Bp07jUua.js                          9.74 kB │ gzip:  3.44 kB
-dist/public/assets/About-BXZ2IlIu.js                                   10.54 kB │ gzip:  3.33 kB
-dist/public/assets/queryClient-BT8pzQCY.js                             11.66 kB │ gzip:  3.86 kB
-dist/public/assets/ContentManagement-CP7Dz21X.js                       12.14 kB │ gzip:  3.85 kB
+dist/public/assets/Blog-DYq0HId1.js                                     7.99 kB │ gzip:  2.68 kB
+dist/public/assets/CustomSoftwareDevelopment-BVVRs9Lu.js                8.26 kB │ gzip:  2.93 kB
+dist/public/assets/AdminShell-jbzkFpmN.js                               8.99 kB │ gzip:  3.27 kB
+dist/public/assets/PortfolioDetail-69fh51Tt.js                          9.74 kB │ gzip:  3.44 kB
+dist/public/assets/About-CFfFEZtH.js                                   10.54 kB │ gzip:  3.33 kB
+dist/public/assets/queryClient-CFhcY_MF.js                             12.09 kB │ gzip:  4.07 kB
+dist/public/assets/ContentManagement-CA1sSht7.js                       12.14 kB │ gzip:  3.85 kB
 dist/public/assets/utils-B3NvoXdR.js                                   12.22 kB │ gzip:  4.34 kB
-dist/public/assets/Subscribe-BBvX1M6p.js                               12.27 kB │ gzip:  4.92 kB
-dist/public/assets/CaseStudyManagement-SFrnGCkf.js                     15.35 kB │ gzip:  4.66 kB
-dist/public/assets/EngineeringJourney-C3mTXLWe.js                      17.01 kB │ gzip:  5.31 kB
+dist/public/assets/Subscribe-zbsUPuIl.js                               12.27 kB │ gzip:  4.92 kB
+dist/public/assets/CaseStudyManagement-DthPWo2s.js                     15.35 kB │ gzip:  4.66 kB
+dist/public/assets/EngineeringJourney-C5NbC9dB.js                      17.01 kB │ gzip:  5.31 kB
 dist/public/assets/utils-CDC-uwFw.js                                   20.05 kB │ gzip:  6.83 kB
-dist/public/assets/RevenueIntelligence-BfLAzlQ2.js                     23.70 kB │ gzip:  5.56 kB
-dist/public/assets/HireMe-ueqWH4Lb.js                                  24.34 kB │ gzip:  6.53 kB
-dist/public/assets/TreasuryRoic-BnUbT-nR.js                            26.12 kB │ gzip:  5.68 kB
-dist/public/assets/Dashboard-DrHMNbPm.js                               27.52 kB │ gzip:  8.33 kB
-dist/public/assets/LeadPipeline-BBULTUHY.js                            29.80 kB │ gzip:  6.20 kB
-dist/public/assets/CapitalOperatingSystem-DmmInj10.js                  31.26 kB │ gzip:  6.33 kB
-dist/public/assets/EngineeringWorkspace-Cz5PNfsj.js                    55.01 kB │ gzip: 15.59 kB
+dist/public/assets/RevenueIntelligence-BjZCUZyL.js                     23.70 kB │ gzip:  5.55 kB
+dist/public/assets/HireMe-C4O9ky5d.js                                  24.34 kB │ gzip:  6.53 kB
+dist/public/assets/TreasuryRoic-BjOlGFTB.js                            26.12 kB │ gzip:  5.68 kB
+dist/public/assets/Dashboard-DzGdsz6D.js                               27.52 kB │ gzip:  8.33 kB
+dist/public/assets/LeadPipeline-BffXSBSI.js                            29.80 kB │ gzip:  6.20 kB
+dist/public/assets/CapitalOperatingSystem-DgmlwXwj.js                  31.26 kB │ gzip:  6.33 kB
+dist/public/assets/EngineeringWorkspace-BP5M2pLZ.js                    55.01 kB │ gzip: 15.59 kB
 dist/public/assets/lib-BClSHELa.js                                    115.10 kB │ gzip: 34.82 kB
 dist/public/assets/dist-D68U-oYC.js                                   134.55 kB │ gzip: 43.87 kB
 dist/public/assets/schemas-D5Q2wQCu.js                                138.41 kB │ gzip: 39.64 kB
-dist/public/assets/index-DMH7Hehi.js                                  245.51 kB │ gzip: 81.47 kB
-dist/public/assets/Contact-CgWi_vqN.js                                391.83 kB │ gzip: 92.30 kB
+dist/public/assets/index-DiEosaxN.js                                  245.51 kB │ gzip: 81.46 kB
+dist/public/assets/Contact-DViqCAII.js                                391.83 kB │ gzip: 92.30 kB
 
-✓ built in 1.46s
+✓ built in 1.36s
 
-  dist/index.js  460.0kb
+  dist/index.js  460.3kb
 
-⚡ Done in 12ms
+⚡ Done in 13ms
 npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
 
 > chrispine-portfolio@1.0.0 verify:runtime
