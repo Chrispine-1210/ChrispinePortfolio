@@ -24,6 +24,7 @@ import { pool } from "./db.js";
 
 import { createEngineeringRouter } from "./engineering/routes.js";
 import { requestContext, safeApiError } from "./security/http-boundary.js";
+import { createFinancialRequestRouter } from "./financial-requests.js";
 
 export function createApp() {
   const app = express();
@@ -103,6 +104,7 @@ export function createApp() {
   app.use(createRevenueIntelligenceRouter());
   app.use(createCapitalOperatingRouter());
   app.use(createTreasuryRoicRouter());
+  app.use(createFinancialRequestRouter());
   app.use(createEngineeringRouter());
   app.use(createEmailRouter());
   app.use(createNotificationRouter());

@@ -105,7 +105,10 @@ export function requireAdminPermission(permission: string) {
       const authenticate = createSessionAuthentication(getDatabaseAuthRuntime().sessions);
       return authenticate(req, res, (authenticationError?: unknown) => {
         if (authenticationError) return next(authenticationError);
-        return requirePermission(permission)(req, res, next);
+        return requirePermission(permission)(req, res, () => {
+          req.authorizedAdminPermission = permission;
+          next();
+        });
       });
     }
     return authMiddleware(req, res, () => {

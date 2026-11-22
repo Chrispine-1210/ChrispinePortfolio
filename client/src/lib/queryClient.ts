@@ -1,5 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { requestFailureMessage, unconfirmedWriteMessage } from "./request-error";
+import { isFinancialWrite } from "@shared/financial-requests";
+import { prepareFinancialRequest, resolveFinancialRequest } from "./financial-request-store";
 
 async function throwIfResNotOk(res: Response, method = "GET") {
   if (!res.ok) {
@@ -13,17 +15,41 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  let reference: string | undefined, actor: string | undefined;
+  if (isFinancialWrite(method, url)) {
+    let identity: Response;
+    try { identity = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" }); }
+    catch { throw new Error("Your account could not be verified. No financial change was submitted."); }
+    await throwIfResNotOk(identity);
+    const user = await identity.json();
+    if (typeof user.id !== "string" || !user.id) throw new Error("A database-backed account is required for financial changes.");
+    actor = user.id;
+    reference = (await prepareFinancialRequest(user.id, method.toUpperCase(), url, data)).key;
+  }
   let res: Response;
   try {
     res = await fetch(url, {
       method,
-      headers: data ? { "Content-Type": "application/json" } : {},
+      headers: { ...(data ? { "Content-Type": "application/json" } : {}), ...(reference && actor ? { "Idempotency-Key": reference, "X-Financial-Actor": actor } : {}) },
       body: data ? JSON.stringify(data) : undefined,
       credentials: "include",
     });
   } catch (error) {
+    if (reference) throw new Error(`The financial outcome is unconfirmed. Reference: ${reference}. Open Financial requests to reconcile it before submitting another change.`);
     if (!["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase())) throw new Error(unconfirmedWriteMessage);
     throw error;
+  }
+
+  if (reference && actor) {
+    if (res.headers.get("Idempotency-Result") === "recorded") {
+      // Require a complete JSON response before clearing the browser reference.
+      try { await res.clone().json(); }
+      catch { throw new Error(`The financial response is incomplete. Reconcile reference ${reference} in Financial requests.`); }
+      resolveFinancialRequest(actor, reference);
+    } else {
+      const payload = await res.clone().json().catch(() => null);
+      throw new Error(`${requestFailureMessage(res.status, payload, res.headers.get("X-Request-Id"), method)} Financial reference: ${reference}. Reconcile it in Financial requests.`);
+    }
   }
 
   await throwIfResNotOk(res, method);

@@ -148,6 +148,22 @@ export const auditEvents = pgTable("audit_events", {
   actionIdx: index("audit_events_action_idx").on(table.action, table.createdAt),
 }));
 
+export const financialRequestReceipts = pgTable("financial_request_receipts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  actorUserId: varchar("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  requestKey: varchar("request_key", { length: 100 }).notNull(),
+  fingerprint: varchar("fingerprint", { length: 64 }).notNull(),
+  method: varchar("method", { length: 10 }).notNull(),
+  path: text("path").notNull(),
+  requiredPermission: varchar("required_permission", { length: 160 }).notNull(),
+  responseStatus: integer("response_status").notNull(),
+  responseBody: jsonb("response_body").notNull(),
+  originalRequestId: varchar("original_request_id", { length: 100 }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  actorKeyUnique: uniqueIndex("financial_request_receipts_actor_key_unique").on(table.actorUserId, table.requestKey),
+}));
+
 export const authenticationAttempts = pgTable("authentication_attempts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   accountKeyHash: varchar("account_key_hash", { length: 64 }).notNull(),

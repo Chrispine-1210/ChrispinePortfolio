@@ -209,5 +209,6 @@ export function databaseRolePolicy(t: BatchTarget, catalog: unknown[]) {
  ALTER DEFAULT PRIVILEGES FOR ROLE ${migrator} IN SCHEMA public GRANT USAGE,SELECT ON SEQUENCES TO ${runtime};
  REVOKE UPDATE ON public.audit_events,public.content_versions FROM ${runtime};
  IF to_regclass('public.engineering_versions') IS NOT NULL THEN REVOKE UPDATE ON public.engineering_versions FROM ${runtime}; END IF;
+ IF to_regclass('public.financial_request_receipts') IS NOT NULL THEN REVOKE UPDATE ON public.financial_request_receipts FROM ${runtime}; END IF;
  END;`)};`;
 }

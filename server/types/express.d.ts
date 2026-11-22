@@ -5,6 +5,7 @@ declare global {
     interface Request {
       securityPrincipal?: SessionPrincipal;
       requestId?: string;
+      authorizedAdminPermission?: string;
     }
   }
 }

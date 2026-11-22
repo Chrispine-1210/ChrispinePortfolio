@@ -7,6 +7,7 @@ import { requestContext, safeApiError } from "./security/http-boundary.js";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as schema from "../shared/schema.js";
+import { contextualDatabase } from "./database-context.js";
 import {
   emptyDetails,
   mediaReference,
@@ -15,7 +16,7 @@ import {
   type RecordKind,
 } from "../shared/engineering.js";
 const database = new PGlite();
-vi.mock("./db.js", () => ({ db: drizzle(database, { schema }) }));
+vi.mock("./db.js", () => ({ db: contextualDatabase(drizzle(database, { schema })) }));
 let app: Express;
 let owner: { cookie: string; id: string },
   other: { cookie: string; id: string },

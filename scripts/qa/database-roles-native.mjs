@@ -36,7 +36,7 @@ const target = {
   migrationRole: "portfolio_migrator",
   runtimeRole: "portfolio_runtime",
 };
-const files = await loadMigrations("migrations");
+const allFiles = await loadMigrations("migrations");
 const evidence = "docs/production-readiness/database-adoption-2026-11-22/";
 const before = JSON.parse(
     await readFile(evidence + "prefix-catalog.json", "utf8"),
@@ -50,6 +50,7 @@ const prefix = JSON.parse(
   baseline = JSON.parse(
     await readFile(evidence + "reference-baseline.json", "utf8"),
   );
+const files = allFiles.filter(f => baseline.migrations.some(m => m.file === f.file));
 const adapter = (c) => ({
   query: (s, p) => c.query(s, p),
   exec: async (s) => {

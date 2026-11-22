@@ -9,6 +9,7 @@ import request from "supertest";
 import type { Express } from "express";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as schema from "../shared/schema.js";
+import { contextualDatabase } from "./database-context.js";
 import {
   EDITORIAL_PREFIX,
   MAX_IMAGE_BYTES,
@@ -297,7 +298,7 @@ describe("safe editorial documents", () => {
 });
 
 const database = new PGlite();
-vi.mock("./db.js", () => ({ db: drizzle(database, { schema }) }));
+vi.mock("./db.js", () => ({ db: contextualDatabase(drizzle(database, { schema })) }));
 let app: Express, adminCookie: string, financeCookie: string;
 beforeAll(async () => {
   vi.stubEnv("ADMIN_AUTH_MODE", "database");

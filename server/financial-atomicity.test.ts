@@ -3,12 +3,13 @@ import { randomUUID } from "node:crypto";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import type { Express } from "express";
-import request from "supertest";
+import request from "./test-support/financial-client.js";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as schema from "../shared/schema.js";
+import { contextualDatabase } from "./database-context.js";
 
 const database = new PGlite();
-vi.mock("./db.js", () => ({ db: drizzle(database, { schema }) }));
+vi.mock("./db.js", () => ({ db: contextualDatabase(drizzle(database, { schema })) }));
 let app: Express;
 let cookie: string;
 let sequence = 0;
@@ -137,7 +138,7 @@ for (const voiding of [false, true]) operation(`acquisition.spend.${voiding ? "v
   return { path: `/api/admin/acquisition/spend/${record.id}/void`, body: reason, status: 200, action: "acquisition.spend.void" };
 });
 
-const tables = ["acquisition_spend_entries", "recurring_revenue_agreements", "revenue_events", "direct_cost_entries", "cost_evidence_attestations", "commercial_invoices", "cash_collections", "recurring_revenue_movements", "delivery_capacity_records", "capital_budget_cycles", "capital_budget_allocations", "treasury_accounts", "treasury_balance_snapshots", "treasury_cash_disbursements", "operating_expense_entries", "operating_tax_provisions", "invested_capital_snapshots", "capital_deployment_entries", "financial_evidence_attestations", "capital_hurdle_policies", "leads", "lead_activities", "audit_events"];
+const tables = ["financial_request_receipts", "acquisition_spend_entries", "recurring_revenue_agreements", "revenue_events", "direct_cost_entries", "cost_evidence_attestations", "commercial_invoices", "cash_collections", "recurring_revenue_movements", "delivery_capacity_records", "capital_budget_cycles", "capital_budget_allocations", "treasury_accounts", "treasury_balance_snapshots", "treasury_cash_disbursements", "operating_expense_entries", "operating_tax_provisions", "invested_capital_snapshots", "capital_deployment_entries", "financial_evidence_attestations", "capital_hurdle_policies", "leads", "lead_activities", "audit_events"];
 async function snapshot() {
   return (await database.query(tables.map(table => `SELECT '${table}' AS name, coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]'::jsonb) AS records FROM ${table} t`).join(" UNION ALL "))).rows;
 }
