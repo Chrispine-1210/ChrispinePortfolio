@@ -12,7 +12,7 @@
     "test:watch": "vitest --config vitest.config.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
-    "db:push": "drizzle-kit push",
+    "db:push": "node scripts/reject-schema-push.mjs",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "verify:release": "npm run check && npm run check:certification && npm test && npm run build && npm run verify:runtime && npm run audit:release",
     "certify:treasury-preview": "node scripts/certify-treasury-preview.mjs",
