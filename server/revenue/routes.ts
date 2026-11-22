@@ -149,9 +149,10 @@ async function audit(
   resourceId: string,
   previousState: unknown,
   newState: unknown,
-  justification?: string,
+  justification: string | undefined,
+  writer: Pick<typeof db, "insert">,
 ) {
-  await db.insert(auditEvents).values({
+  await writer.insert(auditEvents).values({
     actorUserId: request.securityPrincipal?.userId ?? null,
     actorSessionId: request.securityPrincipal?.sessionId ?? null,
     action,
@@ -202,20 +203,23 @@ export function createRevenueIntelligenceRouter() {
       if (startedAt.getTime() > Date.now() + 10 * 60 * 1000) {
         return response.status(400).json({ message: "Agreement start cannot be in the future" });
       }
-      const [record] = await db
-        .insert(recurringRevenueAgreements)
-        .values({
-          leadId: input.leadId,
-          serviceInterest: input.serviceInterest,
-          currency: input.currency,
-          monthlyRecurringRevenue: String(input.monthlyRecurringRevenue),
-          startedAt,
-          sourceReference: input.sourceReference,
-          notes: input.notes || null,
-          createdBy: request.securityPrincipal?.userId ?? null,
-        })
-        .returning();
-      await audit(request, "revenue.agreement.create", "recurring_revenue_agreement", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction
+          .insert(recurringRevenueAgreements)
+          .values({
+            leadId: input.leadId,
+            serviceInterest: input.serviceInterest,
+            currency: input.currency,
+            monthlyRecurringRevenue: String(input.monthlyRecurringRevenue),
+            startedAt,
+            sourceReference: input.sourceReference,
+            notes: input.notes || null,
+            createdBy: request.securityPrincipal?.userId ?? null,
+          })
+          .returning();
+        await audit(request, "revenue.agreement.create", "recurring_revenue_agreement", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -235,7 +239,7 @@ export function createRevenueIntelligenceRouter() {
           .select()
           .from(recurringRevenueAgreements)
           .where(eq(recurringRevenueAgreements.id, request.params.id))
-          .limit(1);
+          .limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         if (previous.status !== "active") return { outcome: "closed" as const, record: previous };
@@ -279,7 +283,7 @@ export function createRevenueIntelligenceRouter() {
           .select()
           .from(recurringRevenueAgreements)
           .where(eq(recurringRevenueAgreements.id, request.params.id))
-          .limit(1);
+          .limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         const [record] = await transaction
@@ -337,20 +341,23 @@ export function createRevenueIntelligenceRouter() {
       if (validation.outcome === "service_mismatch") return response.status(409).json({
         message: `Service must match the won opportunity: ${validation.expected}`,
       });
-      const [record] = await db.insert(revenueEvents).values({
-        leadId: input.leadId,
-        serviceInterest: input.serviceInterest,
-        revenueKind: input.revenueKind,
-        currency: input.currency,
-        amount: String(input.amount),
-        occurredAt: new Date(input.occurredAt),
-        periodStart: input.periodStart ? new Date(input.periodStart) : null,
-        periodEnd: input.periodEnd ? new Date(input.periodEnd) : null,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "revenue.event.create", "revenue_event", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(revenueEvents).values({
+          leadId: input.leadId,
+          serviceInterest: input.serviceInterest,
+          revenueKind: input.revenueKind,
+          currency: input.currency,
+          amount: String(input.amount),
+          occurredAt: new Date(input.occurredAt),
+          periodStart: input.periodStart ? new Date(input.periodStart) : null,
+          periodEnd: input.periodEnd ? new Date(input.periodEnd) : null,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "revenue.event.create", "revenue_event", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -363,7 +370,7 @@ export function createRevenueIntelligenceRouter() {
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction.select().from(revenueEvents)
-          .where(eq(revenueEvents.id, request.params.id)).limit(1);
+          .where(eq(revenueEvents.id, request.params.id)).limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         const [record] = await transaction.update(revenueEvents).set({
@@ -417,19 +424,22 @@ export function createRevenueIntelligenceRouter() {
       if (validation.outcome === "service_mismatch") return response.status(409).json({
         message: `Service must match the won opportunity: ${validation.expected}`,
       });
-      const [record] = await db.insert(directCostEntries).values({
-        leadId: input.leadId,
-        serviceInterest: input.serviceInterest,
-        category: input.category,
-        costScope: input.costScope,
-        currency: input.currency,
-        amount: String(input.amount),
-        occurredAt: new Date(input.occurredAt),
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "revenue.cost.create", "direct_cost_entry", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(directCostEntries).values({
+          leadId: input.leadId,
+          serviceInterest: input.serviceInterest,
+          category: input.category,
+          costScope: input.costScope,
+          currency: input.currency,
+          amount: String(input.amount),
+          occurredAt: new Date(input.occurredAt),
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "revenue.cost.create", "direct_cost_entry", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -442,7 +452,7 @@ export function createRevenueIntelligenceRouter() {
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction.select().from(directCostEntries)
-          .where(eq(directCostEntries.id, request.params.id)).limit(1);
+          .where(eq(directCostEntries.id, request.params.id)).limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         const [record] = await transaction.update(directCostEntries).set({
@@ -507,16 +517,19 @@ export function createRevenueIntelligenceRouter() {
       if (validation.outcome === "service_mismatch") return response.status(409).json({
         message: `Service must match the won opportunity: ${validation.expected}`,
       });
-      const [record] = await db.insert(costEvidenceAttestations).values({
-        leadId: input.leadId,
-        serviceInterest: input.serviceInterest,
-        currency: input.currency,
-        throughAt: new Date(input.throughAt),
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "revenue.cost_attestation.create", "cost_evidence_attestation", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(costEvidenceAttestations).values({
+          leadId: input.leadId,
+          serviceInterest: input.serviceInterest,
+          currency: input.currency,
+          throughAt: new Date(input.throughAt),
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "revenue.cost_attestation.create", "cost_evidence_attestation", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
     }),
   );
@@ -529,7 +542,7 @@ export function createRevenueIntelligenceRouter() {
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction.select().from(costEvidenceAttestations)
-          .where(eq(costEvidenceAttestations.id, request.params.id)).limit(1);
+          .where(eq(costEvidenceAttestations.id, request.params.id)).limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         const [record] = await transaction.update(costEvidenceAttestations).set({

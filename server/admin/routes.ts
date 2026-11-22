@@ -794,7 +794,7 @@ export function createAdminRouter(): Router {
           .select()
           .from(acquisitionSpendEntries)
           .where(eq(acquisitionSpendEntries.id, request.params.id))
-          .limit(1);
+          .limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "already_voided" as const, record: previous };
         const [record] = await transaction
