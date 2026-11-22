@@ -8,11 +8,12 @@ import { spawn, spawnSync } from "node:child_process";
 import { createServer } from "node:net";
 import { once } from "node:events";
 import { loadMigrations } from "../migrations/runner.ts";
-import { schemaObjects } from "../migrations/schema.ts";
+import { schemaObjects, sha256 } from "../migrations/schema.ts";
 import {
   adoptionBatch,
   pendingBatch,
   databaseRolePolicy,
+  migrationStatements,
 } from "../migrations/connector-batch.ts";
 if (process.env.VERCEL || process.env.NODE_ENV === "production")
   throw Error("Native QA is local-only");
@@ -55,6 +56,17 @@ const adapter = (c) => ({
     await c.query(s);
   },
 });
+async function execute(client, sql, statementTimeoutMs = 60000) {
+  await client.query("BEGIN");
+  try {
+    for (const statement of migrationStatements(sql, { statementTimeoutMs }))
+      await client.query(statement);
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  }
+}
 try {
   const probe = createServer();
   await new Promise((yes, no) => {
@@ -120,7 +132,7 @@ try {
   await owner.query(
     "INSERT INTO users(id,email) VALUES('role-proof-user','synthetic-role-proof@test.invalid')",
   );
-  await owner.query(databaseRolePolicy(target));
+  await execute(owner, databaseRolePolicy(target, before));
   checks.push(
     "separate role policy configured without superuser/create-role/create-db authority",
   );
@@ -129,8 +141,8 @@ try {
   const secondOperator = await connect("postgres");
   assert.deepEqual(await schemaObjects(adapter(migrator)), before);
   const adopt = adoptionBatch(target, files.slice(0, -1), prefix, before);
-  await migrator.query(adopt);
-  await migrator.query(adopt);
+  await execute(migrator, adopt);
+  await execute(migrator, adopt);
   assert.equal(
     (
       await migrator.query(
@@ -163,9 +175,10 @@ try {
   checks.push(
     "runtime DML allowed; DDL, role creation, financial deletion, audit mutation, truncate and journal reads denied",
   );
-  await assert.rejects(runtime.query(adopt), /TARGET_MISMATCH/);
+  await assert.rejects(execute(runtime, adopt), /TARGET_MISMATCH/);
   await assert.rejects(
-    migrator.query(
+    execute(
+      migrator,
       adoptionBatch(
         { ...target, branchId: "br-wrong-branch" },
         files.slice(0, -1),
@@ -180,16 +193,53 @@ try {
     "BEGIN; SELECT pg_advisory_xact_lock(1129337650,1296648018)",
   );
   try {
-    await assert.rejects(migrator.query(adopt), /MIGRATION_BUSY/);
-    await assert.rejects(secondOperator.query(databaseRolePolicy(target)), /MIGRATION_BUSY/);
+    await assert.rejects(execute(migrator, adopt), /MIGRATION_BUSY/);
+    await assert.rejects(
+      execute(secondOperator, databaseRolePolicy(target, before)),
+      /MIGRATION_BUSY/,
+    );
   } finally {
     await owner.query("ROLLBACK");
   }
   checks.push(
     "separate migration and role-policy sessions refused while operator held the shared lock",
   );
+  await assert.rejects(migrator.query(adopt), /MIGRATION_TIMEOUT_REQUIRED/);
+  const slow = {
+    ...files.at(-1),
+    sql: files.at(-1).sql + "\nSELECT pg_sleep(2);",
+  };
+  slow.sha256 = sha256(slow.sql);
   await assert.rejects(
-    migrator.query(
+    execute(
+      migrator,
+      pendingBatch(target, files.slice(0, -1), [slow], before, after),
+      1000,
+    ),
+    (error) => error.code === "57014",
+  );
+  assert.equal(
+    (
+      await owner.query(
+        "SELECT to_regclass('public.engineering_records') AS relation",
+      )
+    ).rows[0].relation,
+    null,
+  );
+  assert.equal(
+    (
+      await migrator.query(
+        "SELECT count(*)::int n FROM chrispine_migrations.history",
+      )
+    ).rows[0].n,
+    11,
+  );
+  checks.push(
+    "unbounded execution refused; a real outer-statement timeout canceled a slow migration and rolled schema/history back",
+  );
+  await assert.rejects(
+    execute(
+      migrator,
       pendingBatch(target, files.slice(0, -1), files.slice(-1), before, []),
     ),
     /RESULT_SCHEMA_MISMATCH/,
@@ -205,7 +255,8 @@ try {
   checks.push(
     "failed post-migration verification rolled schema and history back atomically",
   );
-  await migrator.query(
+  await execute(
+    migrator,
     pendingBatch(target, files.slice(0, -1), files.slice(-1), before, after),
   );
   assert.deepEqual(await schemaObjects(adapter(migrator)), after);
@@ -217,7 +268,7 @@ try {
     ).rows[0].n,
     12,
   );
-  await migrator.query(adoptionBatch(target, files, baseline, after));
+  await execute(migrator, adoptionBatch(target, files, baseline, after));
   checks.push(
     "pending source migration applied atomically and subsequent complete adoption was a no-op",
   );

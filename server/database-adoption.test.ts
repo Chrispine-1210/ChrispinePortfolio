@@ -4,6 +4,7 @@ import {
   adoptionBatch,
   pendingBatch,
   databaseRolePolicy,
+  migrationStatements,
   sqlValue,
   type BatchTarget,
 } from "../scripts/migrations/connector-batch.js";
@@ -29,6 +30,20 @@ beforeAll(async () => {
   catalog = JSON.parse(await readFile(root + "reference-catalog.json", "utf8"));
 });
 describe("connector migration operation boundaries", () => {
+  it.each([0, -1, 60001, NaN, Infinity])(
+    "refuses invalid statement budget %s",
+    (statementTimeoutMs) => {
+      expect(() =>
+        migrationStatements("SELECT 1", { statementTimeoutMs }),
+      ).toThrow("positive and bounded");
+    },
+  );
+  it("refuses unbounded or injected lock budgets", () => {
+    for (const lockTimeoutMs of [0, 5001, NaN])
+      expect(() => migrationStatements("SELECT 1", { lockTimeoutMs })).toThrow(
+        "positive and bounded",
+      );
+  });
   it("refuses mismatched production/environment/database targets before generating SQL", () => {
     for (const t of [
       { ...target, branchId: "br-misty-wave-bb79bj7l" },
@@ -44,7 +59,12 @@ describe("connector migration operation boundaries", () => {
       { ...target, runtimeRole: target.migrationRole },
       { ...target, migrationRole: "migrator; DROP TABLE users" },
     ])
-      expect(() => databaseRolePolicy(t)).toThrow();
+      expect(() => databaseRolePolicy(t, catalog)).toThrow();
+  });
+  it("requires a reviewed catalog before any ownership or permission changes", () => {
+    expect(() => databaseRolePolicy(target, [])).toThrow(
+      "reviewed source catalog",
+    );
   });
   it("refuses changed source before generating an apply", () => {
     expect(() =>

@@ -17,7 +17,7 @@ The project refused a new branch with `branches limit exceeded`. Existing backup
 
 ## Guarded connector batches
 
-`scripts/migrations/connector-batch.ts` generates SQL but executes nothing. It verifies source hashes, a source-derived reference catalog and the production/environment boundary before generating a batch. The database statement rechecks actual database, branch, current role, runtime role privileges, the exact current catalog, journal checksums and the shared migration advisory lock. It uses one server transaction, so schema and history commit together. SQL values are collision-safe dollar-quoted. Existing baseline adoption inserts history only; it does not replay old source SQL or seeds. A repeated matching adoption is a no-op. Errors must be reconciled through catalog/history readback before another attempt.
+`scripts/migrations/connector-batch.ts` generates SQL but executes nothing. It verifies source hashes, a source-derived reference catalog and the production/environment boundary before generating a batch. The database statement rechecks actual database, branch, current role, runtime role privileges, the exact current catalog, journal checksums and the shared migration advisory lock. Role/ownership changes also require the reviewed current catalog before any grants or ownership transfers. It uses one server transaction, so schema and history commit together. Execute generated `.json` statement arrays with `run_sql_transaction`, or generated `.sql` files in an operator client with error-stop enabled. Separate SET LOCAL statements configure the statement/lock budgets before DO starts; each DO refuses unbounded or excessive session budgets. Setting statement_timeout inside DO cannot start its outer timer, so that initial implementation was corrected following review. A real slow native migration was canceled by the outer timer and left both schema and history unchanged. PostgreSQL timing reference: https://www.postgresql.org/docs/18/runtime-config-client.html . SQL values are collision-safe dollar-quoted. Existing baseline adoption inserts history only; it does not replay old source SQL or seeds. A repeated matching adoption is a no-op. Errors must be reconciled through catalog/history readback before another attempt.
 
 A pending-migration batch verifies the prefix history and before/after catalogs, and records newly applied source checksums in the same transaction. No force-adopt, checksum-ignore or destructive-reset option exists. The connector compiler uses the same lock keys and history schema as the original direct-session runner.
 
@@ -43,7 +43,7 @@ The existing isolated Preview successfully adopted eleven matching history entri
 
 ## Verification
 
-Full `npm run verify:release`: PASS, 256 tests in 19 files; TypeScript, builds, runtime imports and audit policy pass. Production dependencies: zero findings. Full tree: six moderate, zero high/critical; no exception.
+Full `npm run verify:release`: PASS, 263 tests in 19 files; TypeScript, builds, runtime imports and audit policy pass. Production dependencies: zero findings. Full tree: six moderate, zero high/critical; no exception.
 
 Independent native PostgreSQL 18.7 evidence in `native-role-proof.json` uses real simultaneous sessions and a disposable loopback-only cluster. It verifies baseline adoption/no-op replay, real runtime permission denials, normal DML, wrong role/branch rejection, migration-lock contention, complete rollback after a deliberately mismatched post-migration catalog, the pending migration, new-object grants and immutable-history exclusions. No production data is used. Tooling is installed outside application dependencies; the disposable cluster is removed afterward.
 
@@ -53,4 +53,12 @@ Native command:
 node --import tsx scripts/qa/database-roles-native.mjs /tmp/portfolio-pg-qa/node_modules
 ```
 
-Production operations remain pending in this source snapshot until the exact-head application Preview passes. Live execution, runtime-role activation and readback are recorded separately on the PR. This source snapshot does not claim complete business readiness or backup/restore certification.
+## Production operational adoption
+
+Production now has twelve matching baseline journal entries, recorded as `portfolio_migrator`; no historical migration SQL or business seeds were replayed. The final bounded connector execution rechecked the role policy and matching journal in transactions with timeouts configured before each operation. Both named roles have no superuser/create-role/create-database/BYPASSRLS flags. Runtime membership in the migration role, schema/database creation, financial deletion and audit mutation are all false. See `production-readback.json`.
+
+All sixteen database aliases for the next production deployment and default Preview environment now use their restricted runtime credentials. Original shared development credentials were retained only in the development target; migration/operator credentials are excluded from new deployed runtime aliases. Existing historical deployment snapshots are not claimed to have changed. Application runtime activation still requires the subsequent merged production deployment and `/api/release` role readback, recorded on the PR.
+
+The hosted application Preview at `c22953678347447c90831065c45fa26ec49112cf` reached READY using `portfolio_runtime`. Twenty-seven normal-password/RBAC and financial HTTP checks passed. Synthetic expense, invoice and collection fixtures were voided through the app, with six corresponding financial audits. The QA lead was archived, QA account disabled, password removed and active sessions reduced to zero. See `preview-runtime.json` and `preview-retirement.json`. Later changes affect the operator compiler, its verification and documentation; application behavior is unchanged from that Preview.
+
+This source snapshot does not claim complete business readiness, restore certification or a signed-in owner admin-browser acceptance. No production financial fixtures, charges or provider messages were created.

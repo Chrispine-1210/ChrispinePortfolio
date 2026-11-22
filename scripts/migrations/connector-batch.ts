@@ -71,11 +71,39 @@ function validateFiles(files: MigrationFile[]) {
 const entries = (files: MigrationFile[]) =>
   files.map(({ file, sha256 }) => ({ file, sha256 }));
 export const catalogArraySql = `SELECT coalesce(jsonb_agg(to_jsonb(o) ORDER BY o.kind COLLATE "C",o.key COLLATE "C"),'[]'::jsonb) FROM (${schemaCatalogSql}) o`;
+const executionBudgetGuard = `IF (SELECT setting::bigint FROM pg_catalog.pg_settings WHERE name='statement_timeout') NOT BETWEEN 1 AND 60000 OR (SELECT setting::bigint FROM pg_catalog.pg_settings WHERE name='lock_timeout') NOT BETWEEN 1 AND 5000 THEN RAISE EXCEPTION 'MIGRATION_TIMEOUT_REQUIRED'; END IF;`;
+// Execute these statements on one connection in one transaction. SET LOCAL must
+// precede DO: changing statement_timeout inside DO cannot start its outer timer.
+export function migrationStatements(
+  sql: string,
+  options: { statementTimeoutMs?: number; lockTimeoutMs?: number } = {},
+) {
+  const statement = options.statementTimeoutMs ?? 60000,
+    lock = options.lockTimeoutMs ?? 5000;
+  if (
+    !Number.isInteger(statement) ||
+    statement < 1 ||
+    statement > 60000 ||
+    !Number.isInteger(lock) ||
+    lock < 1 ||
+    lock > 5000
+  )
+    throw new MigrationSafetyError(
+      "INVALID_TIMEOUT",
+      "Migration budgets must be positive and bounded",
+    );
+  return [
+    `SET LOCAL statement_timeout='${statement}ms'`,
+    `SET LOCAL lock_timeout='${lock}ms'`,
+    sql,
+  ];
+}
 function guard(t: BatchTarget, catalog: unknown[]) {
   return `
  IF pg_catalog.current_database()<>${sqlValue(t.database)} OR current_user<>${sqlValue(t.migrationRole)} OR pg_catalog.current_setting('neon.branch_id',true) IS DISTINCT FROM ${sqlValue(t.branchId)} THEN RAISE EXCEPTION 'TARGET_MISMATCH'; END IF;
  IF NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles r WHERE rolname=${sqlValue(t.runtimeRole)} AND NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolbypassrls AND NOT pg_catalog.pg_has_role(rolname,current_user,'MEMBER') AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles p WHERE p.rolname='neon_superuser' AND pg_catalog.pg_has_role(r.oid,p.oid,'MEMBER'))) THEN RAISE EXCEPTION 'ROLE_SEPARATION_REQUIRED'; END IF;
  IF pg_catalog.has_schema_privilege(${sqlValue(t.runtimeRole)},'public','CREATE') OR pg_catalog.has_database_privilege(${sqlValue(t.runtimeRole)},pg_catalog.current_database(),'CREATE') THEN RAISE EXCEPTION 'ROLE_SEPARATION_REQUIRED'; END IF;
+ ${executionBudgetGuard}
  IF NOT pg_catalog.pg_try_advisory_xact_lock(1129337650,1296648018) THEN RAISE EXCEPTION 'MIGRATION_BUSY'; END IF;
  SELECT (${catalogArraySql}) INTO objects;
  IF objects IS DISTINCT FROM ${sqlValue(JSON.stringify(catalog))}::jsonb THEN RAISE EXCEPTION 'BASELINE_MISMATCH'; END IF;
@@ -87,7 +115,7 @@ function historyRead() {
 const journal = `CREATE SCHEMA IF NOT EXISTS chrispine_migrations; REVOKE ALL ON SCHEMA chrispine_migrations FROM PUBLIC;
  CREATE TABLE IF NOT EXISTS chrispine_migrations.history(file text PRIMARY KEY,sha256 text NOT NULL CHECK(sha256~'^[a-f0-9]{64}$'),origin text NOT NULL CHECK(origin IN ('applied','baseline')),recorded_at timestamptz NOT NULL DEFAULT now()); REVOKE ALL ON chrispine_migrations.history FROM PUBLIC;`;
 function block(body: string) {
-  return `DO ${sqlValue(`DECLARE objects jsonb; history jsonb; BEGIN SET LOCAL search_path=public,pg_catalog; SET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='60s'; ${body} END;`)};`;
+  return `DO ${sqlValue(`DECLARE objects jsonb; history jsonb; BEGIN SET LOCAL search_path=public,pg_catalog; ${body} END;`)};`;
 }
 export function adoptionBatch(
   t: BatchTarget,
@@ -134,8 +162,13 @@ export function pendingBatch(
  SELECT (${catalogArraySql}) INTO objects;
  IF objects IS DISTINCT FROM ${sqlValue(JSON.stringify(after))}::jsonb THEN RAISE EXCEPTION 'RESULT_SCHEMA_MISMATCH'; END IF;`);
 }
-export function databaseRolePolicy(t: BatchTarget) {
+export function databaseRolePolicy(t: BatchTarget, catalog: unknown[]) {
   validateTarget(t);
+  if (!Array.isArray(catalog) || !catalog.length)
+    throw new MigrationSafetyError(
+      "INVALID_BASELINE",
+      "Role changes require the reviewed source catalog",
+    );
   const runtime = identifier(t.runtimeRole),
     migrator = identifier(t.migrationRole);
   const mutableDeletes = [
@@ -148,10 +181,13 @@ export function databaseRolePolicy(t: BatchTarget) {
     "portfolio_projects",
     "blog_posts",
   ];
-  return `DO ${sqlValue(`DECLARE r record; BEGIN
- SET LOCAL search_path=pg_catalog,public; SET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='60s';
+  return `DO ${sqlValue(`DECLARE r record; objects jsonb; BEGIN
+ SET LOCAL search_path=pg_catalog,public;
  IF current_database()<>${sqlValue(t.database)} OR current_setting('neon.branch_id',true) IS DISTINCT FROM ${sqlValue(t.branchId)} THEN RAISE EXCEPTION 'TARGET_MISMATCH'; END IF;
+ ${executionBudgetGuard}
  IF NOT pg_catalog.pg_try_advisory_xact_lock(1129337650,1296648018) THEN RAISE EXCEPTION 'MIGRATION_BUSY'; END IF;
+ SELECT (${catalogArraySql}) INTO objects;
+ IF objects IS DISTINCT FROM ${sqlValue(JSON.stringify(catalog))}::jsonb THEN RAISE EXCEPTION 'BASELINE_MISMATCH'; END IF;
  IF (SELECT count(*) FROM pg_roles WHERE rolname IN (${sqlValue(t.runtimeRole)},${sqlValue(t.migrationRole)}) AND NOT rolsuper AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolbypassrls)<>2 THEN RAISE EXCEPTION 'ROLE_SEPARATION_REQUIRED'; END IF;
  IF pg_has_role(${sqlValue(t.runtimeRole)},${sqlValue(t.migrationRole)},'MEMBER') THEN RAISE EXCEPTION 'ROLE_SEPARATION_REQUIRED'; END IF;
  GRANT ${migrator} TO CURRENT_USER;

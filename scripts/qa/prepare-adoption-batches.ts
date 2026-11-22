@@ -6,6 +6,7 @@ import {
   adoptionBatch,
   pendingBatch,
   databaseRolePolicy,
+  migrationStatements,
   type BatchTarget,
 } from "../migrations/connector-batch.js";
 const environment = process.argv[2],
@@ -28,24 +29,34 @@ const t: BatchTarget = {
 };
 const baseline = await read("reference-baseline"),
   catalog = await read("reference-catalog");
+const currentAdoption = adoptionBatch(t, files, baseline, catalog);
 await mkdir(destination, { recursive: true });
-await writeFile(resolve(destination, "roles.sql"), databaseRolePolicy(t));
-await writeFile(
-  resolve(destination, "adopt-current.sql"),
-  adoptionBatch(t, files, baseline, catalog),
-);
+async function save(name: string, sql: string) {
+  const statements = migrationStatements(sql);
+  await writeFile(
+    resolve(destination, name + ".sql"),
+    "BEGIN;\n" + statements.join(";\n") + ";\nCOMMIT;\n",
+  );
+  await writeFile(
+    resolve(destination, name + ".json"),
+    JSON.stringify(statements) + "\n",
+  );
+}
+await save("roles-current", databaseRolePolicy(t, catalog));
+await save("adopt-current", currentAdoption);
 if (environment === "preview") {
   const prefix = await read("prefix-baseline"),
     before = await read("prefix-catalog");
-  await writeFile(
-    resolve(destination, "adopt-prefix.sql"),
+  await save("roles", databaseRolePolicy(t, before));
+  await save(
+    "adopt-prefix",
     adoptionBatch(t, files.slice(0, -1), prefix, before),
   );
-  await writeFile(
-    resolve(destination, "apply-pending.sql"),
+  await save(
+    "apply-pending",
     pendingBatch(t, files.slice(0, -1), files.slice(-1), before, catalog),
   );
-}
+} else await save("roles", databaseRolePolicy(t, catalog));
 console.log(
   JSON.stringify({
     environment,

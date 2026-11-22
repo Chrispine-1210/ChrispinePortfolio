@@ -1,0 +1,16 @@
+{
+  "rows": [
+    {
+      "status": "disabled",
+      "password_removed": true,
+      "active_sessions": 0,
+      "lead_archived": true,
+      "invoice_status": "void",
+      "collection_voided": true,
+      "expense_voided": true,
+      "financial_audits": 6
+    }
+  ],
+  "totalRowCount": 1,
+  "truncated": false
+}
