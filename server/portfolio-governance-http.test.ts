@@ -1740,7 +1740,7 @@ describe("public form and CRM compatibility", () => {
         currency: "USD",
         amount: 8000,
         periodStart: taxPeriodStart.toISOString(),
-        periodEnd: nowIso,
+        periodEnd: new Date(now+dayMs).toISOString(),
         recognizedAt: nowIso,
         sourceReference: "tax-provision-ttm-001",
       })
@@ -1917,9 +1917,8 @@ describe("public form and CRM compatibility", () => {
         complete: true,
       }),
     });
-    const sourceTaxDays = (now - taxPeriodStart.getTime()) / dayMs + 1;
-    const ttmTaxDays = (now - ttmStart.getTime()) / dayMs + 1;
-    const expectedTaxProvision = Math.round(8000 * (ttmTaxDays / sourceTaxDays) * 100) / 100;
+    // 365 days of a 396-day provision, conserved to cents across intervals.
+    const expectedTaxProvision = 7373.74;
     const expectedNopat = 40000 - expectedTaxProvision;
     const expectedRoicPct = Math.round(expectedNopat / 220000 * 100 * 100) / 100;
     const expectedDeploymentRatePct = Math.round(16000 / expectedNopat * 100 * 100) / 100;
@@ -1930,7 +1929,7 @@ describe("public form and CRM compatibility", () => {
     expect(roic.currentTtm.operatingDeploymentRatePct).toBe(expectedDeploymentRatePct);
     expect(roic.hurdle).toMatchObject({ annualHurdleRatePct: 10 });
     expect(roic.valueCreationSpreadPct).toBe(Math.round((expectedRoicPct - 10) * 100) / 100);
-    expect(roic.economicProfit).toBe(Math.round(expectedNopat - 220000 * 0.10));
+    expect(roic.economicProfit).toBeCloseTo(expectedNopat - 220000 * 0.10,2);
     expect(roic.incrementalRoicPct).toBeNull();
     expect(roic.posture).toBe("selective");
 

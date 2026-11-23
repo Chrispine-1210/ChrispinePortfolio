@@ -1,5 +1,6 @@
+import {moneyForInterval,coveredMilliseconds} from "../../shared/financial-intervals.js";
 import { treasuryWindowTotals } from "./reporting.js";
-import { moneyInput, moneyMinor, moneyAdd, moneySubtract, moneySum, moneyCompare, moneyRatio } from "../../shared/money.js";
+import { moneyInput, moneyAverage, moneyMinor, moneyAdd, moneySubtract, moneySum, moneyCompare, moneyRatio } from "../../shared/money.js";
 import { financialReadHandler, financialHandler as asyncHandler } from "../financial-requests.js";
 import {
   and,
@@ -142,7 +143,7 @@ const attestationSchema = z.object({
 
 const hurdleSchema = z.object({
   currency: currencySchema,
-  annualHurdleRatePct: z.number().min(0).max(1000),
+  annualHurdleRatePct: z.number().min(0).max(1000).refine(value=>/^\d+(?:\.\d{1,3})?$/.test(String(value)),"Use at most three fractional percentage digits"),
   effectiveFrom: z.string().datetime(),
   effectiveTo: z.string().datetime().nullable().optional(),
   rationale: z.string().trim().min(10).max(4000),
@@ -155,50 +156,6 @@ const voidSchema = z.object({
 function round(value: number, digits = 1) {
   const m = 10 ** digits;
   return Math.round(value * m) / m;
-}
-
-function daysBetween(start: Date, end: Date) {
-  return Math.max(0, (end.getTime() - start.getTime()) / DAY_MS);
-}
-
-function proratedAmountForOverlap(
-  amount: number,
-  sourceStart: Date,
-  sourceEnd: Date,
-  periodStart: Date,
-  periodEnd: Date,
-) {
-  const overlapStart = new Date(Math.max(sourceStart.getTime(), periodStart.getTime()));
-  const overlapEnd = new Date(Math.min(sourceEnd.getTime(), periodEnd.getTime()));
-  if (overlapEnd.getTime() < overlapStart.getTime()) return 0;
-  const sourceDays = daysBetween(sourceStart, sourceEnd) + 1;
-  if (sourceDays <= 0) return 0;
-  return moneyRatio(amount, Math.min(sourceEnd.getTime() - sourceStart.getTime() + DAY_MS, overlapEnd.getTime() - overlapStart.getTime() + DAY_MS), sourceEnd.getTime() - sourceStart.getTime() + DAY_MS);
-}
-
-function clipIntervals(
-  rows: Array<{ start: Date; end: Date }>,
-  periodStart: Date,
-  periodEnd: Date,
-) {
-  const intervals = rows
-    .map(({ start, end }) => ({
-      start: new Date(Math.max(start.getTime(), periodStart.getTime())),
-      end: new Date(Math.min(end.getTime(), periodEnd.getTime())),
-    }))
-    .filter((row) => row.end.getTime() >= row.start.getTime())
-    .sort((a, b) => a.start.getTime() - b.start.getTime());
-
-  const merged: Array<{ start: Date; end: Date }> = [];
-  for (const interval of intervals) {
-    const last = merged[merged.length - 1];
-    if (!last || interval.start.getTime() > last.end.getTime() + DAY_MS) {
-      merged.push({ ...interval });
-      continue;
-    }
-    if (interval.end.getTime() > last.end.getTime()) last.end = interval.end;
-  }
-  return merged.reduce((sum, row) => sum + daysBetween(row.start, row.end) + 1, 0);
 }
 
 async function audit(
@@ -704,7 +661,7 @@ export function createTreasuryRoicRouter() {
           .where(and(isNull(treasuryBalanceSnapshots.voidedAt),lte(treasuryBalanceSnapshots.capturedAt,now)))
           .orderBy(treasuryBalanceSnapshots.accountId,desc(treasuryBalanceSnapshots.capturedAt),desc(treasuryBalanceSnapshots.createdAt),treasuryBalanceSnapshots.id),
         db.select().from(operatingTaxProvisions).where(and(isNull(operatingTaxProvisions.voidedAt),
-          gt(operatingTaxProvisions.periodEnd,priorStart),lte(operatingTaxProvisions.periodStart,now))),
+          sql`${operatingTaxProvisions.periodEnd}>=${priorStart.toISOString()}::timestamp`,lte(operatingTaxProvisions.periodStart,now))),
         db.select().from(investedCapitalSnapshots).where(and(isNull(investedCapitalSnapshots.voidedAt),
           gt(investedCapitalSnapshots.capturedAt,new Date(priorStart.getTime()-60*DAY_MS)),lte(investedCapitalSnapshots.capturedAt,now)))
           .orderBy(investedCapitalSnapshots.capturedAt,investedCapitalSnapshots.createdAt,investedCapitalSnapshots.id),
@@ -765,7 +722,7 @@ export function createTreasuryRoicRouter() {
 
       const runway = [...cashByCurrency.values()].map((cash) => {
         const ninetyDayOutflow = totals.amount("operatingOutflow","runway",cash.currency);
-        const monthlyBurn = ninetyDayOutflow > 0 ? ninetyDayOutflow / 90 * 30.44 : null;
+        const monthlyBurn = ninetyDayOutflow > 0 ? moneyRatio(ninetyDayOutflow,3044,9000) : null;
         const attestation = latestAttestation(cash.currency, "cash_disbursements_complete");
         const evidenceComplete = Boolean(attestation && attestation.throughAt.getTime() >= now.getTime() - DAY_MS);
         const balanceFresh = Boolean(
@@ -805,10 +762,11 @@ export function createTreasuryRoicRouter() {
         const directCost = totals.amount("directCost",period,currency);
         const acquisition = totals.amount("acquisition",period,currency);
         const operatingExpense = totals.amount("operatingExpense",period,currency);
-        const taxProvision = taxRows.reduce((sum,row)=>moneyAdd(sum,proratedAmountForOverlap(
+        const taxProvision = taxRows.reduce((sum,row)=>moneyAdd(sum,moneyForInterval(
           Number(row.amount),row.periodStart,row.periodEnd,start,end)),0);
         const revenueCoverage = totals.coverage(period,currency);
-        const costCoveragePct = revenueCoverage.leads?round(revenueCoverage.complete/revenueCoverage.leads*100):0;
+        const costComplete=revenueCoverage.leads>0&&revenueCoverage.complete===revenueCoverage.leads;
+        const costCoveragePct = revenueCoverage.leads?costComplete?100:Math.min(99.99,round(revenueCoverage.complete/revenueCoverage.leads*100,2)):0;
 
         const opexAttestation = latestAttestation(currency, "operating_expenses_complete");
         const opexComplete = Boolean(
@@ -816,14 +774,14 @@ export function createTreasuryRoicRouter() {
           opexAttestation.throughAt.getTime() >= end.getTime() - DAY_MS,
         );
 
-        const taxCoverageDays = clipIntervals(
+        const taxCoverageDuration = coveredMilliseconds(
           taxRows.map((row) => ({ start: row.periodStart, end: row.periodEnd })),
           start,
           end,
         );
-        const requiredDays = daysBetween(start, end) + 1;
-        const taxCoveragePct = requiredDays > 0 ? round(Math.min(100, taxCoverageDays / requiredDays * 100)) : 0;
-        const taxComplete = taxCoveragePct >= 95;
+        const requiredDuration=end.getTime()-start.getTime()+1;
+        const taxComplete=requiredDuration>0&&taxCoverageDuration===requiredDuration;
+        const taxCoveragePct=taxComplete?100:Math.min(99.99,round(taxCoverageDuration/requiredDuration*100,2));
 
         const beginning = snapshotAtOrBefore(currency, start, 45);
         const ending = snapshotAtOrBefore(currency, end, 45);
@@ -834,17 +792,17 @@ export function createTreasuryRoicRouter() {
           ? moneySubtract(ending.operatingAssets, ending.operatingLiabilities)
           : null;
         const averageInvested = beginningInvested !== null && endingInvested !== null
-          ? moneyRatio(moneyAdd(beginningInvested, endingInvested), 1, 2)
+          ? moneyAverage(beginningInvested,endingInvested)
           : null;
 
         const economicsComplete =
           revenue > 0 &&
-          costCoveragePct === 100 &&
+          costComplete &&
           opexComplete &&
           taxComplete &&
           averageInvested !== null &&
           averageInvested > 0;
-        const ebit = costCoveragePct === 100 && opexComplete
+        const ebit = costComplete && opexComplete
           ? moneySum([revenue, -directCost, -acquisition, -operatingExpense])
           : null;
         const nopat = economicsComplete && ebit !== null ? moneySubtract(ebit, taxProvision) : null;
@@ -861,7 +819,7 @@ export function createTreasuryRoicRouter() {
           start: start.toISOString(),
           end: end.toISOString(),
           revenue,
-          directCost: costCoveragePct === 100 ? directCost : null,
+          directCost: costComplete ? directCost : null,
           acquisitionSpend: acquisition,
           operatingExpense: opexComplete ? operatingExpense : null,
           ebit,
@@ -890,14 +848,10 @@ export function createTreasuryRoicRouter() {
 
       const companyRoic = [...currencies].map((currency) => {
         const current = computePeriod(currency, ttmStart, now);
-        const prior = computePeriod(currency, priorStart, priorEnd);
+        const prior = computePeriod(currency, priorStart, new Date(priorEnd.getTime()-1));
 
-        const hurdle = hurdlePolicies
-          .filter((row) =>
-            row.currency === currency &&
-            row.effectiveFrom <= now &&
-            (!row.effectiveTo || row.effectiveTo >= now))
-          .sort((a, b) => b.effectiveFrom.getTime() - a.effectiveFrom.getTime())[0];
+        const applicableHurdles=hurdlePolicies.filter(row=>row.currency===currency&&row.effectiveFrom<=now&&(!row.effectiveTo||row.effectiveTo>=now));
+        const hurdle=applicableHurdles.length===1?applicableHurdles[0]:undefined;
         const hurdleRatePct = hurdle ? Number(hurdle.annualHurdleRatePct) : null;
         const valueCreationSpreadPct = current.roicPct !== null && hurdleRatePct !== null
           ? round(current.roicPct - hurdleRatePct, 2)
@@ -905,7 +859,7 @@ export function createTreasuryRoicRouter() {
         const economicProfit = current.nopat !== null &&
           current.averageInvestedCapital !== null &&
           hurdleRatePct !== null
-          ? Math.round(current.nopat - current.averageInvestedCapital * hurdleRatePct / 100)
+          ? moneySubtract(current.nopat,moneyRatio(current.averageInvestedCapital,Math.round(hurdleRatePct*1000),100000))
           : null;
 
         const deltaNopat = current.nopat !== null && prior.nopat !== null
@@ -925,7 +879,7 @@ export function createTreasuryRoicRouter() {
         if (!current.evidence.complete) {
           reasons.push("TTM ROIC is withheld until direct costs, operating expenses, taxes and invested capital are complete.");
         } else if (!hurdle) {
-          reasons.push("No approved hurdle rate exists for this currency; value-creation spread is withheld.");
+          reasons.push(applicableHurdles.length>1?"Multiple active hurdle policies conflict; value-creation spread is withheld.":"No approved hurdle rate exists for this currency; value-creation spread is withheld.");
         } else if (liquidity?.runwayMonths !== null && liquidity?.runwayMonths !== undefined && liquidity.runwayMonths < 3) {
           posture = "preserve_liquidity";
           reasons.push("Verified operating runway is below three months.");
@@ -967,6 +921,7 @@ export function createTreasuryRoicRouter() {
           timeConvention:"UTC; current [start,asOf], prior [start,currentStart)",sourceRecordCount:totals.sourceRecordCount },
         definitions: {
           roic: "Trailing-12-month NOPAT divided by average beginning/ending invested capital.",
+          intervals:"UTC millisecond instants; current [start,asOf], prior [start,currentStart). Tax allocation uses cumulative rounding; complete tax and direct-cost coverage is exact, never inferred from a rounded percentage.",
           nopat: "Evidence-backed EBIT less covered operating tax provision. EBIT deducts direct costs, acquisition spend and non-acquisition operating expenses.",
           capitalTurnover: "Trailing-12-month recognized revenue divided by average invested capital.",
           operatingDeploymentRate: "Actual growth-capex + working-capital + product-development deployment divided by NOPAT; management deployment metric, not an assumed accounting reinvestment rate.",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
 import {
@@ -17,8 +17,6 @@ export default function Login() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated, login, loginPending } = useCustomAuth();
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
   useEffect(() => {
     document.title = "Sign in | Chrispine Mndala";
@@ -27,8 +25,11 @@ export default function Login() {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const values=new FormData(e.currentTarget);
+    const email=String(values.get("email")??"").trim();
+    const password=String(values.get("password")??"");
 
     if (!email || !password) {
       toast({
@@ -83,8 +84,8 @@ export default function Login() {
                 autoComplete="username"
                 type="email"
                 placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                required
                 disabled={loginPending}
                 data-testid="input-login-email"
                 className="bg-background/50"
@@ -105,8 +106,8 @@ export default function Login() {
                 autoComplete="current-password"
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name="password"
+                required
                 disabled={loginPending}
                 data-testid="input-login-password"
                 className="bg-background/50"

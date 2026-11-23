@@ -1,5 +1,6 @@
+import {moneyForInterval,coveredMilliseconds} from "../shared/financial-intervals.js";
 import { describe, expect, it } from "vitest";
-import { moneyAdd, moneyInput, moneyMinor, moneyRatio, moneySubtract, moneySum } from "../shared/money.js";
+import { moneyAdd, moneyAverage, moneyInput, moneyMinor, moneyRatio, moneySubtract, moneySum } from "../shared/money.js";
 import { requireCompleteFinancialEvidence } from "./financial-completeness.js";
 
 describe("monetary boundaries", () => {
@@ -25,5 +26,24 @@ describe("monetary boundaries", () => {
   it("refuses a financial total when any bounded query has omitted evidence", () => {
     expect(()=>requireCompleteFinancialEvidence([Array(11),10],[[],10])).toThrow("No partial financial total");
     expect(()=>requireCompleteFinancialEvidence([Array(10),10])).not.toThrow();
+  });
+});
+
+describe("financial period conservation",()=>{
+  it("preserves a minor unit across adjacent periods instead of rounding it twice",()=>{
+    const start=new Date(0),end=new Date(1);
+    expect(moneyForInterval('0.01',start,end,start,start)).toBe(0.01);
+    expect(moneyForInterval('0.01',start,end,end,end)).toBe(0);
+    expect(moneyForInterval('0.01',start,end,start,end)).toBe(0.01);
+    expect(moneyForInterval('-0.01',start,end,start,start)).toBe(-0.01);
+  });
+  it("counts overlapping coverage once and preserves a one-millisecond gap",()=>{
+    expect(coveredMilliseconds([{start:new Date(0),end:new Date(2)},{start:new Date(2),end:new Date(4)}],new Date(0),new Date(4))).toBe(5);
+    expect(coveredMilliseconds([{start:new Date(0),end:new Date(1)},{start:new Date(3),end:new Date(4)}],new Date(0),new Date(4))).toBe(4);
+  });
+  it("averages valid large balances without overflowing an intermediate sum",()=>{
+    expect(moneyAverage('999999999999.99','999999999999.99')).toBe(999999999999.99);
+    expect(moneyAverage('0.00','0.01')).toBe(0.01);
+    expect(moneyAverage('0.00','-0.01')).toBe(-0.01);
   });
 });

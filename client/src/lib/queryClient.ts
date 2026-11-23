@@ -14,6 +14,7 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
+  additionalHeaders: Record<string,string> = {},
 ): Promise<Response> {
   let reference: string | undefined, actor: string | undefined;
   if (isFinancialWrite(method, url)) {
@@ -30,7 +31,7 @@ export async function apiRequest(
   try {
     res = await fetch(url, {
       method,
-      headers: { ...(data ? { "Content-Type": "application/json" } : {}), ...(reference && actor ? { "Idempotency-Key": reference, "X-Financial-Actor": actor } : {}) },
+      headers: { ...additionalHeaders, ...(data ? { "Content-Type": "application/json" } : {}), ...(reference && actor ? { "Idempotency-Key": reference, "X-Financial-Actor": actor } : {}) },
       body: data ? JSON.stringify(data) : undefined,
       credentials: "include",
     });

@@ -49,3 +49,8 @@ export function moneyInput(options: { zero?: boolean; signed?: boolean } = {}) {
     }
   });
 }
+
+export function moneyAverage(a:string|number,b:string|number):number {
+  const sum=moneyMinor(a)+moneyMinor(b),sign=sum<0n?-1n:1n,absolute=sum<0n?-sum:sum;
+  return moneyNumber(sign*((absolute+1n)/2n));
+}

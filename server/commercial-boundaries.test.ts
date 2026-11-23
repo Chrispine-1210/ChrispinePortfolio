@@ -164,7 +164,7 @@ describe("delivery uncertainty, ownership and audience handling",()=>{
     const {queueDueEmailCampaign}=await import("./email/campaign-worker.js");
     await post("/api/admin/campaigns",{name:"Unsupported",channels:["sms"],audience:{newsletterSubscribers:true}},owner.cookie).expect(400);
     const {rows:[subscriber]}=await database.query("INSERT INTO newsletter_subscribers(email,subscribed_at) VALUES($1,now()-interval '1 second') RETURNING *",[`${randomUUID()}@test.invalid`]);
-    const result=await post("/api/admin/campaigns",{name:"Consent fixture",subject:"News",htmlContent:"<p>News</p>",channels:["email"],audience:{newsletterSubscribers:true},scheduledAt:new Date(Date.now()-1000).toISOString()},owner.cookie).expect(201);
+    const result=await post("/api/admin/campaigns",{requestKey:randomUUID(),name:"Consent fixture",subject:"News",htmlContent:"<p>News</p>",channels:["email"],audience:{newsletterSubscribers:true},scheduledAt:new Date(Date.now()-1000).toISOString()},owner.cookie).set("X-Queue-Actor",owner.id).expect(201);
     expect((await queueDueEmailCampaign()).queued).toBe(1);expect((await queueDueEmailCampaign()).queued).toBe(0);
     const {rows:[queued]}=await database.query("SELECT * FROM email_outbox WHERE idempotency_key=$1",[`campaign:${result.body.id}:${subscriber.id}`]);
     const url=new URL(queued.html_body.match(/href="([^"]+)"/)[1].replaceAll("&amp;","&"));
@@ -175,6 +175,80 @@ describe("delivery uncertainty, ownership and audience handling",()=>{
     expect(await repository.isSuppressed(subscriber.email,new Date(),"marketing")).toBe(true);
     expect(await repository.isSuppressed(subscriber.email,new Date(),"transactional")).toBe(false);
     expect((await database.query("SELECT is_active FROM newsletter_subscribers WHERE id=$1",[subscriber.id])).rows[0].is_active).toBe(false);
+  });
+});
+
+describe("communication operations and durable queue requests",()=>{
+  const input=(key=randomUUID())=>({toEmail:"controlled@test.invalid",subject:"Private queue fixture",htmlBody:"<p>Private message body</p>",textBody:"Private message body",idempotencyKey:key});
+  const enqueue=(body:object,actor=owner)=>post('/api/admin/email/send',body,actor.cookie).set('X-Queue-Actor',actor.id);
+  const campaign=(key=randomUUID())=>({requestKey:key,name:"Durable campaign fixture",subject:"Fixture",htmlContent:"<p>Fixture</p>",textContent:"Fixture",channels:['email'],audience:{newsletterSubscribers:true}});
+  const createCampaign=(body:object,actor=owner)=>post('/api/admin/campaigns',body,actor.cookie).set('X-Queue-Actor',actor.id);
+  it("replays one owned queue reference and refuses different content or an account switch",async()=>{
+    const body=input(),first=await enqueue(body).expect(202);
+    const replay=await enqueue(body).expect(200);expect(replay.body.id).toBe(first.body.id);expect(replay.body.replayed).toBe(true);
+    expect(JSON.stringify(first.body)).not.toContain('Private message body');expect(first.body).not.toHaveProperty('metadata');
+    await enqueue({...body,subject:'Changed message'}).expect(409);
+    await post('/api/admin/email/send',input(),owner.cookie).set('X-Queue-Actor',member.id).expect(409);
+    const receipt=await request(app).get(`/api/admin/email/requests/${body.idempotencyKey}`).set('Cookie',owner.cookie).expect(200);
+    expect(receipt.body).toMatchObject({state:'recorded',record:{id:first.body.id}});
+    const other=await principal('super_administrator');
+    expect((await request(app).get(`/api/admin/email/requests/${body.idempotencyKey}`).set('Cookie',other.cookie).expect(200)).body.state).toBe('unconfirmed');
+    await request(app).get('/api/admin/email/queue').set('Cookie',member.cookie).expect(403);
+    await enqueue(input(),member).expect(403);
+    expect(Number((await database.query("SELECT count(*) AS n FROM audit_events WHERE action='email.queue' AND resource_id=$1",[first.body.id])).rows[0].n)).toBe(1);
+  });
+  it("rolls back the queue record when its audit cannot commit",async()=>{
+    const body=input();await database.exec(`CREATE FUNCTION queue_audit_fixture() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action='email.queue' THEN RAISE EXCEPTION 'synthetic audit outage'; END IF; RETURN NEW; END $$;
+      CREATE TRIGGER queue_audit_fixture BEFORE INSERT ON audit_events FOR EACH ROW EXECUTE FUNCTION queue_audit_fixture()`);
+    try{
+      await enqueue(body).expect(500);
+      expect(Number((await database.query("SELECT count(*) AS n FROM email_outbox WHERE idempotency_key=$1",[`admin:${owner.id}:${body.idempotencyKey}`])).rows[0].n)).toBe(0);
+    }finally{await database.exec('DROP TRIGGER queue_audit_fixture ON audit_events; DROP FUNCTION queue_audit_fixture()');}
+  });
+  it("paginates delivery records and their timelines without leaking message bodies",async()=>{
+    const ids=(await database.query(`INSERT INTO email_outbox(to_email,from_email,subject,html_body,status,idempotency_key,created_at)
+      SELECT 'controlled@test.invalid','sender@test.invalid','Pagination fixture','Never expose this body','delivered','pagination-'||gen_random_uuid(),timestamp '2026-11-01 12:00:00' FROM generate_series(1,65) RETURNING id`)).rows.map((r:any)=>r.id);
+    let cursor:string|null=null;const seen:string[]=[];let counts:any;
+    do{
+      const result=await request(app).get('/api/admin/email/queue?status=delivered'+(cursor?'&cursor='+encodeURIComponent(cursor):'')).set('Cookie',owner.cookie).expect(200);
+      expect(JSON.stringify(result.body)).not.toContain('Never expose this body');counts=result.body.counts;
+      seen.push(...result.body.items.map((row:any)=>row.id));cursor=result.body.nextCursor;
+    }while(cursor);
+    expect(new Set(seen).size).toBe(seen.length);expect(ids.every((id:string)=>seen.includes(id))).toBe(true);expect(counts.delivered).toBe(seen.length);
+    await database.query(`INSERT INTO email_delivery_events(outbox_id,event_type,provider,occurred_at,payload)
+      SELECT $1,'delivery','fixture',timestamp '2026-11-01 12:00:00','{"private":"Hidden callback payload"}'::jsonb FROM generate_series(1,65)`,[ids[0]]);
+    const first=await request(app).get(`/api/admin/email/queue/${ids[0]}`).set('Cookie',owner.cookie).expect(200);
+    expect(first.body.events).toHaveLength(50);expect(JSON.stringify(first.body)).not.toContain('Hidden callback payload');
+    const next=await request(app).get(`/api/admin/email/queue/${ids[0]}?cursor=${encodeURIComponent(first.body.nextCursor)}`).set('Cookie',owner.cookie).expect(200);
+    expect(next.body.events).toHaveLength(15);expect(new Set([...first.body.events,...next.body.events].map(r=>r.id)).size).toBe(65);
+    await request(app).get('/api/admin/email/queue?cursor=invalid').set('Cookie',owner.cookie).expect(400);
+  });
+  it("records verified acceptance once and refuses a conflicting known provider ID",async()=>{
+    const {rows:[record]}=await database.query(`INSERT INTO email_outbox(to_email,from_email,subject,html_body,status,provider_message_id,idempotency_key)
+      VALUES('controlled@test.invalid','sender@test.invalid','Reconcile fixture','Fixture','uncertain','known-provider-id',$1) RETURNING id`,[randomUUID()]);
+    const evidence={outcome:'accepted',providerReference:'Provider ticket fixture',providerMessageId:'foreign-provider-id',justification:'Verified provider evidence for this message'};
+    await post(`/api/admin/email/${record.id}/reconcile`,evidence,owner.cookie).expect(409);
+    await post(`/api/admin/email/${record.id}/reconcile`,{...evidence,providerMessageId:'known-provider-id'},owner.cookie).expect(200);
+    await post(`/api/admin/email/${record.id}/reconcile`,{...evidence,providerMessageId:'known-provider-id'},owner.cookie).expect(409);
+    const result=await request(app).get(`/api/admin/email/queue/${record.id}`).set('Cookie',owner.cookie).expect(200);
+    expect(result.body.message.status).toBe('sent');expect(result.body.events.filter((e:any)=>e.eventType==='operator_reconciled')).toHaveLength(1);
+  });
+  it("creates one owned campaign and replays its original request without a second audience",async()=>{
+    const body=campaign(),first=await createCampaign(body).expect(201);
+    expect((await createCampaign(body).expect(200)).body.id).toBe(first.body.id);
+    await createCampaign({...body,name:'Different intent'}).expect(409);
+    await post('/api/admin/campaigns',campaign(),owner.cookie).set('X-Queue-Actor',member.id).expect(409);
+    expect((await request(app).get(`/api/admin/campaign-requests/${body.requestKey}`).set('Cookie',owner.cookie).expect(200)).body.state).toBe('recorded');
+    const other=await principal('super_administrator');
+    expect((await request(app).get(`/api/admin/campaign-requests/${body.requestKey}`).set('Cookie',other.cookie).expect(200)).body.state).toBe('unconfirmed');
+    await createCampaign(body,other).expect(409);
+    expect(Number((await database.query("SELECT count(*) AS n FROM notification_campaigns WHERE id=$1",[body.requestKey])).rows[0].n)).toBe(1);
+  });
+  it.runIf(native)("serializes simultaneous identical queue and campaign requests across database sessions",async()=>{
+    const body=input(),results=await Promise.all([enqueue(body),enqueue(body)]);
+    expect(results.map(r=>r.status).sort()).toEqual([200,202]);expect(results[0].body.id).toBe(results[1].body.id);
+    const scheduled=campaign(),campaigns=await Promise.all([createCampaign(scheduled),createCampaign(scheduled)]);
+    expect(campaigns.map(r=>r.status).sort()).toEqual([200,201]);expect(campaigns[0].body.id).toBe(campaigns[1].body.id);
   });
 });
 
@@ -239,6 +313,19 @@ describe("financial correctness on actual HTTP routes",()=>{
       expect(totals.coverage('current','XQC')).toEqual({leads:1,complete:1});
     } finally {await database.query('DELETE FROM leads WHERE id=$1',[lead.id]);}
   });
+  it("withholds complete economics when one of thousands of revenue leads lacks cost evidence",async()=>{
+    await database.exec("INSERT INTO leads(name,email,stage) SELECT 'Coverage fixture','coverage-'||n||'@test.invalid','won' FROM generate_series(1,2001)n");
+    try {
+      await database.exec(`INSERT INTO revenue_events(lead_id,service_interest,revenue_kind,currency,amount,occurred_at,source_reference)
+        SELECT id,'enterprise-software','one_time','XQD',0.01,now()-interval '1 day','coverage-'||id FROM leads WHERE name='Coverage fixture'`);
+      await database.exec(`INSERT INTO cost_evidence_attestations(lead_id,service_interest,currency,through_at,source_reference)
+        SELECT id,'enterprise-software','XQD',now(),'coverage-'||id FROM leads WHERE name='Coverage fixture' ORDER BY id LIMIT 2000`);
+      const result=await request(app).get('/api/admin/treasury/intelligence').set('Cookie',owner.cookie).expect(200);
+      const row=result.body.companyRoic.find((row:any)=>row.currency==='XQD').currentTtm;
+      expect(row.evidence.revenueLeadCount).toBe(2001);expect(row.evidence.directCostCoveragePct).toBeLessThan(100);
+      expect(row.evidence.complete).toBe(false);expect(row.directCost).toBeNull();expect(row.nopat).toBeNull();
+    } finally {await database.exec("DELETE FROM leads WHERE name='Coverage fixture'");}
+  },30000);
   it.runIf(native)("serializes competing collections with distinct request references",async()=>{
     const row=await invoice(0.3);const results=await Promise.all([collection(row.id,0.2),collection(row.id,0.2)]);
     expect(results.map(row=>row.status).sort()).toEqual([201,409]);

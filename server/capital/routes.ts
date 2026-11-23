@@ -1212,7 +1212,7 @@ export function createCapitalOperatingRouter() {
       );
       const realizedCapital = [...cashReturn.values()].map((row) => {
         const costCoveragePct = row.cashCollectingLeads.size
-          ? round((row.completeCostLeads.size / row.cashCollectingLeads.size) * 100)
+          ? row.completeCostLeads.size===row.cashCollectingLeads.size?100:Math.min(99.99,round((row.completeCostLeads.size / row.cashCollectingLeads.size) * 100,2))
           : row.directCost > 0 ? 0 : 100;
         const completeCosts = row.cashCollectingLeads.size === row.completeCostLeads.size;
         const cashGrossContribution = completeCosts ? moneySubtract(row.cashCollected, row.directCost) : null;

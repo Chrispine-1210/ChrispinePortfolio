@@ -894,10 +894,10 @@ export function createRevenueIntelligenceRouter() {
           const winsWithCompleteCostEvidence = revenueCustomers.filter(
             (lead) => costEvidenceComplete(lead.id, currency),
           ).length;
-          const revenueCoveragePct = wins ? round((winsWithRevenue / wins) * 100) : 0;
-          const costCoveragePct = winsWithRevenue
-            ? round((winsWithCompleteCostEvidence / winsWithRevenue) * 100)
-            : 0;
+          const revenueCoverageRaw=wins?winsWithRevenue/wins*100:0;
+          const costCoverageRaw=winsWithRevenue?winsWithCompleteCostEvidence/winsWithRevenue*100:0;
+          const revenueCoveragePct=winsWithRevenue===wins&&wins>0?100:Math.min(99.99,round(revenueCoverageRaw,2));
+          const costCoveragePct=winsWithRevenue>0&&winsWithCompleteCostEvidence===winsWithRevenue?100:Math.min(99.99,round(costCoverageRaw,2));
           const recognizedRevenue = wonLeads.reduce(
             (sum, lead) => moneyAdd(sum, revenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
@@ -940,7 +940,7 @@ export function createRevenueIntelligenceRouter() {
               : null;
           const monthlyGrossProfit =
             recurringGrossMarginPct !== null && mrr > 0
-              ? mrr * (recurringGrossMarginPct / 100)
+              ? moneySubtract(mrr,moneyRatio(mrr,Number(moneyMinor(recurringCost)),Number(moneyMinor(recurringRevenue))))
               : null;
           const paybackDays =
             monthlyGrossProfit && monthlyGrossProfit > 0 && spend > 0
@@ -948,21 +948,21 @@ export function createRevenueIntelligenceRouter() {
               : null;
 
           const observedRevenueLtv = revenueCustomers.length
-            ? Math.round(recognizedRevenue / revenueCustomers.length)
+            ? moneyRatio(recognizedRevenue,1,revenueCustomers.length)
             : null;
           const observedGrossProfitLtv =
             completeCosts && revenueCustomers.length && grossProfit !== null
-              ? Math.round(grossProfit / revenueCustomers.length)
+              ? moneyRatio(grossProfit,1,revenueCustomers.length)
               : null;
 
           const blockers: string[] = [];
           if (enquiries < policy.minimumEnquiries) blockers.push(`fewer than ${policy.minimumEnquiries} enquiries`);
           if (proposals < policy.minimumProposals) blockers.push(`fewer than ${policy.minimumProposals} proposals`);
           if (spend <= 0) blockers.push("no service-tagged acquisition spend");
-          if (wins > 0 && revenueCoveragePct < policy.minimumRevenueCoveragePct) {
+          if (wins > 0 && revenueCoverageRaw < policy.minimumRevenueCoveragePct) {
             blockers.push("revenue evidence coverage below 80%");
           }
-          if (winsWithRevenue > 0 && costCoveragePct < policy.minimumCostCoveragePct) {
+          if (winsWithRevenue > 0 && costCoverageRaw < policy.minimumCostCoveragePct) {
             blockers.push("cost-completeness attestation coverage below 80%");
           }
           if (mrr > 0 && paybackDays === null) {
@@ -982,8 +982,8 @@ export function createRevenueIntelligenceRouter() {
             proposals >= policy.minimumProposals &&
             spend > 0 &&
             wins >= policy.minimumWinsForEconomics &&
-            revenueCoveragePct >= policy.minimumRevenueCoveragePct &&
-            costCoveragePct >= policy.minimumCostCoveragePct &&
+            revenueCoverageRaw >= policy.minimumRevenueCoveragePct &&
+            costCoverageRaw >= policy.minimumCostCoveragePct &&
             grossMarginPct !== null &&
             grossProfitRoas !== null;
 
@@ -1024,8 +1024,8 @@ export function createRevenueIntelligenceRouter() {
             enquiries >= 20 &&
             proposals >= 8 &&
             wins >= 4 &&
-            revenueCoveragePct === 100 &&
-            costCoveragePct === 100 &&
+            winsWithRevenue === wins &&
+            winsWithCompleteCostEvidence === winsWithRevenue &&
             spend > 0
               ? "high"
               : decision !== "insufficient_data"
@@ -1058,7 +1058,7 @@ export function createRevenueIntelligenceRouter() {
               recurringCost: recurringCostComplete ? recurringCost : null,
               recurringGrossMarginPct,
               mrr,
-              arr: mrr * 12,
+              arr: moneyRatio(mrr,12,1),
               paybackDays,
               revenueCoveragePct,
               costCoveragePct,
@@ -1147,7 +1147,7 @@ export function createRevenueIntelligenceRouter() {
           activeMrrByCurrency: [...activeMrr.entries()].map(([currency, mrr]) => ({
             currency,
             mrr,
-            arr: mrr * 12,
+            arr: moneyRatio(mrr,12,1),
           })),
           activeAgreements: agreementRows.filter((agreement) => agreement.status === "active").length,
           endedAgreements: agreementRows.filter((agreement) => agreement.status !== "active").length,
