@@ -46,6 +46,10 @@ class Analytics {
       : 0;
 
     return {
+      scope:"process-local API observations",
+      durable:false,
+      capacity:this.maxEvents,
+      coverage:"Only this server instance; at most the last 1,000 requests within 24 hours. CDN page views and other instances are excluded.",
       totalRequests,
       errorCount,
       avgResponseTime: Math.round(avgResponseTime),

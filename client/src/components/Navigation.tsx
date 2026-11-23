@@ -1,322 +1,208 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
+import { Menu, Search, X } from "lucide-react";
 import {
   Sheet,
   SheetContent,
-  SheetTrigger,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Menu,
-  Terminal,
-  Github,
-  Briefcase,
-  FileText,
-  User,
-  Home,
-  Phone,
-  BookOpen,
-  X,
-  ChevronRight,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { preloadPublicRoute } from "@/lib/routePreload";
-import profileImage from "@assets/portfolio_photos/chrispine-profile-headshot.png";
+import portrait from "@assets/portfolio-editorial/chrispine-portrait.webp";
 
-const navItems = [
-  { label: "Home", path: "/", icon: Home },
-  { label: "Work", path: "/portfolio", icon: Briefcase },
-  { label: "Journey", path: "/journey", icon: BookOpen },
-  { label: "Writing", path: "/blog", icon: FileText },
-  { label: "GitHub", path: "/github", icon: Github },
-  { label: "About", path: "/about", icon: User },
-  { label: "Services", path: "/hire", icon: FileText },
-  { label: "Contact", path: "/contact", icon: Phone },
+const destinations = [
+  {
+    label: "Work",
+    path: "/portfolio",
+    detail: "Project casebooks, architecture and recorded evidence",
+  },
+  {
+    label: "Journey",
+    path: "/journey",
+    detail: "Engineering practice, experiments and field notes",
+  },
+  {
+    label: "Writing",
+    path: "/blog",
+    detail: "Research, tutorials and technical perspectives",
+  },
+  {
+    label: "About",
+    path: "/about",
+    detail: "The person, experience and context behind the work",
+  },
+  {
+    label: "Services",
+    path: "/hire",
+    detail: "Software, networks, data and operating systems",
+  },
+  {
+    label: "Contact",
+    path: "/contact",
+    detail: "Start a conversation about a real problem",
+  },
+  {
+    label: "Resources",
+    path: "/resources",
+    detail: "Practical tools and learning references",
+  },
+  {
+    label: "GitHub",
+    path: "/github",
+    detail: "Public source and repository evidence",
+  },
+  {
+    label: "Membership",
+    path: "/subscribe",
+    detail: "Writing access and membership availability",
+  },
+  {
+    label: "Account",
+    path: "/dashboard",
+    detail: "Your membership and account",
+  },
 ];
-
 export function Navigation() {
-  const [location] = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
+  const [location, navigate] = useLocation();
+  const [mobile, setMobile] = useState(false),
+    [searchOpen, setSearchOpen] = useState(false),
+    [query, setQuery] = useState("");
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    setMobile(false);
+    setSearchOpen(false);
+  }, [location]);
+  useEffect(() => {
+    const shortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSearchOpen((value) => !value);
+      }
+    };
+    window.addEventListener("keydown", shortcut);
+    return () => window.removeEventListener("keydown", shortcut);
   }, []);
-
-  const isActive = (path: string) => {
-    if (path === "/") return location === "/";
-    return location.startsWith(path);
-  };
-
+  const active = (path: string) =>
+    location === path || location.startsWith(path + "/");
+  const results = destinations.filter((item) =>
+    `${item.label} ${item.detail}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase()),
+  );
   return (
-    <header
-      className={`universe-header fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "border-b border-white/[0.06] py-0"
-          : "border-b border-transparent py-0"
-      }`}
-      style={{
-        background: "#142b24",
-        backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 gap-4">
-          {/* Logo */}
-          <Link href="/">
-            <motion.div
-              className="flex items-center gap-3 cursor-pointer group flex-shrink-0"
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.2 }}
+    <header className="portfolio-header">
+      <div className="portfolio-header-inner">
+        <Link
+          href="/"
+          className="portfolio-brand"
+          aria-label="Chrispine Mndala home"
+        >
+          <img src={portrait} alt="" width="42" height="42" />
+          <span>
+            <strong>Chrispine Mndala</strong>
+            <span>Engineering & operations · Malawi</span>
+          </span>
+        </Link>
+        <nav className="portfolio-desktop-nav" aria-label="Primary navigation">
+          {destinations.slice(0, 4).map((item) => (
+            <Link
+              key={item.path}
+              href={item.path}
+              aria-current={active(item.path) ? "page" : undefined}
+              onPointerEnter={() => preloadPublicRoute(item.path)}
+              onFocus={() => preloadPublicRoute(item.path)}
             >
-              <div
-                className="relative w-9 h-9 rounded-xl flex items-center justify-center overflow-hidden"
-                style={{
-                  background:
-                    "linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(271 91% 65%) 100%)",
-                }}
-              >
-                <img
-                  src={profileImage}
-                  alt="Chrispine Mndala"
-                  className="h-full w-full object-cover"
-                />
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(255,255,255,0.15), transparent)",
-                  }}
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[15px] font-bold text-white leading-none tracking-tight">
-                  Chrispine
-                </span>
-                <span className="text-[10px] font-mono text-primary/80 leading-none mt-0.5 tracking-wider">
-                  ENGINEER · OPERATOR
-                </span>
-              </div>
-            </motion.div>
-          </Link>
-
-          {/* Desktop Nav */}
-          <nav
-            aria-label="Primary navigation"
-            className="hidden lg:flex items-center gap-1"
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="portfolio-header-actions">
+          <button
+            className="portfolio-search-button"
+            aria-label="Search portfolio navigation"
+            onClick={() => {
+              setQuery("");
+              setSearchOpen(true);
+            }}
           >
-            {navItems.map((item) => {
-              const active = isActive(item.path);
-              return (
-                <Link
-                  key={item.path}
-                  href={item.path}
-                  aria-current={active ? "page" : undefined}
-                  onPointerEnter={() => preloadPublicRoute(item.path)}
-                  onFocus={() => preloadPublicRoute(item.path)}
-                >
-                  <motion.span
-                    className={`relative flex items-center gap-1.5 px-2 py-2 rounded-lg text-[12px] font-medium cursor-pointer transition-all duration-200 ${
-                      active
-                        ? "text-white"
-                        : "text-white/50 hover:text-white/80"
-                    }`}
-                    style={{
-                      background: active
-                        ? "rgba(255,255,255,0.08)"
-                        : "transparent",
-                    }}
-                    whileHover={{
-                      background: active
-                        ? "rgba(255,255,255,0.08)"
-                        : "rgba(255,255,255,0.04)",
-                    }}
-                  >
-                    {active && (
-                      <motion.span
-                        layoutId="nav-indicator"
-                        className="absolute inset-0 rounded-lg"
-                        style={{ background: "rgba(255,255,255,0.08)" }}
-                        transition={{
-                          type: "spring",
-                          bounce: 0.2,
-                          duration: 0.4,
-                        }}
-                      />
-                    )}
-                    <span className="relative z-10">{item.label}</span>
-                  </motion.span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Desktop CTAs */}
-          <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="text-[13px] text-white/50 hover:text-white/80 h-9"
-              data-testid="button-subscribe-nav"
-            >
-              <Link href="/subscribe">Subscribe</Link>
-            </Button>
-            <Button
-              size="sm"
-              asChild
-              className="h-9 px-4 text-[13px] font-semibold rounded-lg"
-              style={{
-                background: "#d3be7b",
-                color: "#142b24",
-                boxShadow: "none",
-              }}
-              data-testid="button-book-call-nav"
-            >
-              <Link href="/hire">Book a Call</Link>
-            </Button>
-          </div>
-
-          {/* Mobile Menu */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild className="lg:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-9 w-9 text-white/70 hover:text-white"
-                data-testid="button-mobile-menu"
-                aria-label={
-                  mobileMenuOpen ? "Close navigation" : "Open navigation"
-                }
+            <Search size={18} />
+            <span>Explore</span>
+            <kbd>Ctrl K</kbd>
+          </button>
+          <Link className="portfolio-header-cta" href="/hire">
+            Discuss a project
+          </Link>
+          <Sheet open={mobile} onOpenChange={setMobile}>
+            <SheetTrigger asChild>
+              <button
+                className="portfolio-menu-button"
+                aria-label="Open navigation"
               >
-                <AnimatePresence mode="wait">
-                  {mobileMenuOpen ? (
-                    <motion.div
-                      key="close"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      <X className="h-5 w-5" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="open"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      <Menu className="h-5 w-5" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Button>
+                <Menu size={24} />
+              </button>
             </SheetTrigger>
-            <SheetContent
-              side="right"
-              className="w-[300px] border-l border-white/[0.06] p-0"
-              style={{ background: "#142b24" }}
-            >
-              <SheetTitle className="sr-only">Portfolio navigation</SheetTitle>
-              <div className="flex flex-col h-full">
-                {/* Mobile header */}
-                <div className="flex items-center gap-3 p-6 border-b border-white/[0.06]">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden border border-white/10">
-                    <img
-                      src={profileImage}
-                      alt="Chrispine Mndala"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-white">
-                      Chrispine
-                    </div>
-                    <div className="text-[10px] font-mono text-primary/70 tracking-wider">
-                      ENGINEER · OPERATOR
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mobile nav items */}
-                <nav className="flex-1 p-4 space-y-1">
-                  {navItems.map((item) => {
-                    const active = isActive(item.path);
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.path}
-                        href={item.path}
-                        onClick={() => setMobileMenuOpen(false)}
-                        onPointerEnter={() => preloadPublicRoute(item.path)}
-                        onFocus={() => preloadPublicRoute(item.path)}
-                      >
-                        <motion.div
-                          className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${
-                            active
-                              ? "bg-primary/10 text-white"
-                              : "text-white/50 hover:text-white hover:bg-white/[0.04]"
-                          }`}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <Icon
-                            className={`w-4 h-4 flex-shrink-0 ${active ? "text-primary" : ""}`}
-                          />
-                          <span className="flex-1 text-sm font-medium">
-                            {item.label}
-                          </span>
-                          {active ? (
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-40 transition-opacity" />
-                          )}
-                        </motion.div>
-                      </Link>
-                    );
-                  })}
-                </nav>
-
-                {/* Mobile CTAs */}
-                <div className="p-4 space-y-2 border-t border-white/[0.06]">
-                  <Button
-                    variant="outline"
-                    className="w-full h-11 text-sm border-white/10 bg-white/[0.03] text-white/70"
-                    asChild
-                    data-testid="button-subscribe-mobile"
+            <SheetContent className="portfolio-mobile-sheet" side="right">
+              <SheetTitle>Explore the portfolio</SheetTitle>
+              <p>Software. Networks. People. Operations.</p>
+              <nav aria-label="Mobile navigation">
+                {destinations.map((item) => (
+                  <Link
+                    key={item.path}
+                    href={item.path}
+                    onClick={() => setMobile(false)}
+                    aria-current={active(item.path) ? "page" : undefined}
                   >
-                    <Link
-                      href="/subscribe"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Subscribe to Newsletter
-                    </Link>
-                  </Button>
-                  <Button
-                    className="w-full h-11 text-sm font-semibold"
-                    style={{
-                      background: "#d3be7b",
-                      color: "#142b24",
-                      boxShadow: "none",
-                    }}
-                    asChild
-                    data-testid="button-book-call-mobile"
-                  >
-                    <Link href="/hire" onClick={() => setMobileMenuOpen(false)}>
-                      Book a Discovery Call
-                    </Link>
-                  </Button>
-                </div>
-              </div>
+                    <strong>{item.label}</strong>
+                    <span>{item.detail}</span>
+                  </Link>
+                ))}
+              </nav>
             </SheetContent>
           </Sheet>
         </div>
       </div>
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="portfolio-search-dialog">
+          <DialogTitle>Find your way</DialogTitle>
+          <DialogDescription>
+            Explore the work, the thinking, or the right next step.
+          </DialogDescription>
+          <label className="portfolio-search-input">
+            <Search size={20} />
+            <input
+              autoComplete="off"
+              aria-label="Search destinations"
+              placeholder="Try networks, research, account…"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <div className="portfolio-search-results">
+            {results.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => {
+                  setSearchOpen(false);
+                  navigate(item.path);
+                }}
+              >
+                <strong>{item.label}</strong>
+                <span>{item.detail}</span>
+              </button>
+            ))}
+            {!results.length && (
+              <p role="status">
+                No matching destination. Try “work” or “contact”.
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

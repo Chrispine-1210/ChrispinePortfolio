@@ -24,15 +24,20 @@ import { pool } from "./db.js";
 
 import { createEngineeringRouter } from "./engineering/routes.js";
 import { requestContext, safeApiError } from "./security/http-boundary.js";
+import { createOperationsStatusRouter } from "./operations-status.js";
+import { createAccountRecoveryRouter } from "./security/account-recovery.js";
+import { protectPublicIntake } from "./security/public-request-limits.js";
+import { createBillingRouter, type BillingGateway } from "./billing.js";
 import { createFinancialRequestRouter } from "./financial-requests.js";
 
-export function createApp() {
+export function createApp(options: { billingGateway?: () => BillingGateway } = {}) {
   const app = express();
   app.disable("x-powered-by");
   app.use(requestContext);
   app.use(securityHeaders);
+  app.use("/api",(_request,response,next)=>{response.setHeader("Cache-Control","no-store");next();});
 
-  app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
+  app.use("/api/stripe-webhook", express.raw({ type: "application/json", limit: "256kb" }));
   setupPostmarkWebhookRoute(app);
   // Only authenticated editorial writes receive the larger, bounded document
   // parser. Public intake, webhooks and financial routes keep their 10 KB limit.
@@ -77,6 +82,8 @@ export function createApp() {
     setupAuthRoutes(customAuthRouter);
   }
   app.use(customAuthRouter);
+  app.use(createAccountRecoveryRouter());
+  app.post(["/api/contact","/api/consultation","/api/newsletter/subscribe"],asyncHandler(async(request,_response,next)=>{await protectPublicIntake(request);next();}));
 
   const analyticsRouter = express.Router();
   setupAnalyticsRoutes(analyticsRouter);
@@ -98,8 +105,11 @@ export function createApp() {
   // in particular, retired document paths should return 404 rather than a 200
   // HTML response that can be mistaken for an available file.
   app.use("/attached_assets", express.static("attached_assets", { fallthrough: false }));
+  app.get("/api/login", (_request, response) => response.redirect(303, "/login"));
+  app.use(createBillingRouter(options.billingGateway));
   app.use(routes);
   app.use(createAdminRouter());
+  app.use(createOperationsStatusRouter());
   app.use(createPortfolioGovernanceRouter());
   app.use(createRevenueIntelligenceRouter());
   app.use(createCapitalOperatingRouter());

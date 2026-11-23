@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /dashboard
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /analytics
+Disallow: /newsletter-manage
+Disallow: /external-posts
+Sitemap: https://chrispine-portfolio.vercel.app/sitemap.xml

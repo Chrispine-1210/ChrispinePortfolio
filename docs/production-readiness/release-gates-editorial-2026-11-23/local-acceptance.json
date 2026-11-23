@@ -1,0 +1,105 @@
+{
+  "verifiedAt": "2026-11-23T10:00:43.608Z",
+  "sourceBase": "d116fcfa9c44cf66c0cc3dbb619c367b22c94243",
+  "environment": "loopback-only disposable in-memory PGlite QA fixture",
+  "principal": "synthetic QA session; not real owner/password/browser acceptance",
+  "checks": [
+    {
+      "check": "synthetic QA session",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "new software source keeps Slava Keyzman credit; saved legacy code covers retain Bernd Dittrich credit",
+      "status": "PASS"
+    },
+    {
+      "check": "real rich-content parser and renderer preserve inline geometry, alt, caption and linked attribution",
+      "status": "PASS"
+    },
+    {
+      "check": "compiled planning cover available locally",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "inline network image available locally",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "anonymous draft creation denied",
+      "status": "PASS",
+      "httpStatus": 401
+    },
+    {
+      "check": "create genuine draft in isolated PGlite",
+      "status": "PASS",
+      "httpStatus": 201
+    },
+    {
+      "check": "draft detail hidden from public",
+      "status": "PASS",
+      "httpStatus": 404
+    },
+    {
+      "check": "draft omitted from public list",
+      "status": "PASS"
+    },
+    {
+      "check": "workflow publish",
+      "status": "PASS",
+      "httpStatus": 409
+    },
+    {
+      "check": "workflow submit_review",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "workflow approve",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "workflow publish",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "approved local article available",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "public list/detail projection retains cover and editorial metadata",
+      "status": "PASS"
+    },
+    {
+      "check": "workflow archive",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "withdrawn article hidden",
+      "status": "PASS",
+      "httpStatus": 404
+    },
+    {
+      "check": "workflow restore",
+      "status": "PASS",
+      "httpStatus": 200
+    },
+    {
+      "check": "fixture returned to unpublished draft",
+      "status": "PASS",
+      "httpStatus": 404
+    }
+  ],
+  "fixtureRetirement": "Public test publication withdrawn and restored to draft; memory discarded when QA stops",
+  "limitations": [
+    "API and server-rendered markup proof only; no browser/layout certification",
+    "No hosted Preview or production acceptance",
+    "No production data, financial fixtures, provider sends, charges, restores or deployment"
+  ]
+}

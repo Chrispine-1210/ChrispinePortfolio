@@ -1,0 +1,378 @@
+{
+  "status": "PASS_RESTORED_LOCAL",
+  "recordedAt": "2026-11-23T13:21:38.121Z",
+  "source": {
+    "branch": "br-misty-wave-bb79bj7l",
+    "database": "neondb",
+    "version": "PostgreSQL 18.7 (84da7d8) on aarch64-unknown-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit",
+    "cutoff": "2026-11-23T13:20:26.090Z"
+  },
+  "restoreVersion": "PostgreSQL 18.7 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0, 64-bit",
+  "tableCount": 58,
+  "tables": [
+    {
+      "schema": "chrispine_migrations",
+      "table": "history",
+      "rows": 13,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "acquisition_spend_entries",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "audit_events",
+      "rows": 41,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "authentication_attempts",
+      "rows": 15,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "blog_comments",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "blog_likes",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "blog_posts",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "capital_budget_allocations",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "capital_budget_cycles",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "capital_deployment_entries",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "capital_hurdle_policies",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "case_studies",
+      "rows": 16,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "case_study_evidence",
+      "rows": 18,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "cash_collections",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "channel_outbox",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "commercial_invoices",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "contact_requests",
+      "rows": 2,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "content_versions",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "cost_evidence_attestations",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "delivery_capacity_records",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "direct_cost_entries",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "email_delivery_events",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "email_outbox",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "email_suppressions",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "email_templates",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "engineering_publications",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "engineering_records",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "engineering_requests",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "engineering_versions",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "external_posts",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "financial_evidence_attestations",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "financial_request_receipts",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "invested_capital_snapshots",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "lead_activities",
+      "rows": 1,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "lead_attribution_touches",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "leads",
+      "rows": 1,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "newsletter_subscribers",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "notification_action_tokens",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "notification_campaigns",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "notification_inbox",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "operating_expense_entries",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "operating_tax_provisions",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "permissions",
+      "rows": 43,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "portfolio_projects",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "projects",
+      "rows": 2,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "push_subscriptions",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "recurring_revenue_agreements",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "recurring_revenue_movements",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "revenue_events",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "role_permissions",
+      "rows": 121,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "roles",
+      "rows": 10,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "security_events",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "sessions",
+      "rows": 10,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "treasury_accounts",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "treasury_balance_snapshots",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "treasury_cash_disbursements",
+      "rows": 0,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "user_roles",
+      "rows": 9,
+      "fingerprintMatches": true
+    },
+    {
+      "schema": "public",
+      "table": "users",
+      "rows": 1,
+      "fingerprintMatches": true
+    }
+  ],
+  "schemaCatalogMatches": true,
+  "tableGrantsMatch": true,
+  "migrationHistoryCount": 13,
+  "sourceSnapshot": "single repeatable-read read-only connector transaction",
+  "productionWrites": false,
+  "realProviderCalls": false,
+  "keyCustody": "Vercel development environment PORTFOLIO_BACKUP_KEY_20261123",
+  "backupFormat": "CPFBAK02 | 12-byte nonce | AES-256-GCM encrypted UTF-8 connector snapshot JSON | 16-byte tag",
+  "encryptedSha256": "a53354081e09ee707e8659df0a9a66445b0c008d73efb85e9bcb5338e1f74a9a",
+  "restoreDurationSeconds": 1,
+  "scope": "public application schema/data and chrispine_migrations history; external media, provider-managed schemas and login passwords excluded; roles restored NOLOGIN",
+  "limitations": [
+    "Local restore, not a Neon failover rehearsal",
+    "External media and service secret custody must be maintained separately",
+    "RPO/RTO service objectives and recurring backup schedule are not inferred"
+  ]
+}

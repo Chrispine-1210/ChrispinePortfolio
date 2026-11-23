@@ -4,12 +4,24 @@ This slice was developed on top of `agent/project-casebooks-20261118`. Current s
 
 ## Current evidence
 
-- TypeScript, integration tests and a production bundle pass; see VERIFICATION.md.
-- Migration 0011 was applied successfully to existing nonproduction review branch `br-steep-dew-bboxeusj` in project `twilight-meadow-16888716`, database `neondb`, on 18 November 2026. The review branch is a child of production main `br-misty-wave-bb79bj7l` and was created earlier for the casebook review.
-- A separate new branch attempt failed because Neon reached its branch limit. No branch was deleted or reset.
-- The production database has not received migration 0011.
-- Browser UI verification uses actual application routes and an isolated PGlite database through a test-only session fixture outside the repository. The preview host cannot resolve the Neon endpoint. This does not certify production login, cookies, networking or Neon-backed browser transactions.
-- Existing dependency audits remain release-blocking. The inspected picomatch advisory includes registry latest 4.0.7. No workflow, audit script or security gate has been weakened or rerun manually.
+Use the [release gate register](../production-readiness/RELEASE_GATES.md) for the
+dated current baseline and open gates. The earlier 18 November source snapshot
+is superseded for production migration/deployment status.
+
+- Production is READY at `d116fcfa9c44cf66c0cc3dbb619c367b22c94243`.
+- Retained production evidence records all 13 migrations through 0012, named
+  restricted runtime/migration roles and runtime identity `portfolio_runtime`.
+  Do not replay adopted 0011/0012 or apply their seeds again.
+- PR #41 contains native PostgreSQL request-receipt proof and authenticated
+  isolated Preview evidence. These do not close exact-money/distinct-key
+  concurrency, owner-browser acceptance or the other open business gates.
+- Retained release checks passed the production and full audit policy. Keep those
+  audits enabled; a bundle alone is insufficient. GitHub jobs were account-billing
+  blocked and are not passing assurance. Their current recovery was not rechecked.
+- Current backup/restore certification remains unverified. Preserve existing
+  snapshots/backup branches; do not reset production or delete backups for space.
+- Earlier synthetic/PGlite browser evidence does not certify the owner's real
+  sign-in, cookies, navigation or production financial workflows.
 
 ## Activation procedure
 
@@ -17,7 +29,7 @@ This slice was developed on top of `agent/project-casebooks-20261118`. Current s
 2. Resolve the dependency findings with a reviewed compatible dependency/build-chain change, or obtain an explicit accountable release exception that states exposure and compensating controls. Do not silently bypass `verify:release`.
 3. Confirm the intended production project/database from current provider configuration. `APP_DATABASE_URL` takes precedence over `DATABASE_URL`; do not apply the schema to a similarly named legacy project.
 4. Before any production migration, establish an independently recoverable backup and verify a restore on an isolated target. Record an accountable maintenance/rollback decision and source/database compatibility.
-5. Apply the reviewed additive migration 0011 using the existing migration procedure and schema-owner account. It creates four tables, immutable-history triggers, constraints/indexes and three engineering permissions assigned to existing administrator roles. Do not create new organization users or broaden unrelated finance permissions.
+5. Inspect the guarded read-only migration plan and matching journal for the exact candidate and target. Production 0011/0012 are already adopted: no replay is proposed. If a later candidate adds a migration, review its exact SQL, compatibility, restricted migration role and isolated rehearsal before separate approval to apply. Do not create organization users or broaden unrelated finance permissions.
 6. Deploy the exact reviewed source. Require `ADMIN_AUTH_MODE=database`, a valid `AUTH_KEY_PEPPER`, correct runtime database configuration and `APP_BASE_URL` set to the actual deployment origin. Missing origin configuration intentionally blocks workspace writes in production. Never put privileged database credentials into public frontend variables.
 7. Use real authenticated sessions to verify own-record CRUD, another account's 404, stale-version 409, repeated request replay, rejected origin, immutable history, denied unauthorized asset observation, public review/publish/withdrawal, safe error messages and no private API caching. Use synthetic fixtures with a documented retirement path, not client records.
 8. Check public `/journey`, existing case studies, admin navigation, narrow layout and media click consent. Verify API security headers on the deployed serverless path, not only static local pages.

@@ -6,6 +6,8 @@ Canonical repository: https://github.com/Chrispine-1210/ChrispinePortfolio
 
 Production address: https://chrispine-portfolio.vercel.app
 
+Full business readiness remains on hold. The [release gate register](docs/production-readiness/RELEASE_GATES.md) separates the deployed baseline, local candidate verification and outstanding operational approvals.
+
 A commit being present in GitHub does not mean that Vercel deployed it. Read [workspace synchronization](docs/workspace-sync/README.md) for source/deployment identities and current release limitations.
 
 ## Project structure

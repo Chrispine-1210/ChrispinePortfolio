@@ -2,6 +2,7 @@ import { asyncHandler } from "./middleware.js";
 import { Router, Request, Response } from "express";
 import { storage } from "./storage.js";
 import { listPublicCaseStudies } from "./portfolio/public-case-study-service.js";
+import { publicWritingPost } from "./editorial-media.js";
 
 export function setupFilteringRoutes(router: Router) {
   // Advanced blog search with pagination
@@ -57,7 +58,7 @@ export function setupFilteringRoutes(router: Router) {
       const paginatedPosts = posts.slice(startIdx, startIdx + limitNum);
 
       res.json({
-        data: paginatedPosts,
+        data: paginatedPosts.map(post => publicWritingPost(post)),
         pagination: {
           page: pageNum,
           limit: limitNum,

@@ -25,8 +25,15 @@ export interface EmailProvider {
 
 export interface EmailOutboxRepository {
   claimBatch(workerId: string, limit: number, now: Date): Promise<QueuedEmail[]>;
-  isSuppressed(email: string, now: Date): Promise<boolean>;
-  markSent(id: string, result: EmailProviderResult, sentAt: Date): Promise<void>;
-  markSuppressed(id: string, at: Date): Promise<void>;
-  markFailed(id: string, error: string, nextAttemptAt: Date | null, at: Date): Promise<void>;
+  isSuppressed(email: string, now: Date, messageType?: string): Promise<boolean>;
+  markSent(id: string, result: EmailProviderResult, sentAt: Date, workerId: string): Promise<void>;
+  markSuppressed(id: string, at: Date, workerId: string): Promise<void>;
+  markFailed(id: string, error: string, nextAttemptAt: Date | null, at: Date, workerId: string): Promise<void>;
+  markUncertain(id: string, detail: string, at: Date, workerId: string, accepted?: EmailProviderResult): Promise<void>;
+}
+
+// Only an explicit provider rejection establishes that a send was not accepted.
+// Transport failures, timeouts and persistence failures remain uncertain.
+export class DeliveryRejectedError extends Error {
+  constructor(message: string, readonly retryable = false) { super(message); }
 }

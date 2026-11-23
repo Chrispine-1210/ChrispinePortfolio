@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { eq } from "drizzle-orm";
 import { db, database } from "./database.js";
-import { users, roles, userRoles } from "../../../shared/schema.js";
+import { users, roles, userRoles, emailOutbox, emailDeliveryEvents } from "../../../shared/schema.js";
 import { app } from "../../../server/app.js";
 import { getDatabaseAuthRuntime } from "../../../server/security/database-auth-routes.js";
 import { serveStatic } from "../../../server/static.js";
@@ -29,6 +29,11 @@ if (!role) throw new Error("QA role migration is missing");
 await db
   .insert(userRoles)
   .values({ userId: user.id, roleId: role.id, assignedBy: user.id });
+// Synthetic delivery records exist only in this production-refusing fixture.
+const [reviewMessage]=await db.insert(emailOutbox).values({toEmail:"controlled@qa.invalid",fromEmail:"sender@qa.invalid",
+  subject:"Synthetic acceptance review",htmlBody:"<p>Local fixture only</p>",status:"uncertain",provider:"fixture",
+  idempotencyKey:"qa-delivery-"+user.id,lastError:"Synthetic connection loss after provider acceptance"}).returning();
+await db.insert(emailDeliveryEvents).values({outboxId:reviewMessage.id,eventType:"acceptance_uncertain",provider:"fixture"});
 app.get("/_qa/start", async (_req, res, next) => {
   try {
     const session = await getDatabaseAuthRuntime().sessions.issue({

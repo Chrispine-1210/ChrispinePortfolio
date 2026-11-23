@@ -1,5 +1,6 @@
 import { ServerClient } from "postmark";
 import type { EmailProvider, EmailProviderResult, QueuedEmail } from "./types.js";
+import { DeliveryRejectedError } from "./types.js";
 
 export class PostmarkEmailProvider implements EmailProvider {
   readonly name = "postmark";
@@ -11,7 +12,7 @@ export class PostmarkEmailProvider implements EmailProvider {
     private readonly broadcastStream = "broadcasts",
   ) {
     if (!serverToken) throw new Error("POSTMARK_SERVER_TOKEN is required");
-    this.client = new ServerClient(serverToken);
+    this.client = new ServerClient(serverToken, { timeout: 5 });
   }
 
   async send(message: QueuedEmail): Promise<EmailProviderResult> {
@@ -33,7 +34,7 @@ export class PostmarkEmailProvider implements EmailProvider {
       },
     });
     if (response.ErrorCode !== 0 || !response.MessageID) {
-      throw new Error(response.Message || "Postmark rejected the email");
+      throw new DeliveryRejectedError(response.Message || "Postmark rejected the email");
     }
     return { provider: this.name, messageId: response.MessageID };
   }

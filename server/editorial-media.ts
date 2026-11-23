@@ -33,10 +33,15 @@ function publicNode(post: BlogPost, node: RichNode): RichNode {
   };
 }
 export function publicWritingPost(post: BlogPost, includeContent = false) {
-  const { content, ...summary } = post;
+  const { content } = post;
   const parsed = readEditorial(content);
   return {
-    ...summary,
+    id: post.id, title: post.title, slug: post.slug, excerpt: post.excerpt,
+    category: post.category, tags: post.tags, isPremium: post.isPremium,
+    readTimeMinutes: post.readTimeMinutes, publishedAt: post.publishedAt,
+    createdAt: post.createdAt, updatedAt: post.updatedAt,
+    seoTitle: post.seoTitle, seoDescription: post.seoDescription,
+    canonicalUrl: post.canonicalUrl, ogImage: post.ogImage,
     featuredImage: post.featuredImage
       ? imageUrl(post, post.featuredImage)
       : null,

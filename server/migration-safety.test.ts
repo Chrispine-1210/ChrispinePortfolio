@@ -189,6 +189,20 @@ describe("reviewed adoption of existing schema", {timeout:15_000}, () => {
     await expect(runMigrations(clone.client, clone.target, files, { mode: "apply", baseline })).rejects.toMatchObject({ code: "BASELINE_MISMATCH" });
     expect(await journalExists(clone.database)).toEqual({ journal: null });
   });
+  it("plans and applies only commercial 0013 after the adopted 13-file history", async () => {
+    const { database, client, target } = await fixture();
+    const migrations = (await loadMigrations("migrations")).filter(file=>file.file<"0014_");
+    const adopted = migrations.filter(file => file.file < "0013_");
+    expect(adopted).toHaveLength(13);
+    await runMigrations(client,target,adopted,{mode:"apply"});
+    await database.exec("INSERT INTO users(email) VALUES('forward-sentinel@test.invalid')");
+    const before=(await database.query("SELECT key FROM permissions ORDER BY key")).rows;
+    expect(await runMigrations(client,target,migrations,{mode:"plan"})).toMatchObject({applied:13,pending:["0013_commercial_boundaries.sql"]});
+    expect(await runMigrations(client,target,migrations,{mode:"apply"})).toMatchObject({appliedNow:1});
+    expect(await runMigrations(client,target,migrations,{mode:"apply"})).toMatchObject({appliedNow:0});
+    expect((await database.query("SELECT count(*)::int AS n FROM users WHERE email='forward-sentinel@test.invalid'")).rows).toEqual([{n:1}]);
+    expect((await database.query("SELECT key FROM permissions WHERE key <> 'email.delivery.reconcile' ORDER BY key")).rows).toEqual(before);
+  },30_000);
   it("executes the repository's complete migration set and exports a reproducible schema reference", async () => {
     const { client, target } = await fixture();
     const migrations = await loadMigrations("migrations");

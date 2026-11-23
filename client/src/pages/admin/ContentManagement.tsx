@@ -98,6 +98,7 @@ function nullable(value: string) {
 export default function ContentManagement() {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
+  const [editingVersion, setEditingVersion] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -121,12 +122,14 @@ export default function ContentManagement() {
   const reset = () => {
     setForm(emptyForm);
     setEditingId(null);
+    setEditingVersion(null);
     setEditorOpen(false);
   };
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
         ...form,
+        ...(editingId ? { expectedVersion: editingVersion } : {}),
         tags: form.tags
           .split(",")
           .map((tag) => tag.trim())
@@ -162,16 +165,19 @@ export default function ContentManagement() {
     mutationFn: ({
       id,
       action,
+      expectedVersion,
       scheduledAt,
       justification,
     }: {
       id: string;
       action: TransitionAction;
+      expectedVersion: number;
       scheduledAt?: string;
       justification?: string;
     }) =>
       apiRequest("POST", `/api/admin/content/posts/${id}/transition`, {
         action,
+        expectedVersion,
         scheduledAt,
         justification,
       }),
@@ -202,6 +208,7 @@ export default function ContentManagement() {
         });
       transition.mutate({
         id: post.id,
+        expectedVersion: post.currentVersion,
         action,
         scheduledAt: date.toISOString(),
       });
@@ -212,13 +219,23 @@ export default function ContentManagement() {
         "Why is this published item being archived?",
       );
       if (!justification) return;
-      transition.mutate({ id: post.id, action, justification });
+      transition.mutate({
+        id: post.id,
+        expectedVersion: post.currentVersion,
+        action,
+        justification,
+      });
       return;
     }
-    transition.mutate({ id: post.id, action });
+    transition.mutate({
+      id: post.id,
+      expectedVersion: post.currentVersion,
+      action,
+    });
   };
   const beginEdit = (post: BlogPost) => {
     setEditingId(post.id);
+    setEditingVersion(post.currentVersion);
     setEditorOpen(true);
     setForm({
       title: post.title,
@@ -281,6 +298,44 @@ export default function ContentManagement() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {save.isError && (
+                <div
+                  role="alert"
+                  className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm leading-relaxed"
+                >
+                  <p>{save.error.message}</p>
+                  <p className="mt-2">
+                    Your entered content is still here. Copy or download it
+                    before reviewing another revision.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() => {
+                      const url = URL.createObjectURL(
+                        new Blob(
+                          [
+                            JSON.stringify(
+                              { ...form, expectedVersion: editingVersion },
+                              null,
+                              2,
+                            ),
+                          ],
+                          { type: "application/json" },
+                        ),
+                      );
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.download = "unsaved-editorial-draft.json";
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    Download entered draft
+                  </Button>
+                </div>
+              )}
               <div className="grid gap-4 md:grid-cols-2">
                 <Input
                   aria-label="Title"

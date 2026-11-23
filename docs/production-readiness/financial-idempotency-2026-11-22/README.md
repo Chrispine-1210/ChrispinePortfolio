@@ -30,8 +30,11 @@ execution; absence is never permission to submit a new key.
   bodies, denied storage/locking, actor separation and no automatic retries.
 - `preview-migration.json`: 0012 applied to the isolated Preview through the
   guarded journal/catalog transaction. Runtime SELECT/INSERT allowed;
-  UPDATE/DELETE/TRUNCATE denied. Production migration/activation is pending
-  exact-head hosted Preview acceptance.
+  UPDATE/DELETE/TRUNCATE denied. This file records the original Preview snapshot.
+  The retained 23 November production review confirms 0012 adoption, restricted
+  runtime identity and the merged READY production deployment. See the current
+  [release gate register](../RELEASE_GATES.md). This does not close the remaining
+  financial, recovery, billing, delivery, restore or owner-browser gates.
 - Source-only prefix/full catalogs retain the twelve-migration starting point
   and thirteen-migration result. Earlier B04 evidence remains historical;
   its tools pin the source filenames/checksums it certified.
