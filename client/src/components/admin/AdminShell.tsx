@@ -22,11 +22,23 @@ import {
   Workflow,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
 
 const navigation = [
+  {
+    label: "Release & operations",
+    path: "/admin/readiness",
+    icon: FileCheck2,
+    permission: "analytics.read",
+    live: true,
+  },
   {
     label: "Overview",
     path: "/admin",
@@ -98,6 +110,13 @@ const navigation = [
     live: true,
   },
   {
+    label: "Financial requests",
+    path: "/admin/financial-requests",
+    icon: FileCheck2,
+    permission: "pipeline.financial.read",
+    live: true,
+  },
+  {
     label: "Audience",
     path: "/admin/audience",
     icon: Users,
@@ -139,7 +158,7 @@ function AdminNavigation({ onNavigate }: { onNavigate?: () => void }) {
   const [location] = useLocation();
   const { user } = useCustomAuth();
   const permissions = new Set(user?.permissions ?? []);
-  const permissionAware = permissions.size > 0;
+  const permissionAware = Array.isArray(user?.permissions);
   return (
     <nav className="space-y-1 p-3">
       {navigation
@@ -232,8 +251,7 @@ export function AdminShell({
             className="w-full justify-start text-white/60 hover:text-white"
             disabled={logoutPending}
             onClick={() => {
-              logout();
-              navigate("/login");
+              logout(undefined,{onSuccess:()=>navigate("/login")});
             }}
           >
             <LogOut className="mr-2 h-4 w-4" />
@@ -256,9 +274,9 @@ export function AdminShell({
               side="left"
               className="w-72 border-white/[0.07] bg-[#142b24] p-0"
             >
-              <div className="border-b border-white/[0.07] p-5 font-semibold">
+              <SheetTitle className="border-b border-white/[0.07] p-5 font-semibold">
                 Chrispine · Operating workspace
-              </div>
+              </SheetTitle>
               <AdminNavigation />
             </SheetContent>
           </Sheet>

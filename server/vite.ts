@@ -1,3 +1,4 @@
+import { asyncHandler } from "./middleware.js";
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
@@ -30,7 +31,7 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
+  app.use("*", asyncHandler(async (req, res, next) => {
     const url = req.originalUrl;
 
     try {
@@ -53,5 +54,5 @@ export async function setupVite(app: Express, server: Server) {
       vite.ssrFixStacktrace(e as Error);
       next(e);
     }
-  });
+  }));
 }

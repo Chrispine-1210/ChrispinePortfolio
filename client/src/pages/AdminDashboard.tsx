@@ -47,6 +47,7 @@ export default function AdminDashboard() {
   ] : [];
 
   return <AdminShell title="Command overview" description="Operational state across content, audience, delivery, and security">
+    <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-primary/25 bg-primary/5 p-5"><div><p className="font-semibold">Release & operations control</p><p className="mt-1 text-sm text-muted-foreground">Review runtime identity, uncertain delivery and the gates that still need evidence.</p></div><Button asChild variant="outline"><Link href="/admin/readiness">Open release control</Link></Button></div>
     {overview.isLoading ? <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">{[1,2,3,4].map(item => <Skeleton key={item} className="h-36" />)}</div> : overview.isError ?
       <Card className="border-destructive/30 bg-destructive/5"><CardContent className="flex items-start gap-3 pt-6"><CircleAlert className="mt-0.5 h-5 w-5 text-destructive"/><div><p className="font-semibold">Overview unavailable</p><p className="mt-1 text-sm text-muted-foreground">{overview.error.message}</p><Button className="mt-4" variant="outline" onClick={() => overview.refetch()}>Retry</Button></div></CardContent></Card> : <div className="space-y-6">
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -64,8 +65,8 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-white/[0.07] bg-white/[0.025]"><CardHeader><CardTitle className="flex items-center gap-2 text-base"><Radio className="h-4 w-4 text-emerald-400"/>Provider readiness</CardTitle></CardHeader><CardContent className="space-y-3">
-            {Object.entries(data!.providers).map(([provider, configured]) => <div key={provider} className="flex items-center justify-between rounded-lg border border-white/[0.06] px-3 py-2.5"><span className="text-sm capitalize">{provider}</span><Badge variant="outline" className={configured ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-400" : "border-white/10 text-white/60"}>{configured ? "Ready" : "Not configured"}</Badge></div>)}
+          <Card className="border-white/[0.07] bg-white/[0.025]"><CardHeader><CardTitle className="flex items-center gap-2 text-base"><Radio className="h-4 w-4 text-emerald-400"/>Provider configuration</CardTitle></CardHeader><CardContent className="space-y-3">
+            {Object.entries(data!.providers).map(([provider, configured]) => <div key={provider} className="flex items-center justify-between rounded-lg border border-white/[0.06] px-3 py-2.5"><span className="text-sm capitalize">{provider}</span><Badge variant="outline" className={configured ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-400" : "border-white/10 text-white/60"}>{configured ? "Configured" : "Not configured"}</Badge></div>)}
           </CardContent></Card>
         </section>
 

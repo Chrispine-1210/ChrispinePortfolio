@@ -1,4 +1,12 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
+import { ImagePicker } from "@/components/admin/ImagePicker";
+import { WritingMetadata } from "@/components/admin/WritingMetadata";
+import {
+  hasEditorialBody,
+  metadataFor,
+  updateEditorialMetadata,
+} from "@shared/editorial";
+const RichTextEditor = lazy(() => import("@/components/admin/RichTextEditor"));
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Archive,
@@ -90,6 +98,7 @@ function nullable(value: string) {
 export default function ContentManagement() {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
+  const [editingVersion, setEditingVersion] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -113,12 +122,14 @@ export default function ContentManagement() {
   const reset = () => {
     setForm(emptyForm);
     setEditingId(null);
+    setEditingVersion(null);
     setEditorOpen(false);
   };
   const save = useMutation({
     mutationFn: async () => {
       const payload = {
         ...form,
+        ...(editingId ? { expectedVersion: editingVersion } : {}),
         tags: form.tags
           .split(",")
           .map((tag) => tag.trim())
@@ -154,16 +165,19 @@ export default function ContentManagement() {
     mutationFn: ({
       id,
       action,
+      expectedVersion,
       scheduledAt,
       justification,
     }: {
       id: string;
       action: TransitionAction;
+      expectedVersion: number;
       scheduledAt?: string;
       justification?: string;
     }) =>
       apiRequest("POST", `/api/admin/content/posts/${id}/transition`, {
         action,
+        expectedVersion,
         scheduledAt,
         justification,
       }),
@@ -194,6 +208,7 @@ export default function ContentManagement() {
         });
       transition.mutate({
         id: post.id,
+        expectedVersion: post.currentVersion,
         action,
         scheduledAt: date.toISOString(),
       });
@@ -204,13 +219,23 @@ export default function ContentManagement() {
         "Why is this published item being archived?",
       );
       if (!justification) return;
-      transition.mutate({ id: post.id, action, justification });
+      transition.mutate({
+        id: post.id,
+        expectedVersion: post.currentVersion,
+        action,
+        justification,
+      });
       return;
     }
-    transition.mutate({ id: post.id, action });
+    transition.mutate({
+      id: post.id,
+      expectedVersion: post.currentVersion,
+      action,
+    });
   };
   const beginEdit = (post: BlogPost) => {
     setEditingId(post.id);
+    setEditingVersion(post.currentVersion);
     setEditorOpen(true);
     setForm({
       title: post.title,
@@ -273,8 +298,47 @@ export default function ContentManagement() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {save.isError && (
+                <div
+                  role="alert"
+                  className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm leading-relaxed"
+                >
+                  <p>{save.error.message}</p>
+                  <p className="mt-2">
+                    Your entered content is still here. Copy or download it
+                    before reviewing another revision.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() => {
+                      const url = URL.createObjectURL(
+                        new Blob(
+                          [
+                            JSON.stringify(
+                              { ...form, expectedVersion: editingVersion },
+                              null,
+                              2,
+                            ),
+                          ],
+                          { type: "application/json" },
+                        ),
+                      );
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.download = "unsaved-editorial-draft.json";
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                  >
+                    Download entered draft
+                  </Button>
+                </div>
+              )}
               <div className="grid gap-4 md:grid-cols-2">
                 <Input
+                  aria-label="Title"
                   value={form.title}
                   onChange={(event) =>
                     setForm({ ...form, title: event.target.value })
@@ -282,6 +346,7 @@ export default function ContentManagement() {
                   placeholder="Title"
                 />
                 <Input
+                  aria-label="URL slug"
                   value={form.slug}
                   onChange={(event) =>
                     setForm({
@@ -295,6 +360,7 @@ export default function ContentManagement() {
                   placeholder="URL slug"
                 />
                 <Input
+                  aria-label="Topic"
                   value={form.category}
                   onChange={(event) =>
                     setForm({ ...form, category: event.target.value })
@@ -302,6 +368,7 @@ export default function ContentManagement() {
                   placeholder="Category"
                 />
                 <Input
+                  aria-label="Tags"
                   value={form.tags}
                   onChange={(event) =>
                     setForm({ ...form, tags: event.target.value })
@@ -312,6 +379,7 @@ export default function ContentManagement() {
                   type="number"
                   min={1}
                   max={240}
+                  aria-label="Read time in minutes"
                   value={form.readTimeMinutes}
                   onChange={(event) =>
                     setForm({
@@ -337,14 +405,26 @@ export default function ContentManagement() {
                   <option value="private">Private</option>
                 </select>
               </div>
-              <Input
+              <WritingMetadata
+                content={form.content}
+                onChange={(content) => setForm((f) => ({ ...f, content }))}
+              />
+              <ImagePicker
+                key={editingId ?? "new"}
                 value={form.featuredImage}
-                onChange={(event) =>
-                  setForm({ ...form, featuredImage: event.target.value })
+                onChange={(featuredImage) =>
+                  setForm((f) => ({ ...f, featuredImage }))
                 }
-                placeholder="Featured image URL (optional)"
+                alt={metadataFor(form.content).coverAlt}
+                onAltChange={(coverAlt) =>
+                  setForm((f) => ({
+                    ...f,
+                    content: updateEditorialMetadata(f.content, { coverAlt }),
+                  }))
+                }
               />
               <Textarea
+                aria-label="Excerpt"
                 value={form.excerpt}
                 onChange={(event) =>
                   setForm({ ...form, excerpt: event.target.value })
@@ -352,17 +432,20 @@ export default function ContentManagement() {
                 placeholder="Excerpt"
                 rows={3}
               />
-              <Textarea
-                className="min-h-72 font-mono"
-                value={form.content}
-                onChange={(event) =>
-                  setForm({ ...form, content: event.target.value })
-                }
-                placeholder="Article content (Markdown)"
-              />
+              <Suspense
+                fallback={<p role="status">Loading the writing editor…</p>}
+              >
+                <RichTextEditor
+                  key={editingId ?? "new"}
+                  label="Writing body"
+                  value={form.content}
+                  onChange={(content) => setForm((f) => ({ ...f, content }))}
+                />
+              </Suspense>
               <div className="grid gap-4 md:grid-cols-2">
                 <Input
                   maxLength={70}
+                  aria-label="SEO title"
                   value={form.seoTitle}
                   onChange={(event) =>
                     setForm({ ...form, seoTitle: event.target.value })
@@ -371,6 +454,7 @@ export default function ContentManagement() {
                 />
                 <Input
                   maxLength={170}
+                  aria-label="SEO description"
                   value={form.seoDescription}
                   onChange={(event) =>
                     setForm({ ...form, seoDescription: event.target.value })
@@ -378,6 +462,7 @@ export default function ContentManagement() {
                   placeholder="SEO description (170 characters)"
                 />
                 <Input
+                  aria-label="Canonical URL"
                   value={form.canonicalUrl}
                   onChange={(event) =>
                     setForm({ ...form, canonicalUrl: event.target.value })
@@ -385,6 +470,7 @@ export default function ContentManagement() {
                   placeholder="Canonical URL"
                 />
                 <Input
+                  aria-label="Social preview image URL"
                   value={form.ogImage}
                   onChange={(event) =>
                     setForm({ ...form, ogImage: event.target.value })
@@ -393,6 +479,7 @@ export default function ContentManagement() {
                 />
               </div>
               <Input
+                aria-label="Revision summary"
                 value={form.changeSummary}
                 onChange={(event) =>
                   setForm({ ...form, changeSummary: event.target.value })
@@ -419,7 +506,7 @@ export default function ContentManagement() {
                     !form.title ||
                     !form.slug ||
                     !form.excerpt ||
-                    !form.content ||
+                    !hasEditorialBody(form.content) ||
                     save.isPending
                   }
                   onClick={() => save.mutate()}

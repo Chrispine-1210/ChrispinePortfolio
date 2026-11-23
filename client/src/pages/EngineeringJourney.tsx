@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "wouter";
-import ReactMarkdown from "react-markdown";
+import { RichContent } from "@/components/editorial/RichContent";
 import {
   ArrowLeft,
   ArrowRight,
@@ -147,18 +147,7 @@ export default function EngineeringJourney() {
                 </div>
               )}
               <div className="prose prose-slate max-w-none prose-headings:tracking-tight prose-img:rounded-2xl prose-pre:whitespace-pre-wrap">
-                <ReactMarkdown
-                  skipHtml
-                  components={{
-                    a: ({ href, children }) => (
-                      <a href={href} target="_blank" rel="noopener noreferrer">
-                        {children}
-                      </a>
-                    ),
-                  }}
-                >
-                  {note.data.body}
-                </ReactMarkdown>
+                <RichContent content={note.data.body}/>
               </div>
               <section className="mt-10 rounded-2xl border border-[#bed0c3] bg-[#e9eee5] p-7">
                 <h2 className="text-xl font-semibold">What I learned</h2>

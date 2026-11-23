@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "migrations": [
+    {
+      "file": "0000_secure_foundation.sql",
+      "sha256": "21243029e76dcde96edd425060ec7f824157ad76896c95933907fd02f0f80508"
+    },
+    {
+      "file": "0001_email_delivery_foundation.sql",
+      "sha256": "bca7e28a3ef8efa6b45bfd1e9368b075b19aa9fc0117a61152ad2155db74dc43"
+    },
+    {
+      "file": "0002_notification_platform.sql",
+      "sha256": "d0da8a3c680ff21f00caa30ff541e6c818ab61efcb6893376a23e1c2240a80b3"
+    },
+    {
+      "file": "0003_crm_pipeline.sql",
+      "sha256": "da7abd420fdc61d42f33bd82a39d77977b587211f4a7903f71c39a3eb5aae6dc"
+    },
+    {
+      "file": "0004_content_workflow.sql",
+      "sha256": "e883709a702169e64a1b2c9dbb9f46c5ca20a70846b87086cbae7cbf9ecf0b66"
+    },
+    {
+      "file": "0005_project_case_study_evidence.sql",
+      "sha256": "af24904a88d760c833c23f4f67939c2f6564332fb079bcf6c4ef83c9e9af2e21"
+    },
+    {
+      "file": "0006_case_study_evidence_withdrawal.sql",
+      "sha256": "858142cbc7f4beb06d03bc9124ce1fe79a0ee8d00739ecc32cbb2f6333632467"
+    },
+    {
+      "file": "0007_acquisition_attribution.sql",
+      "sha256": "d03033dcae2a795301437b9e47148888008d0cdbc42d72471d1c4812b22517cb"
+    },
+    {
+      "file": "0008_revenue_intelligence_capital_allocation.sql",
+      "sha256": "9109f8e30d025fa211f6a1795d2c708aa702ff9d5e5623efa99c973ec3270b80"
+    },
+    {
+      "file": "0009_cash_realization_capital_deployment.sql",
+      "sha256": "35f8c55dad972b12ade91f4157ed2448c9528c1280156918717cb7c8512d1855"
+    },
+    {
+      "file": "0010_treasury_roic_capital_management.sql",
+      "sha256": "b28cce63439dcbce92d97504d8ce45758c4474273633d68a8747582ccbd639a2"
+    },
+    {
+      "file": "0011_engineering_workspace.sql",
+      "sha256": "ed99a25af4cba84a9894d871518a536b241d33ed2cf7338309b39eda4c72ea27"
+    },
+    {
+      "file": "0012_financial_request_receipts.sql",
+      "sha256": "3897744d292cb154cde3913b3aaa32bc9b341081042bbdfdf54e17ab7dcc278d"
+    },
+    {
+      "file": "0013_commercial_boundaries.sql",
+      "sha256": "a37ed8c0d73d65e12481b7b67694058a6bb0d1981ee2588e17957091a0d2ccd0"
+    }
+  ],
+  "schemaDigest": "94b9e1dac84e12e6b5e57780e0c8cc04cd7e42815aae647520deef55d2c90f1b"
+}

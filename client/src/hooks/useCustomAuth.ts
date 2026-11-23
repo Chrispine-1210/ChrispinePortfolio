@@ -31,8 +31,8 @@ export function useCustomAuth() {
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Login failed");
+        const error = await res.json().catch(()=>null);
+        throw new Error(error?.message || error?.error?.message || "Sign-in could not be confirmed. Check your account state before trying again.");
       }
 
       return res.json();

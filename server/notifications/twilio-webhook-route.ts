@@ -1,3 +1,4 @@
+import { asyncHandler } from "../middleware.js";
 import { Router } from "express";
 import Twilio from "twilio";
 import { env } from "../env.js";
@@ -7,7 +8,7 @@ import { eq } from "drizzle-orm";
 
 export function createTwilioWebhookRouter(): Router {
   const router = Router();
-  router.post("/api/webhooks/twilio/status", async (req, res) => {
+  router.post("/api/webhooks/twilio/status", asyncHandler(async (req, res) => {
     if (!env.TWILIO_AUTH_TOKEN || !env.PUBLIC_WEBHOOK_BASE_URL) return res.status(404).json({ message: "Not found" });
     const signature = req.header("X-Twilio-Signature");
     const requestUrl = `${env.PUBLIC_WEBHOOK_BASE_URL.replace(/\/$/, "")}${req.originalUrl}`;
@@ -25,6 +26,6 @@ export function createTwilioWebhookRouter(): Router {
       }).where(eq(channelOutbox.providerMessageId, messageSid));
     }
     res.status(204).end();
-  });
+  }));
   return router;
 }

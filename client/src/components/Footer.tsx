@@ -40,6 +40,12 @@ export function Footer() {
             <h3>Connect & collaborate</h3>
             <ul>
               <li>
+                <Link href="/dashboard">Your account</Link>
+              </li>
+              <li>
+                <Link href="/subscribe">Membership availability</Link>
+              </li>
+              <li>
                 <Link href="/hire">Discuss a project</Link>
               </li>
               <li>

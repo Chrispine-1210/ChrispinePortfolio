@@ -874,11 +874,40 @@ dialog::backdrop{background:rgba(2,7,14,.78);backdrop-filter:blur(3px)}
     ]
   };
 
+  /* workspace-validator:start */
+  function validateWorkspace(value){
+    const fail=()=>{throw new Error("Invalid workspace schema");};
+    const object=v=>v&&typeof v==="object"&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype?v:fail();
+    const text=(v,max=20000)=>typeof v==="string"&&v.length<=max?v:fail();
+    const number=(v,min,max,integer=false)=>typeof v==="number"&&Number.isFinite(v)&&v>=min&&v<=max&&(!integer||Number.isInteger(v))?v:fail();
+    const choice=(v,allowed)=>allowed.includes(v)?v:fail();
+    const list=(v,max,map)=>Array.isArray(v)&&v.length<=max?v.map(map):fail();
+    const id=v=>typeof v==="string"&&/^[A-Za-z0-9_-]{1,100}$/.test(v)?v:fail();
+    const unique=items=>new Set(items.map(v=>v.id)).size===items.length?items:fail();
+    const source=object(value),lab=object(source.lab),settings=object(source.settings);
+    if(source.formatVersion!==undefined&&source.formatVersion!==2)fail();
+    const domains=["TCP/IP","Routing","DNS","DHCP","VLANs","NAT","Cisco Packet Tracer","Troubleshooting Method"];
+    const challenges=unique(list(source.challenges,1000,raw=>{
+      const c=object(raw);let result=null;
+      if(c.result!==null){const r=object(c.result);result={diagnosis:text(r.diagnosis),evidence:text(r.evidence),mistakes:list(r.mistakes,100,v=>text(v,1000)),confidence:number(r.confidence,0,100),quality:number(r.quality,0,100),timeSpent:number(r.timeSpent,0,1000),outcome:text(r.outcome,200),followup:text(r.followup),completedAt:number(r.completedAt,0,8640000000000000,true)};}
+      const date=text(c.date,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(Date.parse(date)))fail();
+      const status=choice(c.status,["current","planned","completed"]);if(status==="completed"&&!result)fail();
+      return{id:id(c.id),title:text(c.title,300),date,difficulty:number(c.difficulty,1,5,true),status,domains:list(c.domains,8,v=>choice(v,domains)),impact:text(c.impact),scenario:text(c.scenario),questions:list(c.questions,100,v=>text(v,2000)),evidence:list(c.evidence,100,v=>text(v,2000)),solution:list(c.solution,100,v=>text(v,2000)),exercise:text(c.exercise),followup:text(c.followup),result};
+    }));
+    if(challenges.filter(c=>c.status==="current").length>1)fail();
+    const output={formatVersion:2,settings:{targetDifficulty:number(settings.targetDifficulty,1,5,true)},weeklyNotes:text(source.weeklyNotes),lab:{},challenges};
+    for(const key of ["hypothesis","falsifier","findings","rootCause","remediation","verification"])output.lab[key]=text(lab[key]);
+    output.lab.devices=unique(list(lab.devices,200,raw=>{const d=object(raw);return{id:id(d.id),name:text(d.name,300),role:text(d.role,2000),address:text(d.address,1000),status:text(d.status,100)};}));
+    output.lab.commands=unique(list(lab.commands,500,raw=>{const c=object(raw);if(typeof c.done!=="boolean")fail();return{id:id(c.id),done:c.done,command:text(c.command,5000),purpose:text(c.purpose,5000),status:text(c.status,100)};}));
+    return output;
+  }
+  /* workspace-validator:end */
+
   function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
   function load(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : clone(defaultState);
+      return raw && raw.length<=2000000 ? validateWorkspace(JSON.parse(raw)) : clone(defaultState);
     }catch(e){ return clone(defaultState); }
   }
   let state = load();
@@ -1405,15 +1434,15 @@ dialog::backdrop{background:rgba(2,7,14,.78);backdrop-filter:blur(3px)}
   $("targetDifficulty").addEventListener("change",()=>{state.settings.targetDifficulty=Number($("targetDifficulty").value);save(false);});
 
   $("exportBtn").addEventListener("click",()=>{
-    const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    const blob=new Blob([JSON.stringify({...state,formatVersion:2},null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob),a=document.createElement("a");
     a.href=url;a.download="network-ops-training-workspace.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
   });
   $("importFile").addEventListener("change",async e=>{
     const file=e.target.files?.[0];if(!file)return;
     try{
-      const data=JSON.parse(await file.text());
-      if(!Array.isArray(data.challenges)||!data.lab)throw new Error("Invalid format");
+      if(file.size>2000000)throw new Error("Workspace file is too large");
+      const data=validateWorkspace(JSON.parse(await file.text()));
       state=data;save();alert("Workspace imported.");
     }catch(err){alert("Import failed. Use a JSON export from this workspace.");}
     e.target.value="";

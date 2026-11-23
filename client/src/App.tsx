@@ -10,8 +10,10 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
 import Landing from "@/pages/Landing";
+import "@/styles/portfolio-evolution.css";
 
 const NotFound = lazy(() => import("@/pages/not-found"));
+const AccountRecovery = lazy(() => import("@/pages/AccountRecovery"));
 const Login = lazy(() => import("@/pages/Login"));
 const PortfolioAdvanced = lazy(() => import("@/pages/PortfolioAdvanced"));
 const PortfolioDetail = lazy(() => import("@/pages/PortfolioDetail"));
@@ -26,7 +28,9 @@ const HireMe = lazy(() => import("@/pages/HireMe"));
 const Resources = lazy(() => import("@/pages/Resources"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const Subscribe = lazy(() => import("@/pages/Subscribe"));
+const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const OperationsControl = lazy(() => import("@/pages/admin/OperationsControl"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const Analytics = lazy(() => import("@/pages/Analytics"));
 const NewsletterManagement = lazy(() => import("@/pages/NewsletterManagement"));
@@ -63,6 +67,7 @@ const CapitalOperatingSystem = lazy(
   () => import("@/pages/admin/CapitalOperatingSystem"),
 );
 const TreasuryRoic = lazy(() => import("@/pages/admin/TreasuryRoic"));
+const FinancialRequests = lazy(() => import("@/pages/admin/FinancialRequests"));
 const SecurityManagement = lazy(
   () => import("@/pages/admin/SecurityManagement"),
 );
@@ -135,8 +140,14 @@ function Router() {
             <Route path="/publications" component={Resources} />
             <Route path="/contact" component={Contact} />
             <Route path="/subscribe" component={Subscribe} />
+            <Route path="/unsubscribe" component={Unsubscribe} />
             <Route path="/login" component={Login} />
+            <Route path="/forgot-password" component={AccountRecovery} />
+            <Route path="/reset-password" component={AccountRecovery} />
             <Route path="/dashboard" component={Dashboard} />
+            <Route path="/admin/readiness">
+              <AdminProtectedRoute component={OperationsControl} />
+            </Route>
             <Route path="/admin">
               <AdminProtectedRoute component={AdminDashboard} />
             </Route>
@@ -175,6 +186,9 @@ function Router() {
             </Route>
             <Route path="/admin/treasury">
               <AdminProtectedRoute component={TreasuryRoic} />
+            </Route>
+            <Route path="/admin/financial-requests">
+              <AdminProtectedRoute component={FinancialRequests} />
             </Route>
             <Route path="/admin/security">
               <AdminProtectedRoute component={SecurityManagement} />

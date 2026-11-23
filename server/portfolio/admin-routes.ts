@@ -1,3 +1,4 @@
+import { editorialFragment, imageSource } from "../../shared/editorial.js";
 import { randomUUID } from "node:crypto";
 import { and, desc, DrizzleQueryError, eq, isNull } from "drizzle-orm";
 import { Router, type ErrorRequestHandler } from "express";
@@ -54,23 +55,23 @@ const caseStudyFields = {
   title: z.string().trim().min(1).max(300),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(240),
   summary: z.string().trim().min(1).max(5000),
-  challenge: z.string().max(50_000).nullable().optional(),
-  constraints: z.string().max(50_000).nullable().optional(),
-  objectives: z.string().max(50_000).nullable().optional(),
-  solution: z.string().max(100_000).nullable().optional(),
-  architecture: z.string().max(100_000).nullable().optional(),
+  challenge: editorialFragment.nullable().optional(),
+  constraints: editorialFragment.nullable().optional(),
+  objectives: editorialFragment.nullable().optional(),
+  solution: editorialFragment.nullable().optional(),
+  architecture: editorialFragment.nullable().optional(),
   technologies: z.array(z.string().trim().min(1).max(100)).max(50),
-  securityControls: z.string().max(50_000).nullable().optional(),
-  integrations: z.string().max(50_000).nullable().optional(),
-  roleDescription: z.string().max(50_000).nullable().optional(),
-  teamDescription: z.string().max(50_000).nullable().optional(),
-  timeline: z.string().max(50_000).nullable().optional(),
-  outcome: z.string().max(50_000).nullable().optional(),
-  lessons: z.string().max(50_000).nullable().optional(),
-  nextPhase: z.string().max(50_000).nullable().optional(),
+  securityControls: editorialFragment.nullable().optional(),
+  integrations: editorialFragment.nullable().optional(),
+  roleDescription: editorialFragment.nullable().optional(),
+  teamDescription: editorialFragment.nullable().optional(),
+  timeline: editorialFragment.nullable().optional(),
+  outcome: editorialFragment.nullable().optional(),
+  lessons: editorialFragment.nullable().optional(),
+  nextPhase: editorialFragment.nullable().optional(),
   category: z.string().trim().min(1).max(160),
-  featuredImage: httpUrl.nullable().optional(),
-  images: z.array(httpUrl).max(30),
+  featuredImage: imageSource.nullable().optional(),
+  images: z.array(imageSource).max(30),
   liveUrl: httpUrl.nullable().optional(),
   githubUrl: httpUrl.nullable().optional(),
   visibility: z.enum(["public", "unlisted", "private"]),
@@ -174,8 +175,7 @@ const handleGovernanceError: ErrorRequestHandler = (error, request, response, ne
   if (code === "22003") {
     return response.status(400).json({ message: "Numeric value is out of range" });
   }
-  console.error("Portfolio governance request failed", { requestId: request.requestId, code });
-  response.status(500).json({ message: "Portfolio operation failed" });
+  next(error);
 };
 
 export function createPortfolioGovernanceRouter() {

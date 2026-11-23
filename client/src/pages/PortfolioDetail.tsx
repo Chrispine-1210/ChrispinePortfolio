@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import ReactMarkdown from "react-markdown";
+import { RichContent } from "@/components/editorial/RichContent";
 import {
   ArrowLeft,
   ArrowUpRight,
@@ -15,29 +15,7 @@ import { CaseStudyCover } from "@/components/CaseStudyCover";
 import type { PublicPortfolioProject } from "@shared/schema";
 
 function Editorial({ text }: { text: string }) {
-  return (
-    <div className="prose prose-invert max-w-none prose-headings:tracking-tight prose-h3:text-xl prose-p:leading-relaxed prose-a:text-primary prose-img:rounded-xl prose-pre:whitespace-pre-wrap prose-pre:break-words">
-      <ReactMarkdown
-        components={{
-          a: ({ children, href }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer">
-              {children}
-            </a>
-          ),
-          img: ({ src, alt }) => (
-            <img
-              src={src}
-              alt={alt ?? "Project architecture"}
-              loading="lazy"
-              decoding="async"
-            />
-          ),
-        }}
-      >
-        {text}
-      </ReactMarkdown>
-    </div>
-  );
+  return <RichContent content={text} className="editorial-prose" />;
 }
 
 export default function PortfolioDetail() {
@@ -122,9 +100,12 @@ export default function PortfolioDetail() {
     {
       id: "role",
       title: "My contribution & collaboration",
-      text: [d?.roleDescription, d?.teamDescription]
-        .filter(Boolean)
-        .join("\n\n"),
+      text: d?.roleDescription,
+    },
+    {
+      id: "collaboration",
+      title: "Collaboration & attribution",
+      text: d?.teamDescription,
     },
     {
       id: "results",

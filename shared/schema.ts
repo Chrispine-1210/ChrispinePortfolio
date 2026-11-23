@@ -61,6 +61,64 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+export const billingSubscriptions = pgTable("billing_subscriptions", {
+  id: varchar("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  customerId: varchar("customer_id").notNull(), priceId: varchar("price_id").notNull(),
+  status: varchar("status", { length: 40 }).notNull(), entitledUntil: timestamp("entitled_until"),
+  observedAt: timestamp("observed_at").notNull().defaultNow(), livemode: boolean("livemode").notNull().default(false),
+}, table => ({ userIdx: index("billing_subscriptions_user_idx").on(table.userId) }));
+export const billingEventReceipts = pgTable("billing_event_receipts", {
+  id: varchar("id").primaryKey(), eventType: varchar("event_type").notNull(),
+  fingerprint: varchar("fingerprint", { length: 64 }).notNull(), subscriptionId: varchar("subscription_id"),
+  receivedAt: timestamp("received_at").notNull().defaultNow(),
+});
+export const billingCheckoutRequests = pgTable("billing_checkout_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  requestKey: varchar("request_key", { length: 100 }).notNull(), priceId: varchar("price_id").notNull(),
+  status: varchar("status", { length: 24 }).notNull().default("creating"),
+  sessionId: varchar("session_id").unique(), checkoutUrl: text("checkout_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(), updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, table => ({ actorKey: uniqueIndex("billing_checkout_requests_user_id_request_key_key").on(table.userId, table.requestKey),
+  openUser: uniqueIndex("billing_checkout_open_user_idx").on(table.userId).where(sql`${table.status} IN ('creating','created','uncertain')`) }));
+
+export const accountRecoveryTokens = pgTable(
+  "account_recovery_tokens",
+  {
+    id: varchar("id")
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: varchar("token_hash", { length: 64 }).notNull().unique(),
+    userSecurityVersion: integer("user_security_version").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    consumedAt: timestamp("consumed_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    userTime: index("account_recovery_user_time_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+  }),
+);
+export const publicRequestLimits = pgTable(
+  "public_request_limits",
+  {
+    keyHash: varchar("key_hash", { length: 64 }).notNull(),
+    bucketStart: timestamp("bucket_start").notNull(),
+    hits: integer("hits").notNull().default(1),
+    expiresAt: timestamp("expires_at").notNull(),
+  },
+  (table) => ({
+    key: primaryKey({ columns: [table.keyHash, table.bucketStart] }),
+    expiry: index("public_request_limits_expiry_idx").on(table.expiresAt),
+  }),
+);
+
 // Identity, authorization, session, and accountability foundation.
 export const roles = pgTable("roles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -146,6 +204,22 @@ export const auditEvents = pgTable("audit_events", {
   actorIdx: index("audit_events_actor_idx").on(table.actorUserId, table.createdAt),
   resourceIdx: index("audit_events_resource_idx").on(table.resourceType, table.resourceId),
   actionIdx: index("audit_events_action_idx").on(table.action, table.createdAt),
+}));
+
+export const financialRequestReceipts = pgTable("financial_request_receipts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  actorUserId: varchar("actor_user_id").notNull().references(() => users.id, { onDelete: "restrict" }),
+  requestKey: varchar("request_key", { length: 100 }).notNull(),
+  fingerprint: varchar("fingerprint", { length: 64 }).notNull(),
+  method: varchar("method", { length: 10 }).notNull(),
+  path: text("path").notNull(),
+  requiredPermission: varchar("required_permission", { length: 160 }).notNull(),
+  responseStatus: integer("response_status").notNull(),
+  responseBody: jsonb("response_body").notNull(),
+  originalRequestId: varchar("original_request_id", { length: 100 }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  actorKeyUnique: uniqueIndex("financial_request_receipts_actor_key_unique").on(table.actorUserId, table.requestKey),
 }));
 
 export const authenticationAttempts = pgTable("authentication_attempts", {
@@ -479,7 +553,13 @@ export const insertContactRequestSchema = createInsertSchema(contactRequests).om
   id: true,
   isRead: true,
   createdAt: true,
-});
+}).extend({
+  name: z.string().trim().min(2).max(180),
+  email: z.string().trim().email().max(320).transform(value => value.toLowerCase()),
+  projectType: z.string().trim().max(180).nullable().optional(),
+  message: z.string().trim().min(10).max(5000),
+  preferredContact: z.enum(["", "email", "phone", "whatsapp"]).nullable().optional(),
+}).strict();
 
 export type InsertContactRequest = z.infer<typeof insertContactRequestSchema>;
 export type ContactRequest = typeof contactRequests.$inferSelect;

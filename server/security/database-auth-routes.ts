@@ -1,3 +1,4 @@
+import { asyncHandler } from "../middleware.js";
 import { randomUUID } from "node:crypto";
 import type { Request, Response, Router } from "express";
 import { z } from "zod";
@@ -10,6 +11,7 @@ import { DrizzleSessionRepository } from "./drizzle-session-repository.js";
 import { LoginThrottleService } from "./login-throttle.js";
 import { ADMIN_SESSION_COOKIE, createSessionAuthentication, readCookie } from "./session-middleware.js";
 import { SessionService } from "./session-service.js";
+import { publicIdentity } from "./identity.js";
 
 const loginSchema = z.object({
   email: z.string().email().max(320),
@@ -58,7 +60,7 @@ export function getDatabaseAuthRuntime() {
 export function setupDatabaseAuthRoutes(router: Router, runtime = getDatabaseAuthRuntime()) {
   const authenticate = createSessionAuthentication(runtime.sessions);
 
-  router.post("/api/auth/login", async (request: Request, response: Response, next) => {
+  router.post("/api/auth/login", asyncHandler(async (request: Request, response: Response, next) => {
     try {
       const parsed = loginSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid login request" });
@@ -79,25 +81,20 @@ export function setupDatabaseAuthRoutes(router: Router, runtime = getDatabaseAut
       response.cookie(ADMIN_SESSION_COOKIE, result.session.token, cookieOptions(result.session.expiresAt));
       return response.json({
         message: "Login successful",
-        user: { id: result.user.id, email: result.user.email, isAdmin: true },
+        user: { id: result.user.id, email: result.user.email },
       });
     } catch (error) {
       next(error);
     }
-  });
+  }));
 
   router.get("/api/auth/me", authenticate, (request: Request, response: Response) => {
     response.setHeader("Cache-Control", "no-store");
     const principal = request.securityPrincipal!;
-    response.json({
-      id: principal.userId,
-      email: principal.email,
-      isAdmin: true,
-      permissions: principal.permissions,
-    });
+    response.json(publicIdentity(principal));
   });
 
-  router.post("/api/auth/logout", async (request: Request, response: Response, next) => {
+  router.post("/api/auth/logout", asyncHandler(async (request: Request, response: Response, next) => {
     try {
       const token = readCookie(request.headers.cookie, ADMIN_SESSION_COOKIE);
       if (token) await runtime.sessions.revoke(token, "logout");
@@ -107,7 +104,7 @@ export function setupDatabaseAuthRoutes(router: Router, runtime = getDatabaseAut
     } catch (error) {
       next(error);
     }
-  });
+  }));
 
   return { authenticate };
 }

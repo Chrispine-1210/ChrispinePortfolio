@@ -35,7 +35,7 @@ export default function Analytics() {
   return (
     <AdminShell
       title="Application observations"
-      description="Request metrics reported by the portfolio API"
+      description="Process-local request observations; this is not a durable visitor or conversion total"
     >
       <div className="bg-background">
         <div className="max-w-7xl mx-auto space-y-8">

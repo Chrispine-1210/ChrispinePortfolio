@@ -12,26 +12,32 @@ import {
 import { EditorialPage } from "@/components/editorial/EditorialPage";
 import { setSEO } from "@/lib/seoHelper";
 import publicCvUrl from "@assets/Chrispine-Mndala-CV-2026.pdf?url";
+import { editorialPhotos, PhotoCredit } from "@/components/EditorialPhoto";
+import "@/styles/content-studio.css";
 import portrait from "@assets/portfolio_photos/chrispine-about-campus.png";
 
 const capabilities = [
   {
     icon: Code2,
+    photo: "code" as const,
     title: "Software that supports the work",
     body: "Web interfaces, APIs and database-backed workflows. My applied stack includes React, TypeScript, Node.js, PostgreSQL and Drizzle.",
   },
   {
     icon: Network,
+    photo: "network" as const,
     title: "Connected systems",
     body: "A foundation in TCP/IP, routing, DNS and device troubleshooting, with continued practical work in servers, networks and recovery.",
   },
   {
     icon: BarChart3,
+    photo: "library" as const,
     title: "Data with a purpose",
     body: "Collection, analysis and reporting that help people understand operations. Excel, dashboards and monitoring and evaluation inform the approach.",
   },
   {
     icon: Briefcase,
+    photo: "planning" as const,
     title: "An operator’s perspective",
     body: "Commercial operations, stock controls, compliance and staff coordination shape how I approach software requirements and delivery.",
   },
@@ -206,8 +212,21 @@ export default function About() {
           </h2>
         </div>
         <div className="editorial-capabilities">
-          {capabilities.map(({ icon: Icon, title, body }) => (
+          {capabilities.map(({ icon: Icon, title, body, photo }) => (
             <div key={title}>
+              <figure className="practice-photo">
+                <img
+                  src={editorialPhotos[photo].src}
+                  alt={editorialPhotos[photo].alt}
+                  loading="lazy"
+                  decoding="async"
+                  width="600"
+                  height="375"
+                />
+                <figcaption>
+                  <PhotoCredit photo={photo} />
+                </figcaption>
+              </figure>
               <Icon size={24} strokeWidth={1.5} />
               <h3>{title}</h3>
               <p className="editorial-copy">{body}</p>

@@ -1,4 +1,4 @@
-import code from "@assets/portfolio-editorial/photo-code.webp";
+import legacyCode from "@assets/portfolio-editorial/photo-code.webp";
 import collaboration from "@assets/portfolio-editorial/photo-collaboration.webp";
 import contact from "@assets/portfolio-editorial/photo-contact.webp";
 import library from "@assets/portfolio-editorial/photo-library.webp";
@@ -9,7 +9,9 @@ import writing from "@assets/portfolio-editorial/photo-writing.webp";
 import { cn } from "@/lib/utils";
 
 const photos = {
-  code: { src: code, alt: "Close-up of a computer display showing code", author: "Bernd Dittrich", slug: "computer-screen-displaying-code-and-text-XIpm0bnYOQE" },
+  network: { src: "/media/editorial/network.webp", alt: "Ethernet patch leads connected to switches in a network rack", author: "Yuriy Vertikov", slug: "a-rack-of-servers-with-wires-and-wires-attached-to-them-c-lSQecD9oI" },
+  hardware: { src: "/media/editorial/hardware.webp", alt: "Circuit board and precision screwdriver on a blue repair mat", author: "Fotografia Lui Vlad", slug: "circuit-board-being-repaired-with-a-screwdriver-HpoYaT9-9aE" },
+  code: { src: workspace, alt: "A desktop monitor and accessories on a workspace desk", author: "Slava Keyzman", slug: "turned-on-flat-screen-monitor-white-wooden-desk-ZG4Y6lLPARw" },
   collaboration: { src: collaboration, alt: "A person using a smartphone beside an open laptop", author: "Christina @ wocintechchat.com", slug: "person-using-smartphone-and-macbook-UTw3j_aoIKM" },
   contact: { src: contact, alt: "A smartphone resting on a patterned notebook on a wooden table", author: "Swello", slug: "smartphone-on-notebook-and-laptop-on-table-CGvC8yWgC-g" },
   library: { src: library, alt: "Rows of books on wooden library shelves", author: "Susan Q Yin", slug: "books-on-brown-wooden-shelf-2JIvboGLeho" },
@@ -18,15 +20,26 @@ const photos = {
   workspace: { src: workspace, alt: "A desktop monitor and accessories on a workspace desk", author: "Slava Keyzman", slug: "turned-on-flat-screen-monitor-white-wooden-desk-ZG4Y6lLPARw" },
   writing: { src: writing, alt: "A hand writing notes with a pen", author: "Alexander Mass", slug: "a-person-writing-in-a-notebook-with-a-pen-5Nqc_YugFao" },
 };
+export const editorialPhotos = photos;
+
+// Existing saved covers can retain the previous bundled URL. Keep both the
+// emitted file and its original attribution without offering it as the new code photo.
+const legacyCodePhoto = {
+  src: legacyCode,
+  author: "Bernd Dittrich",
+  slug: "computer-screen-displaying-code-and-text-XIpm0bnYOQE",
+};
 
 export function articlePhoto(category: string): keyof typeof photos {
   switch (category.toLowerCase()) {
     case "programming":
     case "ai & data":
-    case "networking":
-    case "hardware engineering":
-    case "infrastructure":
       return "code";
+    case "networking":
+    case "infrastructure":
+      return "network";
+    case "hardware engineering":
+      return "hardware";
     case "leadership":
     case "career":
       return "planning";
@@ -41,9 +54,17 @@ export function editorialPhotoSource(photo: keyof typeof photos) {
   return photos[photo].src;
 }
 
+export function PhotoCreditForSource({src}:{src:string}) {
+  const match = [...Object.values(photos), legacyCodePhoto].find(photo => photo.src === src);
+  return match ? <PhotoAttribution author={match.author} slug={match.slug} /> : null;
+}
+
 export function PhotoCredit({ photo }: { photo: keyof typeof photos }) {
   const { author, slug } = photos[photo];
+  return <PhotoAttribution author={author} slug={slug} />;
+}
 
+function PhotoAttribution({ author, slug }: { author: string; slug: string }) {
   return <>Editorial photo by <a href={"https://unsplash.com/photos/" + slug} className="underline underline-offset-2">{author}</a> on Unsplash</>;
 }
 

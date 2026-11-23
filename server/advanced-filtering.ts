@@ -1,10 +1,12 @@
+import { asyncHandler } from "./middleware.js";
 import { Router, Request, Response } from "express";
 import { storage } from "./storage.js";
 import { listPublicCaseStudies } from "./portfolio/public-case-study-service.js";
+import { publicWritingPost } from "./editorial-media.js";
 
 export function setupFilteringRoutes(router: Router) {
   // Advanced blog search with pagination
-  router.get("/api/blog/search", async (req: Request, res: Response) => {
+  router.get("/api/blog/search", asyncHandler(async (req: Request, res: Response) => {
     try {
       const {
         q = "",
@@ -56,7 +58,7 @@ export function setupFilteringRoutes(router: Router) {
       const paginatedPosts = posts.slice(startIdx, startIdx + limitNum);
 
       res.json({
-        data: paginatedPosts,
+        data: paginatedPosts.map(post => publicWritingPost(post)),
         pagination: {
           page: pageNum,
           limit: limitNum,
@@ -68,10 +70,10 @@ export function setupFilteringRoutes(router: Router) {
     } catch (error) {
       res.status(500).json({ message: "Search failed" });
     }
-  });
+  }));
 
   // Advanced portfolio search with pagination
-  router.get("/api/portfolio/search", async (req: Request, res: Response) => {
+  router.get("/api/portfolio/search", asyncHandler(async (req: Request, res: Response) => {
     res.setHeader("Cache-Control", "no-store");
     try {
       const {
@@ -129,10 +131,10 @@ export function setupFilteringRoutes(router: Router) {
     } catch (error) {
       res.status(500).json({ message: "Search failed" });
     }
-  });
+  }));
 
   // Get all categories
-  router.get("/api/categories/blog", async (req: Request, res: Response) => {
+  router.get("/api/categories/blog", asyncHandler(async (req: Request, res: Response) => {
     try {
       const posts = await storage.getPublishedBlogPosts();
       const categories = Array.from(
@@ -142,12 +144,12 @@ export function setupFilteringRoutes(router: Router) {
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch categories" });
     }
-  });
+  }));
 
   // Get all portfolio categories
   router.get(
     "/api/categories/portfolio",
-    async (req: Request, res: Response) => {
+    asyncHandler(async (req: Request, res: Response) => {
       res.setHeader("Cache-Control", "no-store");
       try {
         const projects = await listPublicCaseStudies();
@@ -158,6 +160,6 @@ export function setupFilteringRoutes(router: Router) {
       } catch (error) {
         res.status(500).json({ message: "Failed to fetch categories" });
       }
-    }
+    })
   );
 }

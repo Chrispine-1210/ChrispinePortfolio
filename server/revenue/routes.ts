@@ -1,3 +1,5 @@
+import { moneyInput, moneyMinor, moneyAdd, moneySubtract, moneySum, moneyCompare, moneyRatio } from "../../shared/money.js";
+import { financialReadHandler, financialHandler as asyncHandler } from "../financial-requests.js";
 import {
   and,
   desc,
@@ -32,10 +34,7 @@ const agreementInputSchema = z.object({
   leadId: z.string().uuid(),
   serviceInterest: z.string().trim().min(1).max(180),
   currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
-  monthlyRecurringRevenue: z.union([
-    z.number().positive(),
-    z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number).refine((value) => value > 0),
-  ]),
+  monthlyRecurringRevenue: moneyInput(),
   startedAt: z.string().datetime(),
   sourceReference: z.string().trim().min(3).max(2000),
   notes: z.string().trim().max(4000).nullable().optional(),
@@ -46,10 +45,7 @@ const revenueInputSchema = z.object({
   serviceInterest: z.string().trim().min(1).max(180),
   revenueKind: z.enum(["one_time", "recurring"]),
   currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
-  amount: z.union([
-    z.number().positive(),
-    z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number).refine((value) => value > 0),
-  ]),
+  amount: moneyInput(),
   occurredAt: z.string().datetime(),
   periodStart: z.string().datetime().nullable().optional(),
   periodEnd: z.string().datetime().nullable().optional(),
@@ -78,10 +74,7 @@ const costInputSchema = z.object({
   category: z.enum(["delivery_labour", "infrastructure", "subcontractor", "transaction", "support", "other"]),
   costScope: z.enum(["one_time", "recurring"]),
   currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
-  amount: z.union([
-    z.number().nonnegative(),
-    z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number),
-  ]),
+  amount: moneyInput({ zero: true }),
   occurredAt: z.string().datetime(),
   sourceReference: z.string().trim().min(3).max(2000),
   notes: z.string().trim().max(4000).nullable().optional(),
@@ -148,9 +141,10 @@ async function audit(
   resourceId: string,
   previousState: unknown,
   newState: unknown,
-  justification?: string,
+  justification: string | undefined,
+  writer: Pick<typeof db, "insert">,
 ) {
-  await db.insert(auditEvents).values({
+  await writer.insert(auditEvents).values({
     actorUserId: request.securityPrincipal?.userId ?? null,
     actorSessionId: request.securityPrincipal?.sessionId ?? null,
     action,
@@ -170,7 +164,7 @@ export function createRevenueIntelligenceRouter() {
   router.get(
     "/api/admin/revenue/agreements",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db
         .select()
         .from(recurringRevenueAgreements)
@@ -178,13 +172,13 @@ export function createRevenueIntelligenceRouter() {
         .limit(1000);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/agreements",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = agreementInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({
         message: "Invalid recurring revenue agreement",
@@ -201,28 +195,31 @@ export function createRevenueIntelligenceRouter() {
       if (startedAt.getTime() > Date.now() + 10 * 60 * 1000) {
         return response.status(400).json({ message: "Agreement start cannot be in the future" });
       }
-      const [record] = await db
-        .insert(recurringRevenueAgreements)
-        .values({
-          leadId: input.leadId,
-          serviceInterest: input.serviceInterest,
-          currency: input.currency,
-          monthlyRecurringRevenue: String(input.monthlyRecurringRevenue),
-          startedAt,
-          sourceReference: input.sourceReference,
-          notes: input.notes || null,
-          createdBy: request.securityPrincipal?.userId ?? null,
-        })
-        .returning();
-      await audit(request, "revenue.agreement.create", "recurring_revenue_agreement", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction
+          .insert(recurringRevenueAgreements)
+          .values({
+            leadId: input.leadId,
+            serviceInterest: input.serviceInterest,
+            currency: input.currency,
+            monthlyRecurringRevenue: String(input.monthlyRecurringRevenue),
+            startedAt,
+            sourceReference: input.sourceReference,
+            notes: input.notes || null,
+            createdBy: request.securityPrincipal?.userId ?? null,
+          })
+          .returning();
+        await audit(request, "revenue.agreement.create", "recurring_revenue_agreement", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/agreements/:id/end",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = endAgreementSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({
         message: "Invalid agreement close request",
@@ -234,7 +231,7 @@ export function createRevenueIntelligenceRouter() {
           .select()
           .from(recurringRevenueAgreements)
           .where(eq(recurringRevenueAgreements.id, request.params.id))
-          .limit(1);
+          .limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         if (previous.status !== "active") return { outcome: "closed" as const, record: previous };
@@ -264,13 +261,13 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "closed") return response.status(409).json({ message: "Agreement is already closed" });
       if (result.outcome === "invalid_end") return response.status(400).json({ message: "Agreement end cannot precede its start" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/agreements/:id/void",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
@@ -278,7 +275,7 @@ export function createRevenueIntelligenceRouter() {
           .select()
           .from(recurringRevenueAgreements)
           .where(eq(recurringRevenueAgreements.id, request.params.id))
-          .limit(1);
+          .limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         const [record] = await transaction
@@ -307,23 +304,23 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "missing") return response.status(404).json({ message: "Agreement not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Agreement is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/revenue/events",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(revenueEvents).orderBy(desc(revenueEvents.occurredAt)).limit(1500);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/events",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = revenueInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({
         message: "Invalid revenue evidence",
@@ -336,33 +333,36 @@ export function createRevenueIntelligenceRouter() {
       if (validation.outcome === "service_mismatch") return response.status(409).json({
         message: `Service must match the won opportunity: ${validation.expected}`,
       });
-      const [record] = await db.insert(revenueEvents).values({
-        leadId: input.leadId,
-        serviceInterest: input.serviceInterest,
-        revenueKind: input.revenueKind,
-        currency: input.currency,
-        amount: String(input.amount),
-        occurredAt: new Date(input.occurredAt),
-        periodStart: input.periodStart ? new Date(input.periodStart) : null,
-        periodEnd: input.periodEnd ? new Date(input.periodEnd) : null,
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "revenue.event.create", "revenue_event", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(revenueEvents).values({
+          leadId: input.leadId,
+          serviceInterest: input.serviceInterest,
+          revenueKind: input.revenueKind,
+          currency: input.currency,
+          amount: String(input.amount),
+          occurredAt: new Date(input.occurredAt),
+          periodStart: input.periodStart ? new Date(input.periodStart) : null,
+          periodEnd: input.periodEnd ? new Date(input.periodEnd) : null,
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "revenue.event.create", "revenue_event", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/events/:id/void",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction.select().from(revenueEvents)
-          .where(eq(revenueEvents.id, request.params.id)).limit(1);
+          .where(eq(revenueEvents.id, request.params.id)).limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         const [record] = await transaction.update(revenueEvents).set({
@@ -387,23 +387,23 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "missing") return response.status(404).json({ message: "Revenue event not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Revenue event is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/revenue/costs",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(directCostEntries).orderBy(desc(directCostEntries.occurredAt)).limit(1500);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/costs",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = costInputSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({
         message: "Invalid direct-cost evidence",
@@ -416,32 +416,35 @@ export function createRevenueIntelligenceRouter() {
       if (validation.outcome === "service_mismatch") return response.status(409).json({
         message: `Service must match the won opportunity: ${validation.expected}`,
       });
-      const [record] = await db.insert(directCostEntries).values({
-        leadId: input.leadId,
-        serviceInterest: input.serviceInterest,
-        category: input.category,
-        costScope: input.costScope,
-        currency: input.currency,
-        amount: String(input.amount),
-        occurredAt: new Date(input.occurredAt),
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "revenue.cost.create", "direct_cost_entry", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(directCostEntries).values({
+          leadId: input.leadId,
+          serviceInterest: input.serviceInterest,
+          category: input.category,
+          costScope: input.costScope,
+          currency: input.currency,
+          amount: String(input.amount),
+          occurredAt: new Date(input.occurredAt),
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "revenue.cost.create", "direct_cost_entry", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/costs/:id/void",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction.select().from(directCostEntries)
-          .where(eq(directCostEntries.id, request.params.id)).limit(1);
+          .where(eq(directCostEntries.id, request.params.id)).limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         const [record] = await transaction.update(directCostEntries).set({
@@ -466,24 +469,24 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "missing") return response.status(404).json({ message: "Direct-cost entry not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Direct-cost entry is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/revenue/cost-attestations",
     requireAdminPermission("pipeline.financial.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const rows = await db.select().from(costEvidenceAttestations)
         .orderBy(desc(costEvidenceAttestations.throughAt)).limit(1500);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/cost-attestations",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = z.object({
         leadId: z.string().uuid(),
         serviceInterest: z.string().trim().min(1).max(180),
@@ -506,29 +509,32 @@ export function createRevenueIntelligenceRouter() {
       if (validation.outcome === "service_mismatch") return response.status(409).json({
         message: `Service must match the won opportunity: ${validation.expected}`,
       });
-      const [record] = await db.insert(costEvidenceAttestations).values({
-        leadId: input.leadId,
-        serviceInterest: input.serviceInterest,
-        currency: input.currency,
-        throughAt: new Date(input.throughAt),
-        sourceReference: input.sourceReference,
-        notes: input.notes || null,
-        createdBy: request.securityPrincipal?.userId ?? null,
-      }).returning();
-      await audit(request, "revenue.cost_attestation.create", "cost_evidence_attestation", record.id, null, record);
+      const record = await db.transaction(async (transaction) => {
+        const [record] = await transaction.insert(costEvidenceAttestations).values({
+          leadId: input.leadId,
+          serviceInterest: input.serviceInterest,
+          currency: input.currency,
+          throughAt: new Date(input.throughAt),
+          sourceReference: input.sourceReference,
+          notes: input.notes || null,
+          createdBy: request.securityPrincipal?.userId ?? null,
+        }).returning();
+        await audit(request, "revenue.cost_attestation.create", "cost_evidence_attestation", record.id, null, record, undefined, transaction);
+        return record;
+      });
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/revenue/cost-attestations/:id/void",
     requireAdminPermission("revenue.economics.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = voidSchema.safeParse(request.body);
       if (!parsed.success) return response.status(400).json({ message: "Invalid void request", errors: parsed.error.issues });
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction.select().from(costEvidenceAttestations)
-          .where(eq(costEvidenceAttestations.id, request.params.id)).limit(1);
+          .where(eq(costEvidenceAttestations.id, request.params.id)).limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "voided" as const };
         const [record] = await transaction.update(costEvidenceAttestations).set({
@@ -553,13 +559,13 @@ export function createRevenueIntelligenceRouter() {
       if (result.outcome === "missing") return response.status(404).json({ message: "Cost attestation not found" });
       if (result.outcome === "voided") return response.status(409).json({ message: "Cost attestation is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/revenue/intelligence",
     requireAdminPermission("pipeline.financial.read"),
-    async (request, response) => {
+    financialReadHandler(async (request, response) => {
       const requested =
         typeof request.query.window === "string" ? request.query.window : "90d";
       const windowValue = (supportedWindows as readonly string[]).includes(requested)
@@ -579,13 +585,15 @@ export function createRevenueIntelligenceRouter() {
       }).from(leads).where(and(
         isNull(leads.archivedAt),
         ...(since ? [gt(leads.createdAt, since)] : []),
-      )).orderBy(desc(leads.createdAt)).limit(5000);
+      )).orderBy(desc(leads.createdAt));
 
       const leadIds = leadRows.map((lead) => lead.id);
+      const cohortIds = db.select({id:leads.id}).from(leads).where(and(isNull(leads.archivedAt),
+        ...(since?[gt(leads.createdAt,since)]:[])));
       const [touchRows, stageRows, revenueRows, costRows, attestationRows, agreementRows, spendRows] = await Promise.all([
         leadIds.length
           ? db.select().from(leadAttributionTouches)
-            .where(inArray(leadAttributionTouches.leadId, leadIds))
+            .where(inArray(leadAttributionTouches.leadId, cohortIds))
             .orderBy(leadAttributionTouches.capturedAt)
           : Promise.resolve([]),
         leadIds.length
@@ -594,39 +602,40 @@ export function createRevenueIntelligenceRouter() {
               metadata: leadActivities.metadata,
               createdAt: leadActivities.createdAt,
             }).from(leadActivities).where(and(
-              inArray(leadActivities.leadId, leadIds),
+              inArray(leadActivities.leadId, cohortIds),
               eq(leadActivities.type, "stage_changed"),
             )).orderBy(leadActivities.createdAt)
           : Promise.resolve([]),
         leadIds.length
           ? db.select().from(revenueEvents).where(and(
-              inArray(revenueEvents.leadId, leadIds),
+              inArray(revenueEvents.leadId, cohortIds),
               isNull(revenueEvents.voidedAt),
             )).orderBy(revenueEvents.occurredAt)
           : Promise.resolve([]),
         leadIds.length
           ? db.select().from(directCostEntries).where(and(
-              inArray(directCostEntries.leadId, leadIds),
+              inArray(directCostEntries.leadId, cohortIds),
               isNull(directCostEntries.voidedAt),
             )).orderBy(directCostEntries.occurredAt)
           : Promise.resolve([]),
         leadIds.length
           ? db.select().from(costEvidenceAttestations).where(and(
-              inArray(costEvidenceAttestations.leadId, leadIds),
+              inArray(costEvidenceAttestations.leadId, cohortIds),
               isNull(costEvidenceAttestations.voidedAt),
             )).orderBy(costEvidenceAttestations.throughAt)
           : Promise.resolve([]),
         leadIds.length
           ? db.select().from(recurringRevenueAgreements).where(and(
-              inArray(recurringRevenueAgreements.leadId, leadIds),
+              inArray(recurringRevenueAgreements.leadId, cohortIds),
               isNull(recurringRevenueAgreements.voidedAt),
             )).orderBy(recurringRevenueAgreements.startedAt)
           : Promise.resolve([]),
         db.select().from(acquisitionSpendEntries).where(and(
           isNull(acquisitionSpendEntries.voidedAt),
           ...(since ? [gt(acquisitionSpendEntries.occurredAt, since)] : []),
-        )).orderBy(acquisitionSpendEntries.occurredAt).limit(5000),
+        )).orderBy(acquisitionSpendEntries.occurredAt),
       ]);
+
 
       const lastTouch = new Map<string, (typeof touchRows)[number]>();
       for (const touch of touchRows) if (touch.touchType === "last") lastTouch.set(touch.leadId, touch);
@@ -667,7 +676,7 @@ export function createRevenueIntelligenceRouter() {
         amount: number,
       ) => {
         const values = target.get(leadId) ?? new Map<string, number>();
-        values.set(currency, (values.get(currency) ?? 0) + amount);
+        values.set(currency, moneyAdd(values.get(currency) ?? 0, amount));
         target.set(leadId, values);
       };
 
@@ -756,7 +765,7 @@ export function createRevenueIntelligenceRouter() {
         }
         const key = `${spend.channel}::${spend.serviceInterest}`;
         const currencies = spendByGroupCurrency.get(key) ?? new Map<string, number>();
-        currencies.set(spend.currency, (currencies.get(spend.currency) ?? 0) + amount);
+        currencies.set(spend.currency, moneyAdd(currencies.get(spend.currency) ?? 0, amount));
         spendByGroupCurrency.set(key, currencies);
         const previousSpendAt = earliestSpendByGroup.get(key);
         if (!previousSpendAt || spend.occurredAt.getTime() < previousSpendAt.getTime()) {
@@ -814,7 +823,7 @@ export function createRevenueIntelligenceRouter() {
           row.count += 1;
           const estimatedValue = lead.estimatedValue ? Number(lead.estimatedValue) : 0;
           if (Number.isFinite(estimatedValue) && estimatedValue > 0) {
-            row.valueByCurrency.set(lead.currency, (row.valueByCurrency.get(lead.currency) ?? 0) + estimatedValue);
+            row.valueByCurrency.set(lead.currency, moneyAdd(row.valueByCurrency.get(lead.currency) ?? 0, estimatedValue));
           }
           agingBuckets.set(bucket, row);
           const threshold = stageThresholdDays[lead.stage];
@@ -885,35 +894,35 @@ export function createRevenueIntelligenceRouter() {
           const winsWithCompleteCostEvidence = revenueCustomers.filter(
             (lead) => costEvidenceComplete(lead.id, currency),
           ).length;
-          const revenueCoveragePct = wins ? round((winsWithRevenue / wins) * 100) : 0;
-          const costCoveragePct = winsWithRevenue
-            ? round((winsWithCompleteCostEvidence / winsWithRevenue) * 100)
-            : 0;
+          const revenueCoverageRaw=wins?winsWithRevenue/wins*100:0;
+          const costCoverageRaw=winsWithRevenue?winsWithCompleteCostEvidence/winsWithRevenue*100:0;
+          const revenueCoveragePct=winsWithRevenue===wins&&wins>0?100:Math.min(99.99,round(revenueCoverageRaw,2));
+          const costCoveragePct=winsWithRevenue>0&&winsWithCompleteCostEvidence===winsWithRevenue?100:Math.min(99.99,round(costCoverageRaw,2));
           const recognizedRevenue = wonLeads.reduce(
-            (sum, lead) => sum + (revenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
+            (sum, lead) => moneyAdd(sum, revenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
           );
           const directCost = wonLeads.reduce(
-            (sum, lead) => sum + (costByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
+            (sum, lead) => moneyAdd(sum, costByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
           );
           const recurringRevenue = wonLeads.reduce(
-            (sum, lead) => sum + (recurringRevenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
+            (sum, lead) => moneyAdd(sum, recurringRevenueByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
           );
           const recurringCost = wonLeads.reduce(
-            (sum, lead) => sum + (recurringCostByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
+            (sum, lead) => moneyAdd(sum, recurringCostByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
           );
           const mrr = wonLeads.reduce(
-            (sum, lead) => sum + (activeMrrByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
+            (sum, lead) => moneyAdd(sum, activeMrrByLeadCurrency.get(lead.id)?.get(currency) ?? 0),
             0,
           );
           const completeCosts =
             winsWithRevenue > 0 && winsWithCompleteCostEvidence === winsWithRevenue;
-          const grossProfit = completeCosts ? recognizedRevenue - directCost : null;
+          const grossProfit = completeCosts ? moneySubtract(recognizedRevenue, directCost) : null;
           const grossMarginPct = completeCosts && recognizedRevenue > 0
-            ? round(((recognizedRevenue - directCost) / recognizedRevenue) * 100)
+            ? round(((moneySubtract(recognizedRevenue, directCost)) / recognizedRevenue) * 100)
             : null;
           const grossProfitRoas = grossProfit !== null && spend > 0
             ? round(grossProfit / spend, 2)
@@ -927,11 +936,11 @@ export function createRevenueIntelligenceRouter() {
             recurringRevenueCustomers.every((lead) => costEvidenceComplete(lead.id, currency));
           const recurringGrossMarginPct =
             recurringCostComplete && recurringRevenue > 0
-              ? round(((recurringRevenue - recurringCost) / recurringRevenue) * 100)
+              ? round(((moneySubtract(recurringRevenue, recurringCost)) / recurringRevenue) * 100)
               : null;
           const monthlyGrossProfit =
             recurringGrossMarginPct !== null && mrr > 0
-              ? mrr * (recurringGrossMarginPct / 100)
+              ? moneySubtract(mrr,moneyRatio(mrr,Number(moneyMinor(recurringCost)),Number(moneyMinor(recurringRevenue))))
               : null;
           const paybackDays =
             monthlyGrossProfit && monthlyGrossProfit > 0 && spend > 0
@@ -939,21 +948,21 @@ export function createRevenueIntelligenceRouter() {
               : null;
 
           const observedRevenueLtv = revenueCustomers.length
-            ? Math.round(recognizedRevenue / revenueCustomers.length)
+            ? moneyRatio(recognizedRevenue,1,revenueCustomers.length)
             : null;
           const observedGrossProfitLtv =
             completeCosts && revenueCustomers.length && grossProfit !== null
-              ? Math.round(grossProfit / revenueCustomers.length)
+              ? moneyRatio(grossProfit,1,revenueCustomers.length)
               : null;
 
           const blockers: string[] = [];
           if (enquiries < policy.minimumEnquiries) blockers.push(`fewer than ${policy.minimumEnquiries} enquiries`);
           if (proposals < policy.minimumProposals) blockers.push(`fewer than ${policy.minimumProposals} proposals`);
           if (spend <= 0) blockers.push("no service-tagged acquisition spend");
-          if (wins > 0 && revenueCoveragePct < policy.minimumRevenueCoveragePct) {
+          if (wins > 0 && revenueCoverageRaw < policy.minimumRevenueCoveragePct) {
             blockers.push("revenue evidence coverage below 80%");
           }
-          if (winsWithRevenue > 0 && costCoveragePct < policy.minimumCostCoveragePct) {
+          if (winsWithRevenue > 0 && costCoverageRaw < policy.minimumCostCoveragePct) {
             blockers.push("cost-completeness attestation coverage below 80%");
           }
           if (mrr > 0 && paybackDays === null) {
@@ -973,8 +982,8 @@ export function createRevenueIntelligenceRouter() {
             proposals >= policy.minimumProposals &&
             spend > 0 &&
             wins >= policy.minimumWinsForEconomics &&
-            revenueCoveragePct >= policy.minimumRevenueCoveragePct &&
-            costCoveragePct >= policy.minimumCostCoveragePct &&
+            revenueCoverageRaw >= policy.minimumRevenueCoveragePct &&
+            costCoverageRaw >= policy.minimumCostCoveragePct &&
             grossMarginPct !== null &&
             grossProfitRoas !== null;
 
@@ -1015,8 +1024,8 @@ export function createRevenueIntelligenceRouter() {
             enquiries >= 20 &&
             proposals >= 8 &&
             wins >= 4 &&
-            revenueCoveragePct === 100 &&
-            costCoveragePct === 100 &&
+            winsWithRevenue === wins &&
+            winsWithCompleteCostEvidence === winsWithRevenue &&
             spend > 0
               ? "high"
               : decision !== "insufficient_data"
@@ -1049,7 +1058,7 @@ export function createRevenueIntelligenceRouter() {
               recurringCost: recurringCostComplete ? recurringCost : null,
               recurringGrossMarginPct,
               mrr,
-              arr: mrr * 12,
+              arr: moneyRatio(mrr,12,1),
               paybackDays,
               revenueCoveragePct,
               costCoveragePct,
@@ -1090,14 +1099,14 @@ export function createRevenueIntelligenceRouter() {
         const revenue = revenueByLeadCurrency.get(lead.id);
         if (revenue) {
           for (const [currency, value] of revenue) {
-            row.revenueByCurrency.set(currency, (row.revenueByCurrency.get(currency) ?? 0) + value);
+            row.revenueByCurrency.set(currency, moneyAdd(row.revenueByCurrency.get(currency) ?? 0, value));
             if (!costEvidenceComplete(lead.id, currency)) {
               row.costComplete = false;
             } else {
               const cost = costByLeadCurrency.get(lead.id)?.get(currency) ?? 0;
               row.grossProfitByCurrency.set(
                 currency,
-                (row.grossProfitByCurrency.get(currency) ?? 0) + value - cost,
+                moneySum([row.grossProfitByCurrency.get(currency) ?? 0, value, -cost]),
               );
             }
           }
@@ -1107,7 +1116,7 @@ export function createRevenueIntelligenceRouter() {
 
       const activeMrr = new Map<string, number>();
       for (const values of activeMrrByLeadCurrency.values()) {
-        for (const [currency, value] of values) activeMrr.set(currency, (activeMrr.get(currency) ?? 0) + value);
+        for (const [currency, value] of values) activeMrr.set(currency, moneyAdd(activeMrr.get(currency) ?? 0, value));
       }
 
       const endedDurations = agreementRows
@@ -1138,7 +1147,7 @@ export function createRevenueIntelligenceRouter() {
           activeMrrByCurrency: [...activeMrr.entries()].map(([currency, mrr]) => ({
             currency,
             mrr,
-            arr: mrr * 12,
+            arr: moneyRatio(mrr,12,1),
           })),
           activeAgreements: agreementRows.filter((agreement) => agreement.status === "active").length,
           endedAgreements: agreementRows.filter((agreement) => agreement.status !== "active").length,
@@ -1194,7 +1203,7 @@ export function createRevenueIntelligenceRouter() {
             String(a.service).localeCompare(String(b.service));
         }),
       });
-    },
+    }),
   );
 
   return router;

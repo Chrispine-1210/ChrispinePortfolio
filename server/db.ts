@@ -3,10 +3,12 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "../shared/schema.js";
 import { env } from "./env.js";
+import { runtimeDatabaseUrl } from "../shared/database-target.js";
+import { contextualDatabase } from "./database-context.js";
 
 neonConfig.webSocketConstructor = ws;
 
-const connectionString = env.APP_DATABASE_URL ?? env.DATABASE_URL;
+const connectionString = runtimeDatabaseUrl(env);
 
 if (!connectionString) {
   throw new Error(
@@ -15,4 +17,4 @@ if (!connectionString) {
 }
 
 export const pool = new Pool({ connectionString });
-export const db = drizzle({ client: pool, schema });
+export const db = contextualDatabase(drizzle({ client: pool, schema }));

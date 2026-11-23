@@ -194,10 +194,15 @@ export function ConsultationForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-1.5">
+          <label
+            htmlFor="brief-name"
+            className="block text-sm text-muted-foreground tracking-wide mb-1.5"
+          >
             Full name *
           </label>
           <input
+            id="brief-name"
+            name="name"
             type="text"
             required
             minLength={2}
@@ -209,10 +214,15 @@ export function ConsultationForm({
           />
         </div>
         <div>
-          <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-1.5">
+          <label
+            htmlFor="brief-email"
+            className="block text-sm text-muted-foreground tracking-wide mb-1.5"
+          >
             Work email *
           </label>
           <input
+            id="brief-email"
+            name="email"
             type="email"
             required
             value={form.email}
@@ -226,10 +236,15 @@ export function ConsultationForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-1.5">
+          <label
+            htmlFor="brief-organization"
+            className="block text-sm text-muted-foreground tracking-wide mb-1.5"
+          >
             Organisation *
           </label>
           <input
+            id="brief-organization"
+            name="organization"
             type="text"
             required
             minLength={2}
@@ -241,10 +256,15 @@ export function ConsultationForm({
           />
         </div>
         <div>
-          <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-1.5">
+          <label
+            htmlFor="brief-phone"
+            className="block text-sm text-muted-foreground tracking-wide mb-1.5"
+          >
             Phone / WhatsApp
           </label>
           <input
+            id="brief-phone"
+            name="phone"
             type="tel"
             value={form.phone}
             onChange={set("phone")}
@@ -257,10 +277,15 @@ export function ConsultationForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-1.5">
+          <label
+            htmlFor="brief-serviceInterest"
+            className="block text-sm text-muted-foreground tracking-wide mb-1.5"
+          >
             Service needed *
           </label>
           <select
+            id="brief-serviceInterest"
+            name="serviceInterest"
             required
             value={form.serviceInterest}
             onChange={set("serviceInterest")}
@@ -276,10 +301,15 @@ export function ConsultationForm({
           </select>
         </div>
         <div>
-          <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-1.5">
+          <label
+            htmlFor="brief-industry"
+            className="block text-sm text-muted-foreground tracking-wide mb-1.5"
+          >
             Industry *
           </label>
           <select
+            id="brief-industry"
+            name="industry"
             required
             value={form.industry}
             onChange={set("industry")}
@@ -297,10 +327,15 @@ export function ConsultationForm({
       </div>
 
       <div>
-        <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-1.5">
+        <label
+          htmlFor="brief-challenge"
+          className="block text-sm text-muted-foreground tracking-wide mb-1.5"
+        >
           Business / technical challenge *
         </label>
         <textarea
+          id="brief-challenge"
+          name="challenge"
           required
           minLength={20}
           value={form.challenge}
@@ -313,10 +348,15 @@ export function ConsultationForm({
       </div>
 
       <div>
-        <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-1.5">
+        <label
+          htmlFor="brief-currentTech"
+          className="block text-sm text-muted-foreground tracking-wide mb-1.5"
+        >
           Current systems / network
         </label>
         <textarea
+          id="brief-currentTech"
+          name="currentTech"
           value={form.currentTech}
           onChange={set("currentTech")}
           placeholder="What tools, software, network equipment or manual processes are in place today?"
@@ -327,7 +367,7 @@ export function ConsultationForm({
       </div>
 
       <div>
-        <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-2">
+        <label className="block text-sm text-muted-foreground tracking-wide mb-2">
           Indicative budget
         </label>
         <div className="flex flex-wrap gap-2">
@@ -351,7 +391,7 @@ export function ConsultationForm({
       </div>
 
       <div>
-        <label className="block text-[10px] text-muted-foreground uppercase tracking-widest mb-2">
+        <label className="block text-sm text-muted-foreground tracking-wide mb-2">
           Expected timeline
         </label>
         <div className="flex flex-wrap gap-2">

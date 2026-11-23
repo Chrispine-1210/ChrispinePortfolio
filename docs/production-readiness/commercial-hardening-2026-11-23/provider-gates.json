@@ -1,0 +1,44 @@
+{
+  "recordedDate": "2026-11-23",
+  "timezone": "Africa/Blantyre",
+  "productionHead": "d116fcfa9c44cf66c0cc3dbb619c367b22c94243",
+  "neonProject": "twilight-meadow-16888716",
+  "productionBranch": "br-misty-wave-bb79bj7l",
+  "currentSnapshotAttempt": {
+    "name": "portfolio-before-commercial-hardening-20261123",
+    "result": "REJECTED",
+    "httpStatus": 422,
+    "message": "snapshots limit exceeded",
+    "snapshotCreated": false
+  },
+  "retainedSnapshot": {
+    "id": "snap-fragrant-dream-bbspabwq",
+    "createdAt": "2026-11-18T14:31:52Z",
+    "currentReleaseProof": false
+  },
+  "retainedBranches": 10,
+  "restoreExecuted": false,
+  "productionReadOnlyObservation": {
+    "migrationCount": 13,
+    "databaseTimezone": "GMT",
+    "statementWasSelectOnly": true
+  },
+  "github": {
+    "verifyRun": 45074569008,
+    "verifyJob": 137368807910,
+    "status": "completed",
+    "conclusion": "failure",
+    "steps": null,
+    "rerunExecuted": false,
+    "currentCandidateHostedAssurance": false
+  },
+  "ownerBrowserAcceptance": "OPEN",
+  "productionActivation": "HOLD",
+  "productionDeployment": {
+    "id": "dpl_JAxPkYZdHmBxsKJCdMJoW6VM4PD6",
+    "status": "READY",
+    "target": "production",
+    "head": "d116fcfa9c44cf66c0cc3dbb619c367b22c94243",
+    "runtimeReadinessInferred": false
+  }
+}

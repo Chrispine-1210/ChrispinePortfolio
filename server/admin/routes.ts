@@ -1,3 +1,6 @@
+import { ApiError } from "../middleware.js";
+import { moneyInput, moneyMinor, moneyAdd, moneySubtract, moneySum, moneyCompare, moneyRatio } from "../../shared/money.js";
+import { financialReadHandler, financialHandler as asyncHandler } from "../financial-requests.js";
 import {
   and,
   desc,
@@ -38,6 +41,7 @@ import {
 import { requireAdminPermission } from "../custom-auth.js";
 import { db } from "../db.js";
 import { env } from "../env.js";
+import { editorialContent, hasEditorialBody, imageSource } from "../../shared/editorial.js";
 
 const count = sql<number>`count(*)::int`;
 const leadStages = [
@@ -68,10 +72,10 @@ const contentInputSchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
       .max(240),
     excerpt: z.string().trim().min(1).max(2000),
-    content: z.string().min(1).max(1_000_000),
+    content: editorialContent.refine(hasEditorialBody,"Write the document body before saving."),
     category: z.string().trim().min(1).max(120),
     tags: z.array(z.string().trim().min(1).max(80)).max(30).default([]),
-    featuredImage: z.string().url().nullable().optional(),
+    featuredImage: imageSource.nullable().optional(),
     isPremium: z.boolean().default(false),
     readTimeMinutes: z.number().int().min(1).max(240).default(5),
     seoTitle: z.string().trim().max(70).nullable().optional(),
@@ -96,12 +100,7 @@ const acquisitionSpendInputSchema = z.object({
   campaign: z.string().trim().max(180).nullable().optional(),
   serviceInterest: z.string().trim().max(180).nullable().optional(),
   currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
-  amount: z.union([
-    z.number().positive(),
-    z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number).refine((value) => value > 0, {
-      message: "Spend amount must be greater than zero",
-    }),
-  ]),
+  amount: moneyInput(),
   occurredAt: z.string().datetime().superRefine((value, context) => {
     const occurred = new Date(value).getTime();
     if (!Number.isFinite(occurred) || occurred > Date.now() + 10 * 60 * 1000) {
@@ -155,7 +154,7 @@ export function createAdminRouter(): Router {
   router.get(
     "/api/admin/content/posts",
     requireAdminPermission("content.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       response.setHeader("Cache-Control", "no-store");
       response.json(
         await db
@@ -164,13 +163,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(blogPosts.updatedAt))
           .limit(500),
       );
-    },
+    }),
   );
 
   router.post(
     "/api/admin/content/posts",
     requireAdminPermission("content.create"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { changeSummary, ...input } = contentInputSchema.parse(
         request.body,
       );
@@ -206,23 +205,31 @@ export function createAdminRouter(): Router {
         return created;
       });
       response.status(201).json(post);
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/content/posts/:id",
     requireAdminPermission("content.update"),
-    async (request, response) => {
-      const { changeSummary, ...input } = contentInputSchema.parse(
-        request.body,
-      );
+    asyncHandler(async (request, response) => {
+      const { changeSummary, expectedVersion, ...input } = contentInputSchema
+        .extend({ expectedVersion: z.number().int().positive() })
+        .parse(request.body);
       const post = await db.transaction(async (transaction) => {
         const [previous] = await transaction
           .select()
           .from(blogPosts)
           .where(eq(blogPosts.id, request.params.id))
-          .limit(1);
+          .limit(1)
+          .for("update");
         if (!previous) return undefined;
+        if (previous.currentVersion !== expectedVersion)
+          throw new ApiError(
+            409,
+            "This draft changed after you opened it. Your submitted revision was not saved. Review the latest version before replacing it.",
+            "EDITORIAL_VERSION_CONFLICT",
+            { currentVersion: previous.currentVersion },
+          );
         if (previous.workflowStatus !== "draft") return null;
         const nextVersion = previous.currentVersion + 1;
         const [updated] = await transaction
@@ -258,20 +265,17 @@ export function createAdminRouter(): Router {
       if (post === undefined)
         return response.status(404).json({ message: "Post not found" });
       if (post === null)
-        return response
-          .status(409)
-          .json({
-            message:
-              "Only drafts can be edited; return the item to draft first",
-          });
+        return response.status(409).json({
+          message: "Only drafts can be edited; return the item to draft first",
+        });
       response.json(post);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/content/posts/:id/versions",
     requireAdminPermission("content.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       response.json(
         await db
           .select({
@@ -286,15 +290,16 @@ export function createAdminRouter(): Router {
           .orderBy(desc(contentVersions.version))
           .limit(200),
       );
-    },
+    }),
   );
 
   router.post(
     "/api/admin/content/posts/:id/transition",
     requireAdminPermission("content.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = z
         .object({
+          expectedVersion: z.number().int().positive(),
           action: z.enum([
             "submit_review",
             "return_draft",
@@ -352,11 +357,9 @@ export function createAdminRouter(): Router {
         input.action === "archive" &&
         (!input.justification || input.justification.length < 8)
       )
-        return response
-          .status(400)
-          .json({
-            message: "Archive justification must contain at least 8 characters",
-          });
+        return response.status(400).json({
+          message: "Archive justification must contain at least 8 characters",
+        });
       const scheduledAt = input.scheduledAt
         ? new Date(input.scheduledAt)
         : null;
@@ -372,8 +375,15 @@ export function createAdminRouter(): Router {
           .select()
           .from(blogPosts)
           .where(eq(blogPosts.id, request.params.id))
-          .limit(1);
+          .limit(1)
+          .for("update");
         if (!previous) return undefined;
+        if (previous.currentVersion !== input.expectedVersion)
+          throw new ApiError(
+            409,
+            "The publication record changed. Refresh and review its current version before continuing.",
+            "EDITORIAL_VERSION_CONFLICT",
+          );
         if (!policy.from.includes(previous.workflowStatus)) return null;
         const now = new Date();
         const nextVersion = previous.currentVersion + 1;
@@ -389,18 +399,18 @@ export function createAdminRouter(): Router {
                   ? previous.publishedAt
                   : null,
             scheduledAt: policy.to === "scheduled" ? scheduledAt : null,
-          approvedAt:
-            policy.to === "approved"
-              ? now
-              : policy.to === "draft"
-                ? null
-                : previous.approvedAt,
-          approverId:
-            policy.to === "approved"
-              ? (request.securityPrincipal?.userId ?? null)
-              : policy.to === "draft"
-                ? null
-                : previous.approverId,
+            approvedAt:
+              policy.to === "approved"
+                ? now
+                : policy.to === "draft"
+                  ? null
+                  : previous.approvedAt,
+            approverId:
+              policy.to === "approved"
+                ? (request.securityPrincipal?.userId ?? null)
+                : policy.to === "draft"
+                  ? null
+                  : previous.approverId,
             archivedAt: policy.to === "archived" ? now : null,
             currentVersion: nextVersion,
             updatedAt: now,
@@ -435,10 +445,10 @@ export function createAdminRouter(): Router {
           .status(409)
           .json({ message: "Invalid workflow transition" });
       response.json(post);
-    },
+    }),
   );
 
-  router.get("/api/internal/content-scheduler", async (request, response) => {
+  router.get("/api/internal/content-scheduler", asyncHandler(async (request, response) => {
     if (
       !env.CRON_SECRET ||
       request.headers.authorization !== `Bearer ${env.CRON_SECRET}`
@@ -497,12 +507,12 @@ export function createAdminRouter(): Router {
       return due.length;
     });
     response.json({ published });
-  });
+  }));
 
   router.get(
     "/api/admin/leads",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const search =
         typeof request.query.search === "string"
           ? request.query.search.trim().slice(0, 120)
@@ -543,13 +553,13 @@ export function createAdminRouter(): Router {
           canViewFinancial ? record : { ...record, estimatedValue: null },
         ),
       );
-    },
+    }),
   );
 
   router.get(
     "/api/admin/leads/:id/activities",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       response.json(
         await db
           .select()
@@ -558,13 +568,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(leadActivities.createdAt))
           .limit(200),
       );
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/leads/:id",
     requireAdminPermission("leads.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = updateLeadSchema.parse(request.body);
       const result = await db.transaction(async (transaction) => {
         const [previous] = await transaction
@@ -655,13 +665,13 @@ export function createAdminRouter(): Router {
           message: "Estimated commercial value is required before proposal, negotiation, or won stages",
         });
       response.json(result.record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/leads/:id/activities",
     requireAdminPermission("leads.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = z
         .object({
           type: z.enum(["note", "call", "email", "meeting", "task"]),
@@ -685,13 +695,13 @@ export function createAdminRouter(): Router {
         })
         .returning();
       response.status(201).json(activity);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/pipeline/summary",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const canViewFinancial =
         !request.securityPrincipal ||
         request.securityPrincipal.permissions.includes(
@@ -714,13 +724,13 @@ export function createAdminRouter(): Router {
           canViewFinancial ? row : { ...row, value: null, weightedValue: null },
         ),
       );
-    },
+    }),
   );
 
   router.get(
     "/api/admin/acquisition/spend",
     requireAdminPermission("pipeline.financial.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const rows = await db
         .select()
         .from(acquisitionSpendEntries)
@@ -728,13 +738,13 @@ export function createAdminRouter(): Router {
         .limit(1000);
       response.setHeader("Cache-Control", "no-store");
       response.json(rows);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/acquisition/spend",
     requireAdminPermission("acquisition.spend.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = acquisitionSpendInputSchema.safeParse(request.body);
       if (!parsed.success) {
         return response.status(400).json({
@@ -771,13 +781,13 @@ export function createAdminRouter(): Router {
         return [created];
       });
       response.status(201).json(record);
-    },
+    }),
   );
 
   router.post(
     "/api/admin/acquisition/spend/:id/void",
     requireAdminPermission("acquisition.spend.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const parsed = z.object({
         reason: z.string().trim().min(5).max(1000),
       }).strict().safeParse(request.body);
@@ -793,7 +803,7 @@ export function createAdminRouter(): Router {
           .select()
           .from(acquisitionSpendEntries)
           .where(eq(acquisitionSpendEntries.id, request.params.id))
-          .limit(1);
+          .limit(1).for("update");
         if (!previous) return { outcome: "missing" as const };
         if (previous.voidedAt) return { outcome: "already_voided" as const, record: previous };
         const [record] = await transaction
@@ -822,13 +832,13 @@ export function createAdminRouter(): Router {
       if (result.outcome === "missing") return response.status(404).json({ message: "Spend entry not found" });
       if (result.outcome === "already_voided") return response.status(409).json({ message: "Spend entry is already voided" });
       response.json(result.record);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/pipeline/funnel",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    financialReadHandler(async (request, response) => {
       const requestedWindow =
         typeof request.query.window === "string" ? request.query.window : "90d";
       const windowValue = ["30d", "90d", "365d", "all"].includes(requestedWindow)
@@ -865,9 +875,12 @@ export function createAdminRouter(): Router {
           ),
         )
         .orderBy(desc(leads.createdAt))
-        .limit(5000);
+        ;
+
 
       const leadIds = leadRows.map((lead) => lead.id);
+      const cohortIds = db.select({id:leads.id}).from(leads).where(and(isNull(leads.archivedAt),
+        ...(since?[gt(leads.createdAt,since)]:[])));
       const stageEvents = leadIds.length
         ? await db
             .select({
@@ -878,7 +891,7 @@ export function createAdminRouter(): Router {
             .from(leadActivities)
             .where(
               and(
-                inArray(leadActivities.leadId, leadIds),
+                inArray(leadActivities.leadId, cohortIds),
                 eq(leadActivities.type, "stage_changed"),
               ),
             )
@@ -970,11 +983,11 @@ export function createAdminRouter(): Router {
             wonValue: 0,
             lostValue: 0,
           };
-          if (lead.stage === "won") totals.wonValue += value;
-          else if (lead.stage === "lost") totals.lostValue += value;
+          if (lead.stage === "won") totals.wonValue = moneyAdd(totals.wonValue, value);
+          else if (lead.stage === "lost") totals.lostValue = moneyAdd(totals.lostValue, value);
           else {
-            totals.openValue += value;
-            totals.weightedOpenValue += value * (lead.probability / 100);
+            totals.openValue = moneyAdd(totals.openValue, value);
+            totals.weightedOpenValue = moneyAdd(totals.weightedOpenValue, moneyRatio(value, lead.probability, 100));
           }
           financial.set(currency, totals);
         }
@@ -1010,13 +1023,13 @@ export function createAdminRouter(): Router {
           ? [...financial.values()].sort((a, b) => a.currency.localeCompare(b.currency))
           : [],
       });
-    },
+    }),
   );
 
   router.get(
     "/api/admin/acquisition/intelligence",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    financialReadHandler(async (request, response) => {
       const requestedWindow =
         typeof request.query.window === "string" ? request.query.window : "90d";
       const windowValue = ["30d", "90d", "365d", "all"].includes(requestedWindow)
@@ -1042,7 +1055,7 @@ export function createAdminRouter(): Router {
           .from(leads)
           .where(and(isNull(leads.archivedAt), ...(since ? [gt(leads.createdAt, since)] : [])))
           .orderBy(desc(leads.createdAt))
-          .limit(5000),
+          ,
         db
           .select()
           .from(acquisitionSpendEntries)
@@ -1051,16 +1064,18 @@ export function createAdminRouter(): Router {
             ...(since ? [gt(acquisitionSpendEntries.occurredAt, since)] : []),
           ))
           .orderBy(desc(acquisitionSpendEntries.occurredAt))
-          .limit(5000),
+          ,
       ]);
 
       const leadIds = leadRows.map((lead) => lead.id);
+      const cohortIds = db.select({id:leads.id}).from(leads).where(and(isNull(leads.archivedAt),
+        ...(since?[gt(leads.createdAt,since)]:[])));
       const [touches, stageEvents] = leadIds.length
         ? await Promise.all([
             db
               .select()
               .from(leadAttributionTouches)
-              .where(inArray(leadAttributionTouches.leadId, leadIds))
+              .where(inArray(leadAttributionTouches.leadId, cohortIds))
               .orderBy(leadAttributionTouches.capturedAt),
             db
               .select({
@@ -1071,7 +1086,7 @@ export function createAdminRouter(): Router {
               .from(leadActivities)
               .where(
                 and(
-                  inArray(leadActivities.leadId, leadIds),
+                  inArray(leadActivities.leadId, cohortIds),
                   eq(leadActivities.type, "stage_changed"),
                 ),
               )
@@ -1149,7 +1164,7 @@ export function createAdminRouter(): Router {
         amount: number,
       ) => {
         const currencyTotals = target.get(key) ?? new Map<string, number>();
-        currencyTotals.set(currency, (currencyTotals.get(currency) ?? 0) + amount);
+        currencyTotals.set(currency, moneyAdd(currencyTotals.get(currency) ?? 0, amount));
         target.set(key, currencyTotals);
       };
 
@@ -1161,7 +1176,7 @@ export function createAdminRouter(): Router {
         addSpend(spendByCampaign, spend.campaign || "unattributed", spend.currency, amount);
         totalSpendByCurrency.set(
           spend.currency,
-          (totalSpendByCurrency.get(spend.currency) ?? 0) + amount,
+          moneyAdd(totalSpendByCurrency.get(spend.currency) ?? 0, amount),
         );
       }
 
@@ -1177,7 +1192,7 @@ export function createAdminRouter(): Router {
           const value = Number(lead.estimatedValue);
           if (Number.isFinite(value) && value > 0) {
             const current = row.wonValues.get(currency) ?? { total: 0, count: 0 };
-            current.total += value;
+            current.total = moneyAdd(current.total, value);
             current.count += 1;
             row.wonValues.set(currency, current);
           }
@@ -1377,13 +1392,13 @@ export function createAdminRouter(): Router {
             : "Campaign spend is not yet ingested; CAC, ROAS, and payback are intentionally unavailable.",
         },
       });
-    },
+    }),
   );
 
   router.get(
     "/api/admin/audit",
     requireAdminPermission("audit.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const search =
         typeof request.query.search === "string"
           ? request.query.search.trim().slice(0, 120)
@@ -1405,13 +1420,13 @@ export function createAdminRouter(): Router {
         .limit(500);
       response.setHeader("Cache-Control", "no-store");
       response.json(events);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/security/events",
     requireAdminPermission("security.events.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       response.setHeader("Cache-Control", "no-store");
       response.json(
         await db
@@ -1420,13 +1435,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(securityEvents.createdAt))
           .limit(500),
       );
-    },
+    }),
   );
 
   router.get(
     "/api/admin/security/sessions",
     requireAdminPermission("security.events.read"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       response.setHeader("Cache-Control", "no-store");
       response.json(
         await db
@@ -1447,13 +1462,13 @@ export function createAdminRouter(): Router {
           .orderBy(desc(sessions.lastSeenAt))
           .limit(500),
       );
-    },
+    }),
   );
 
   router.post(
     "/api/admin/security/sessions/:id/revoke",
     requireAdminPermission("security.settings.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { justification } = z
         .object({ justification: z.string().trim().min(8).max(1000) })
         .strict()
@@ -1487,13 +1502,13 @@ export function createAdminRouter(): Router {
       if (!revoked)
         return response.status(404).json({ message: "Session not found" });
       response.json({ revoked: true });
-    },
+    }),
   );
 
   router.get(
     "/api/admin/users",
     requireAdminPermission("users.manage"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const userRecords = await db
         .select({
           id: users.id,
@@ -1526,13 +1541,13 @@ export function createAdminRouter(): Router {
             .map((item) => ({ key: item.roleKey, name: item.roleName })),
         })),
       );
-    },
+    }),
   );
 
   router.get(
     "/api/admin/roles",
     requireAdminPermission("users.manage"),
-    async (_request, response) => {
+    asyncHandler(async (_request, response) => {
       const roleRecords = await db.select().from(roles).orderBy(roles.name);
       const grants = await db
         .select({
@@ -1552,13 +1567,13 @@ export function createAdminRouter(): Router {
             .map((item) => item.permissionKey),
         })),
       );
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/users/:id/status",
     requireAdminPermission("users.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = z
         .object({
           status: z.enum(["active", "disabled"]),
@@ -1613,13 +1628,13 @@ export function createAdminRouter(): Router {
       if (!updated)
         return response.status(404).json({ message: "User not found" });
       response.json({ id: updated.id, status: updated.status });
-    },
+    }),
   );
 
   router.put(
     "/api/admin/users/:id/roles",
     requireAdminPermission("users.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const input = z
         .object({
           roleKeys: z.array(z.string().min(1).max(80)).min(1).max(20),
@@ -1714,13 +1729,13 @@ export function createAdminRouter(): Router {
             message: "The final super administrator role cannot be removed",
           });
       response.json(result);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/contacts",
     requireAdminPermission("leads.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const search =
         typeof request.query.search === "string"
           ? request.query.search.trim().slice(0, 120)
@@ -1746,13 +1761,13 @@ export function createAdminRouter(): Router {
         .limit(200);
       response.setHeader("Cache-Control", "no-store");
       response.json(contacts);
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/contacts/:id",
     requireAdminPermission("leads.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { isRead } = z
         .object({ isRead: z.boolean() })
         .strict()
@@ -1785,13 +1800,13 @@ export function createAdminRouter(): Router {
       if (!contact)
         return response.status(404).json({ message: "Contact not found" });
       response.json(contact);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/subscribers",
     requireAdminPermission("email.delivery.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const search =
         typeof request.query.search === "string"
           ? request.query.search.trim().slice(0, 120)
@@ -1816,13 +1831,13 @@ export function createAdminRouter(): Router {
         .limit(500);
       response.setHeader("Cache-Control", "no-store");
       response.json(subscribers);
-    },
+    }),
   );
 
   router.patch(
     "/api/admin/subscribers/:id",
     requireAdminPermission("notifications.manage"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const { isActive } = z
         .object({ isActive: z.boolean() })
         .strict()
@@ -1858,13 +1873,13 @@ export function createAdminRouter(): Router {
       if (!subscriber)
         return response.status(404).json({ message: "Subscriber not found" });
       response.json(subscriber);
-    },
+    }),
   );
 
   router.get(
     "/api/admin/overview",
     requireAdminPermission("analytics.read"),
-    async (request, response) => {
+    asyncHandler(async (request, response) => {
       const now = new Date();
       const userId = request.securityPrincipal?.userId;
       const [
@@ -2077,7 +2092,7 @@ export function createAdminRouter(): Router {
         recent: { contacts: recentContacts, email: recentEmail },
         generatedAt: now.toISOString(),
       });
-    },
+    }),
   );
 
   return router;

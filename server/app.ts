@@ -1,5 +1,6 @@
+import { asyncHandler } from "./middleware.js";
 import express from "express";
-import { setupAuthRoutes } from "./custom-auth.js";
+import { requireAdminPermission, setupAuthRoutes } from "./custom-auth.js";
 import { analyticsMiddleware } from "./analytics.js";
 import { setupAnalyticsRoutes } from "./api-analytics.js";
 import { setupSeedRoutes } from "./content-seeder.js";
@@ -23,15 +24,29 @@ import { pool } from "./db.js";
 
 import { createEngineeringRouter } from "./engineering/routes.js";
 import { requestContext, safeApiError } from "./security/http-boundary.js";
+import { createOperationsStatusRouter } from "./operations-status.js";
+import { createAccountRecoveryRouter } from "./security/account-recovery.js";
+import { protectPublicIntake } from "./security/public-request-limits.js";
+import { createBillingRouter, type BillingGateway } from "./billing.js";
+import { createFinancialRequestRouter } from "./financial-requests.js";
 
-export function createApp() {
+export function createApp(options: { billingGateway?: () => BillingGateway } = {}) {
   const app = express();
   app.disable("x-powered-by");
   app.use(requestContext);
   app.use(securityHeaders);
+  app.use("/api",(_request,response,next)=>{response.setHeader("Cache-Control","no-store");next();});
 
-  app.use("/api/stripe-webhook", express.raw({ type: "application/json" }));
+  app.use("/api/stripe-webhook", express.raw({ type: "application/json", limit: "256kb" }));
   setupPostmarkWebhookRoute(app);
+  // Only authenticated editorial writes receive the larger, bounded document
+  // parser. Public intake, webhooks and financial routes keep their 10 KB limit.
+  const editorialJson=express.json({limit:"1250kb"});
+  app.post("/api/admin/content/posts",requireAdminPermission("content.create"),editorialJson);
+  app.patch("/api/admin/content/posts/:id",requireAdminPermission("content.update"),editorialJson);
+  app.post("/api/admin/case-studies",requireAdminPermission("portfolio.manage"),editorialJson);
+  app.patch("/api/admin/case-studies/:id",requireAdminPermission("portfolio.manage"),editorialJson);
+  app.post("/api/admin/engineering/records/:id/publish",requireAdminPermission("engineering.publish"),express.json({limit:"128kb"}));
   app.use(express.json({
     verify: (req: any, _res, buf) => {
       req.rawBody = buf;
@@ -43,21 +58,22 @@ export function createApp() {
   app.use(requestLogger);
   app.use(analyticsMiddleware);
 
-  app.get("/api/release", async (_request, response, next) => {
+  app.get("/api/release", asyncHandler(async (_request, response, next) => {
     try {
       const databaseIdentity = await pool.query(
-        "select current_setting('neon.branch_id', true) as branch_id",
+        "select current_setting('neon.branch_id', true) as branch_id, current_user as database_role",
       );
       const branchId = databaseIdentity.rows?.[0]?.branch_id ?? null;
       response.setHeader("Cache-Control", "no-store");
       response.json({
         ...getReleaseMetadata(),
         databaseBranchId: typeof branchId === "string" ? branchId : null,
+        databaseRole: typeof databaseIdentity.rows?.[0]?.database_role === "string" ? databaseIdentity.rows[0].database_role : null,
       });
     } catch (error) {
       next(error);
     }
-  });
+  }));
 
   const customAuthRouter = express.Router();
   if (env.ADMIN_AUTH_MODE === "database") {
@@ -66,6 +82,8 @@ export function createApp() {
     setupAuthRoutes(customAuthRouter);
   }
   app.use(customAuthRouter);
+  app.use(createAccountRecoveryRouter());
+  app.post(["/api/contact","/api/consultation","/api/newsletter/subscribe"],asyncHandler(async(request,_response,next)=>{await protectPublicIntake(request);next();}));
 
   const analyticsRouter = express.Router();
   setupAnalyticsRoutes(analyticsRouter);
@@ -87,12 +105,16 @@ export function createApp() {
   // in particular, retired document paths should return 404 rather than a 200
   // HTML response that can be mistaken for an available file.
   app.use("/attached_assets", express.static("attached_assets", { fallthrough: false }));
+  app.get("/api/login", (_request, response) => response.redirect(303, "/login"));
+  app.use(createBillingRouter(options.billingGateway));
   app.use(routes);
   app.use(createAdminRouter());
+  app.use(createOperationsStatusRouter());
   app.use(createPortfolioGovernanceRouter());
   app.use(createRevenueIntelligenceRouter());
   app.use(createCapitalOperatingRouter());
   app.use(createTreasuryRoicRouter());
+  app.use(createFinancialRequestRouter());
   app.use(createEngineeringRouter());
   app.use(createEmailRouter());
   app.use(createNotificationRouter());

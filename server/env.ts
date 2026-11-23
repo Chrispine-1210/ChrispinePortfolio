@@ -68,6 +68,10 @@ const environmentSchema = z
     ),
     STRIPE_SECRET_KEY: optionalNonEmptyString,
     STRIPE_WEBHOOK_SECRET: optionalNonEmptyString,
+    RECOVERY_EMAIL_ENCRYPTION_KEY: z.preprocess(value=>value===""?undefined:value,z.string().regex(/^[a-fA-F0-9]{64}$/).optional()),
+    ACCOUNT_RECOVERY_MODE: z.enum(["disabled", "email"]).default("disabled"),
+    BILLING_MODE: z.enum(["disabled", "sandbox"]).default("disabled"),
+    STRIPE_PRICE_ID: optionalNonEmptyString,
   })
   .superRefine((environment, context) => {
     if (environment.EMAIL_PROVIDER === "postmark") {

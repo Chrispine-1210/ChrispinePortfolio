@@ -1,9 +1,15 @@
 import { eq } from "drizzle-orm";
-import { contactRequests, leadActivities, leadAttributionTouches, leads, type ContactRequest } from "../../shared/schema.js";
+import { contactRequests, leadActivities, leadAttributionTouches, leads, type ContactRequest, type InsertContactRequest } from "../../shared/schema.js";
 import { db } from "../db.js";
+import { enqueueContactAutomation } from "../email/automations.js";
+
+type IntakeTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 export async function createLeadFromContact(contact: ContactRequest, landingPage = "/contact") {
-  return db.transaction(async transaction => {
+  return db.transaction(transaction => insertContactLead(transaction, contact, landingPage));
+}
+
+async function insertContactLead(transaction: IntakeTransaction, contact: ContactRequest, landingPage: string) {
     const [created] = await transaction.insert(leads).values({
       contactRequestId: contact.id,
       name: contact.name,
@@ -29,6 +35,16 @@ export async function createLeadFromContact(contact: ContactRequest, landingPage
     const [existing] = await transaction.select().from(leads)
       .where(eq(leads.contactRequestId, contact.id)).limit(1);
     return existing;
+}
+
+// Accept an enquiry only after contact, follow-up and configured notification
+// records commit together. A downstream failure leaves no orphaned intake.
+export async function createContactWithLead(input: InsertContactRequest, landingPage = "/contact") {
+  return db.transaction(async transaction => {
+    const [contact] = await transaction.insert(contactRequests).values(input).returning();
+    const lead = await insertContactLead(transaction, contact, landingPage);
+    await enqueueContactAutomation(contact, transaction);
+    return { contact, lead };
   });
 }
 
@@ -175,6 +191,7 @@ export async function createLeadFromConsultation(
       },
     });
 
+    await enqueueContactAutomation(contact, transaction);
     return { contact, lead };
   });
 }
