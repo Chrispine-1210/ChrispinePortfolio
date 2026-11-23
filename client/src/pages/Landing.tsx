@@ -125,13 +125,17 @@ export default function Landing() {
         </div>
         <div className="universe-principles">
           <article>
-            <img
-              className="principle-photo"
-              src={editorialPhotos.planning.src}
-              alt={editorialPhotos.planning.alt}
-              loading="lazy"
-              decoding="async"
-            />
+            <figure className="practice-photo">
+              <img
+                src={editorialPhotos.planning.src}
+                alt={editorialPhotos.planning.alt}
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>
+                <PhotoCredit photo="planning" />
+              </figcaption>
+            </figure>
             <span className="editorial-eyebrow">Hands-on beginnings</span>
             <h3>Learn the operation.</h3>
             <p className="editorial-copy">
@@ -141,13 +145,17 @@ export default function Landing() {
             </p>
           </article>
           <article>
-            <img
-              className="principle-photo"
-              src={editorialPhotos.network.src}
-              alt={editorialPhotos.network.alt}
-              loading="lazy"
-              decoding="async"
-            />
+            <figure className="practice-photo">
+              <img
+                src={editorialPhotos.network.src}
+                alt={editorialPhotos.network.alt}
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>
+                <PhotoCredit photo="network" />
+              </figcaption>
+            </figure>
             <span className="editorial-eyebrow">Building with constraints</span>
             <h3>Make the decisions count.</h3>
             <p className="editorial-copy">
@@ -157,13 +165,17 @@ export default function Landing() {
             </p>
           </article>
           <article>
-            <img
-              className="principle-photo"
-              src={editorialPhotos.writing.src}
-              alt={editorialPhotos.writing.alt}
-              loading="lazy"
-              decoding="async"
-            />
+            <figure className="practice-photo">
+              <img
+                src={editorialPhotos.writing.src}
+                alt={editorialPhotos.writing.alt}
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>
+                <PhotoCredit photo="writing" />
+              </figcaption>
+            </figure>
             <span className="editorial-eyebrow">Pride in the process</span>
             <h3>Keep the evidence.</h3>
             <p className="editorial-copy">

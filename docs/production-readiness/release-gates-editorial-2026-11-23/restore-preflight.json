@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-11-23T10:00:23.756Z",
+  "projectId": "twilight-meadow-16888716",
+  "productionBranchId": "br-misty-wave-bb79bj7l",
+  "subscription": "free_v3",
+  "branchesLimit": 10,
+  "branchCount": 10,
+  "availableBranchSlots": 0,
+  "historyRetentionSeconds": 21600,
+  "snapshotSchedule": [],
+  "snapshots": [
+    {
+      "id": "snap-fragrant-dream-bbspabwq",
+      "name": "portfolio-before-engineering-0011-20261118",
+      "source_branch_id": "br-misty-wave-bb79bj7l",
+      "created_at": "2026-11-18T14:31:52Z",
+      "manual": true,
+      "full_size": 35651584
+    }
+  ],
+  "actions": "Read-only provider metadata; no snapshot, branch, restore, credential, production data or configuration mutations."
+}
