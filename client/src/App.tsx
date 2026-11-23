@@ -9,6 +9,7 @@ import { captureAcquisitionTouch } from "@/lib/acquisition";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import Landing from "@/pages/Landing";
 import "@/styles/portfolio-evolution.css";
 
@@ -239,6 +240,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <SpeedInsights />
       </TooltipProvider>
     </QueryClientProvider>
   );
