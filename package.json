@@ -65,6 +65,7 @@
     "@tiptap/starter-kit": "3.35.0",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.1.0",
     "argon2": "^0.45.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
