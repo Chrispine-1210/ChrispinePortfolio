@@ -13,14 +13,16 @@ import {
   pushSubscriptions,
 } from "../../shared/schema.js";
 import { hashNotificationActionToken } from "./action-token.js";
+import { queueDueEmailCampaign } from "../email/campaign-worker.js";
+import { env } from "../env.js";
 
 const campaignInput = z.object({
   name: z.string().trim().min(1).max(180),
   subject: z.string().max(500).optional(),
   htmlContent: z.string().max(500_000).optional(),
   textContent: z.string().max(200_000).optional(),
-  channels: z.array(z.enum(["email", "sms", "whatsapp", "push", "in_app"])).min(1),
-  audience: z.record(z.string(), z.unknown()).default({}),
+  channels: z.tuple([z.literal("email")]),
+  audience: z.object({newsletterSubscribers:z.literal(true)}).strict(),
   scheduledAt: z.coerce.date().optional(),
 });
 
@@ -42,6 +44,7 @@ export function createNotificationRouter(): Router {
   router.post("/api/admin/campaigns", requireAdminPermission("campaigns.manage"), asyncHandler(async (req, res) => {
     const input = campaignInput.parse(req.body);
     const scheduledAt = input.scheduledAt ?? null;
+    if(scheduledAt && (!input.subject?.trim()||(!input.htmlContent?.trim()&&!input.textContent?.trim())))return res.status(400).json({message:"Scheduled campaigns need a subject and message"});
     const status = scheduledAt ? "scheduled" : "draft";
     const [campaign] = await db.insert(notificationCampaigns).values({
       ...input,
@@ -73,14 +76,19 @@ export function createNotificationRouter(): Router {
           isNull(notificationActionTokens.consumedAt),
           gt(notificationActionTokens.expiresAt, now),
         )).returning();
-      if (!action) return null;
+      if (!action) {
+        const [previous]=await transaction.select({consumedAt:notificationActionTokens.consumedAt}).from(notificationActionTokens)
+          .where(and(eq(notificationActionTokens.tokenHash,hashNotificationActionToken(token)),eq(notificationActionTokens.purpose,"newsletter_unsubscribe"))).limit(1);
+        return previous?.consumedAt?{alreadyProcessed:true}:null;
+      }
       await transaction.update(newsletterSubscribers).set({ isActive: false, unsubscribedAt: now })
         .where(eq(newsletterSubscribers.email, action.email));
       await transaction.insert(emailSuppressions).values({
         email: action.email.toLowerCase(), reason: "unsubscribe", source: "secure_link",
       }).onConflictDoUpdate({
         target: emailSuppressions.email,
-        set: { reason: "unsubscribe", source: "secure_link", expiresAt: null, updatedAt: now },
+        // Preserve stronger bounce/complaint suppressions when unsubscribing.
+        set: { expiresAt: null, updatedAt: now },
       });
       return action;
     });
@@ -95,6 +103,11 @@ export function createNotificationRouter(): Router {
       .where(and(eq(notificationInbox.userId, userId), isNull(notificationInbox.archivedAt)))
       .orderBy(desc(notificationInbox.createdAt)).limit(100);
     res.json(notifications);
+  }));
+
+  router.post("/api/internal/campaign-worker",asyncHandler(async(req,res)=>{
+    if(!env.NOTIFICATION_WORKER_SECRET||req.headers.authorization!==`Bearer ${env.NOTIFICATION_WORKER_SECRET}`)return res.status(403).json({message:"Forbidden"});
+    res.json(await queueDueEmailCampaign());
   }));
 
   router.post("/api/notifications/:id/read", requireAdminPermission("notifications.read"), asyncHandler(async (req, res) => {

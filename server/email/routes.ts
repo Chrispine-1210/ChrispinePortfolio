@@ -1,9 +1,9 @@
 import { asyncHandler } from "../middleware.js";
 import { randomUUID } from "node:crypto";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { Router } from "express";
 import { z } from "zod";
-import { emailDeliveryEvents, emailOutbox, emailSuppressions } from "../../shared/schema.js";
+import { auditEvents, emailDeliveryEvents, emailOutbox, emailSuppressions } from "../../shared/schema.js";
 import { requireAdminPermission } from "../custom-auth.js";
 import { db } from "../db.js";
 import { env } from "../env.js";
@@ -40,11 +40,33 @@ export function createEmailRouter(): Router {
     await db.delete(emailSuppressions).where(eq(emailSuppressions.id, req.params.id));
     res.status(204).end();
   }));
+  router.post("/api/admin/email/:id/reconcile", requireAdminPermission("email.delivery.reconcile"), asyncHandler(async (req,res) => {
+    const input=z.object({outcome:z.enum(["accepted","confirmed_not_sent"]),providerReference:z.string().trim().min(5).max(1000),
+      providerMessageId:z.string().trim().min(1).max(255).optional(),justification:z.string().trim().min(12).max(2000)}).strict().parse(req.body);
+    if (input.outcome==="accepted"&&!input.providerMessageId) return res.status(400).json({message:"A provider message identifier is required"});
+    const result=await db.transaction(async transaction=>{
+      const [previous]=await transaction.select().from(emailOutbox).where(eq(emailOutbox.id,req.params.id)).limit(1).for("update");
+      if(!previous)return "missing";
+      if(previous.status!=="uncertain")return "conflict";
+      if(input.outcome==="confirmed_not_sent"&&previous.providerMessageId)return "conflict";
+      const values=input.outcome==="accepted"?{status:"sent",provider:"postmark",providerMessageId:input.providerMessageId,sentAt:new Date()}:
+        {status:"retry",availableAt:new Date()};
+      await transaction.update(emailOutbox).set({...values,lockedAt:null,lockedBy:null,lastError:null,updatedAt:new Date()}).where(eq(emailOutbox.id,previous.id));
+      await transaction.insert(emailDeliveryEvents).values({outboxId:previous.id,eventType:"operator_reconciled",payload:input});
+      await transaction.insert(auditEvents).values({actorUserId:req.securityPrincipal?.userId,actorSessionId:req.securityPrincipal?.sessionId,
+        action:"email.acceptance.reconcile",resourceType:"email_outbox",resourceId:previous.id,result:"success",requestId:req.requestId,
+        justification:input.justification,previousState:{status:previous.status},newState:{...values,providerReference:input.providerReference}});
+      return "ok";
+    });
+    if(result==="missing")return res.status(404).json({message:"Message not found"});
+    if(result==="conflict")return res.status(409).json({message:"Message cannot be reconciled to that outcome"});
+    res.json({reconciled:true});
+  }));
   router.post("/api/internal/email-worker", asyncHandler(async (req, res) => {
     if (!env.NOTIFICATION_WORKER_SECRET || req.headers.authorization !== `Bearer ${env.NOTIFICATION_WORKER_SECRET}`)
       return res.status(403).json({ message: "Forbidden" });
     const dispatcher = new EmailDispatcher(new DrizzleEmailOutboxRepository(), createEmailProvider());
-    res.json(await dispatcher.processBatch(`http-${randomUUID()}`, 50));
+    res.json(await dispatcher.processBatch(`http-${randomUUID()}`, 3));
   }));
   return router;
 }

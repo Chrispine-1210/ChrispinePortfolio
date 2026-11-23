@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DeliveryRejectedError } from "./email/types.js";
 import { EmailDispatcher } from "./email/dispatcher.js";
 import { renderEmailTemplate } from "./email/template-renderer.js";
 import { verifyPostmarkBasicAuthorization } from "./email/postmark-webhook-auth.js";
@@ -18,6 +19,8 @@ class MemoryOutbox implements EmailOutboxRepository {
   suppressedMessages: string[] = [];
   failures: Array<{ id: string; nextAttemptAt: Date | null; error: string }> = [];
   suppressedRecipients = new Set<string>();
+  uncertain:string[]=[];
+  async markUncertain(id:string){this.uncertain.push(id);}
 
   constructor(public messages: QueuedEmail[]) {}
   async claimBatch(_workerId: string, limit: number) { return this.messages.slice(0, limit); }
@@ -83,7 +86,7 @@ describe("email outbox dispatcher", () => {
     const summary = await new EmailDispatcher(repository, new StubProvider())
       .processBatch("worker-1", 25, new Date("2026-07-23T18:00:00Z"));
 
-    expect(summary).toEqual({ claimed: 1, sent: 1, suppressed: 0, retried: 0, failed: 0 });
+    expect(summary).toEqual({ claimed: 1, sent: 1, suppressed: 0, retried: 0, failed: 0, uncertain: 0 });
     expect(repository.sent).toEqual(["email-1"]);
   });
 
@@ -100,7 +103,7 @@ describe("email outbox dispatcher", () => {
   it("schedules exponential retries and terminates at the attempt limit", async () => {
     const now = new Date("2026-07-23T18:00:00Z");
     const retryRepository = new MemoryOutbox([message({ attemptCount: 1 })]);
-    await new EmailDispatcher(retryRepository, new StubProvider(new Error("provider unavailable")))
+    await new EmailDispatcher(retryRepository, new StubProvider(new DeliveryRejectedError("provider unavailable", true)))
       .processBatch("worker-1", 25, now);
     expect(retryRepository.failures[0]).toMatchObject({
       error: "provider unavailable",
@@ -110,7 +113,7 @@ describe("email outbox dispatcher", () => {
     const terminalRepository = new MemoryOutbox([message({ attemptCount: 4, maxAttempts: 5 })]);
     const terminalSummary = await new EmailDispatcher(
       terminalRepository,
-      new StubProvider(new Error("permanent failure")),
+      new StubProvider(new DeliveryRejectedError("permanent failure")),
     ).processBatch("worker-1", 25, now);
     expect(terminalSummary.failed).toBe(1);
     expect(terminalRepository.failures[0]?.nextAttemptAt).toBeNull();

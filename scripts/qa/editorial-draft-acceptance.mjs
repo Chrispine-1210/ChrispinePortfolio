@@ -32,8 +32,10 @@ async function status(response, expected, name) {
   return response;
 }
 async function transition(action, expected = 200) {
+  const items=await (await call("/api/admin/content/posts","GET",undefined,true)).json();
+  const expectedVersion=items.find(post=>post.id===postId)?.currentVersion;
   return status(await call(`/api/admin/content/posts/${postId}/transition`, "POST", {
-    action, ...(action === "archive" ? { justification: "Isolated editorial acceptance completed; withdraw local test publication" } : {}),
+    expectedVersion,action, ...(action === "archive" ? { justification: "Isolated editorial acceptance completed; withdraw local test publication" } : {}),
   }, true), expected, `workflow ${action}`);
 }
 
@@ -103,7 +105,9 @@ try {
   retired = true;
 } finally {
   if (postId && !retired) {
-    const response = await call(`/api/admin/content/posts/${postId}/transition`, "POST", { action: "archive", justification: "Withdraw local QA article after interrupted acceptance" }, true);
+    const items=await (await call("/api/admin/content/posts","GET",undefined,true)).json();
+    const expectedVersion=items.find(post=>post.id===postId)?.currentVersion;
+    const response = await call(`/api/admin/content/posts/${postId}/transition`, "POST", {expectedVersion, action: "archive", justification: "Withdraw local QA article after interrupted acceptance" }, true);
     if (response.status !== 200) console.error("Inspect interrupted local fixture; stop the in-memory QA process.");
   }
 }

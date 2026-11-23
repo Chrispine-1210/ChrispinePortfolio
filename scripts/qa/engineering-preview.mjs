@@ -54,7 +54,7 @@ if (args.includes("--build-only")) {
 } else {
   for (const key of Object.keys(process.env)) {
     if (
-      /^(STRIPE_|POSTMARK_|TWILIO_|VAPID_|BOOTSTRAP_|ADMIN_|AUTH_|DATABASE_URL$|APP_DATABASE_URL$|PUBLIC_WEBHOOK_BASE_URL$|NOTIFICATION_WORKER_SECRET$|CRON_SECRET$)/.test(
+      /^(BILLING_MODE$|ACCOUNT_RECOVERY_MODE$|RECOVERY_|STRIPE_|POSTMARK_|TWILIO_|VAPID_|BOOTSTRAP_|ADMIN_|AUTH_|DATABASE_URL$|APP_DATABASE_URL$|PUBLIC_WEBHOOK_BASE_URL$|NOTIFICATION_WORKER_SECRET$|CRON_SECRET$)/.test(
         key,
       )
     )
@@ -65,6 +65,9 @@ if (args.includes("--build-only")) {
     ENGINEERING_QA_FIXTURE: "isolated-pglite-only",
     ADMIN_AUTH_MODE: "database",
     EMAIL_PROVIDER: "disabled",
+    BILLING_MODE: "disabled",
+    ACCOUNT_RECOVERY_MODE: "disabled",
+    TZ: "UTC",
     DATABASE_URL: "postgresql://qa:qa@localhost/isolated-fixture",
     AUTH_KEY_PEPPER: randomBytes(32).toString("hex"),
     APP_BASE_URL: `http://127.0.0.1:${port}`,

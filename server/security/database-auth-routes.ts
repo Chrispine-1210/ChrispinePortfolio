@@ -11,6 +11,7 @@ import { DrizzleSessionRepository } from "./drizzle-session-repository.js";
 import { LoginThrottleService } from "./login-throttle.js";
 import { ADMIN_SESSION_COOKIE, createSessionAuthentication, readCookie } from "./session-middleware.js";
 import { SessionService } from "./session-service.js";
+import { publicIdentity } from "./identity.js";
 
 const loginSchema = z.object({
   email: z.string().email().max(320),
@@ -80,7 +81,7 @@ export function setupDatabaseAuthRoutes(router: Router, runtime = getDatabaseAut
       response.cookie(ADMIN_SESSION_COOKIE, result.session.token, cookieOptions(result.session.expiresAt));
       return response.json({
         message: "Login successful",
-        user: { id: result.user.id, email: result.user.email, isAdmin: true },
+        user: { id: result.user.id, email: result.user.email },
       });
     } catch (error) {
       next(error);
@@ -90,12 +91,7 @@ export function setupDatabaseAuthRoutes(router: Router, runtime = getDatabaseAut
   router.get("/api/auth/me", authenticate, (request: Request, response: Response) => {
     response.setHeader("Cache-Control", "no-store");
     const principal = request.securityPrincipal!;
-    response.json({
-      id: principal.userId,
-      email: principal.email,
-      isAdmin: true,
-      permissions: principal.permissions,
-    });
+    response.json(publicIdentity(principal));
   });
 
   router.post("/api/auth/logout", asyncHandler(async (request: Request, response: Response, next) => {

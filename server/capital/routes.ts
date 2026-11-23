@@ -1,4 +1,5 @@
-import { financialHandler as asyncHandler } from "../financial-requests.js";
+import { moneyInput, moneyMinor, moneyAdd, moneySubtract, moneySum, moneyCompare, moneyRatio } from "../../shared/money.js";
+import { financialReadHandler, financialHandler as asyncHandler } from "../financial-requests.js";
 import {
   and,
   desc,
@@ -34,15 +35,9 @@ const DAY_MS = 86_400_000;
 const supportedWindows = ["30d", "90d", "365d", "all"] as const;
 type WindowValue = typeof supportedWindows[number];
 
-const moneySchema = z.union([
-  z.number().positive(),
-  z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number).refine((value) => value > 0),
-]);
+const moneySchema = moneyInput();
 
-const nonnegativeMoneySchema = z.union([
-  z.number().nonnegative(),
-  z.string().regex(/^\d+(?:\.\d{1,2})?$/).transform(Number),
-]);
+const nonnegativeMoneySchema = moneyInput({ zero: true });
 
 const invoiceInputSchema = z.object({
   leadId: z.string().uuid(),
@@ -69,7 +64,7 @@ const collectionInputSchema = z.object({
 const movementInputSchema = z.object({
   agreementId: z.string().uuid(),
   movementType: z.enum(["expansion", "contraction", "churn", "reactivation"]),
-  mrrDelta: z.number().refine((value) => Number.isFinite(value) && value !== 0),
+  mrrDelta: moneyInput({ signed: true }),
   effectiveAt: z.string().datetime(),
   sourceReference: z.string().trim().min(3).max(2000),
   notes: z.string().trim().max(4000).nullable().optional(),
@@ -144,21 +139,21 @@ function validateMrrHistory(initialMrr: number, movements: MovementLike[]) {
 
   for (const movement of ordered) {
     const delta = Number(movement.mrrDelta);
-    const nextMrr = currentMrr + delta;
+    const nextMrr = moneyAdd(currentMrr, delta);
     if (movement.movementType === "expansion") {
-      if (currentMrr <= 0.005 || delta <= 0) return { valid: false as const };
+      if (currentMrr <= 0 || delta <= 0) return { valid: false as const };
     } else if (movement.movementType === "contraction") {
-      if (currentMrr <= 0.005 || delta >= 0 || nextMrr <= 0.005) return { valid: false as const };
+      if (currentMrr <= 0 || delta >= 0 || nextMrr <= 0) return { valid: false as const };
     } else if (movement.movementType === "churn") {
-      if (currentMrr <= 0.005 || delta >= 0 || Math.abs(nextMrr) > 0.005) return { valid: false as const };
+      if (currentMrr <= 0 || delta >= 0 || nextMrr !== 0) return { valid: false as const };
       latestChurn = movement.effectiveAt;
     } else if (movement.movementType === "reactivation") {
-      if (Math.abs(currentMrr) > 0.005 || delta <= 0) return { valid: false as const };
+      if (currentMrr !== 0 || delta <= 0) return { valid: false as const };
     } else {
       return { valid: false as const };
     }
-    if (nextMrr < -0.005) return { valid: false as const };
-    currentMrr = Math.abs(nextMrr) <= 0.005 ? 0 : nextMrr;
+    if (nextMrr < 0) return { valid: false as const };
+    currentMrr = nextMrr;
   }
 
   return { valid: true as const, currentMrr, latestChurn };
@@ -217,9 +212,9 @@ async function refreshInvoiceStatus(transaction: FinancialTransaction, invoiceId
     .where(eq(commercialInvoices.id, invoiceId)).limit(1);
   if (!invoice || invoice.voidedAt) return invoice;
   const collections = await activeInvoiceCollections(transaction, invoiceId);
-  const collected = collections.reduce((sum, row) => sum + Number(row.amount), 0);
+  const collected = collections.reduce((sum, row) => moneyAdd(sum, row.amount), 0);
   const amount = Number(invoice.amount);
-  const status = collected <= 0 ? "issued" : collected + 0.005 >= amount ? "paid" : "partially_paid";
+  const status = collected <= 0 ? "issued" : moneyCompare(collected, amount) >= 0 ? "paid" : "partially_paid";
   const [updated] = await transaction.update(commercialInvoices).set({ status })
     .where(eq(commercialInvoices.id, invoiceId)).returning();
   return updated;
@@ -364,9 +359,9 @@ export function createCapitalOperatingRouter() {
           eq(cashCollections.invoiceId, invoice.id),
           isNull(cashCollections.voidedAt),
         ));
-        const collected = collections.reduce((sum, row) => sum + Number(row.amount), 0);
-        const outstanding = Number(invoice.amount) - collected;
-        if (input.amount > outstanding + 0.005) return { outcome: "over_collection" as const, outstanding };
+        const collected = collections.reduce((sum, row) => moneyAdd(sum, row.amount), 0);
+        const outstanding = moneySubtract(invoice.amount, collected);
+        if (moneyCompare(input.amount, outstanding) > 0) return { outcome: "over_collection" as const, outstanding };
 
         const [record] = await transaction.insert(cashCollections).values({
           invoiceId: invoice.id,
@@ -377,8 +372,8 @@ export function createCapitalOperatingRouter() {
           notes: input.notes || null,
           createdBy: request.securityPrincipal?.userId ?? null,
         }).returning();
-        const total = collected + input.amount;
-        const status = total + 0.005 >= Number(invoice.amount) ? "paid" : "partially_paid";
+        const total = moneyAdd(collected, input.amount);
+        const status = moneyCompare(total, invoice.amount) >= 0 ? "paid" : "partially_paid";
         await transaction.update(commercialInvoices).set({ status })
           .where(eq(commercialInvoices.id, invoice.id));
         await transaction.insert(auditEvents).values({
@@ -498,7 +493,7 @@ export function createCapitalOperatingRouter() {
         }).returning();
 
         await transaction.update(recurringRevenueAgreements).set(
-          history.currentMrr <= 0.005
+          history.currentMrr <= 0
             ? { status: "cancelled", endedAt: history.latestChurn ?? effectiveAt }
             : { status: "active", endedAt: null },
         ).where(eq(recurringRevenueAgreements.id, agreement.id));
@@ -564,7 +559,7 @@ export function createCapitalOperatingRouter() {
         }).where(eq(recurringRevenueMovements.id, previous.id)).returning();
 
         await transaction.update(recurringRevenueAgreements).set(
-          history.currentMrr <= 0.005
+          history.currentMrr <= 0
             ? { status: "cancelled", endedAt: history.latestChurn ?? agreement.endedAt }
             : { status: "active", endedAt: null },
         ).where(eq(recurringRevenueAgreements.id, agreement.id));
@@ -724,8 +719,8 @@ export function createCapitalOperatingRouter() {
           .where(eq(capitalBudgetAllocations.budgetId, budget.id));
         const otherApproved = existing
           .filter((row) => !(row.channel === input.channel && row.serviceInterest === input.serviceInterest))
-          .reduce((sum, row) => sum + Number(row.approvedAmount), 0);
-        if (otherApproved + input.approvedAmount > Number(budget.envelopeAmount) + 0.005) {
+          .reduce((sum, row) => moneyAdd(sum, row.approvedAmount), 0);
+        if (moneyCompare(moneyAdd(otherApproved, input.approvedAmount), budget.envelopeAmount) > 0) {
           return { outcome: "over_envelope" as const };
         }
         const current = existing.find((row) => row.channel === input.channel && row.serviceInterest === input.serviceInterest);
@@ -784,9 +779,9 @@ export function createCapitalOperatingRouter() {
         if (budget.status !== "draft") return { outcome: "locked" as const };
         const allocations = await transaction.select().from(capitalBudgetAllocations)
           .where(eq(capitalBudgetAllocations.budgetId, budget.id));
-        const approved = allocations.reduce((sum, row) => sum + Number(row.approvedAmount), 0);
+        const approved = allocations.reduce((sum, row) => moneyAdd(sum, row.approvedAmount), 0);
         if (!allocations.length || approved <= 0) return { outcome: "empty" as const };
-        if (approved > Number(budget.envelopeAmount) + 0.005) return { outcome: "over_envelope" as const };
+        if (moneyCompare(approved, budget.envelopeAmount) > 0) return { outcome: "over_envelope" as const };
         const exceptionAllocations = allocations.filter((row) =>
           Number(row.approvedAmount) > 0 &&
           ["cut", "insufficient_data"].includes(row.recommendationDecision));
@@ -876,7 +871,7 @@ export function createCapitalOperatingRouter() {
   router.get(
     "/api/admin/capital/intelligence",
     requireAdminPermission("pipeline.financial.read"),
-    asyncHandler(async (request, response) => {
+    financialReadHandler(async (request, response) => {
       const requested = typeof request.query.window === "string" ? request.query.window : "90d";
       const windowValue = (supportedWindows as readonly string[]).includes(requested)
         ? requested as WindowValue
@@ -903,34 +898,34 @@ export function createCapitalOperatingRouter() {
         db.select().from(commercialInvoices).where(and(
           isNull(commercialInvoices.voidedAt),
           ...(since ? [gt(commercialInvoices.issuedAt, since)] : []),
-        )).orderBy(commercialInvoices.issuedAt).limit(5000),
+        )).orderBy(commercialInvoices.issuedAt),
         db.select().from(commercialInvoices).where(and(
           isNull(commercialInvoices.voidedAt),
-        )).orderBy(commercialInvoices.dueAt).limit(5000),
+        )).orderBy(commercialInvoices.dueAt),
         db.select().from(recurringRevenueAgreements).where(
           isNull(recurringRevenueAgreements.voidedAt),
-        ).orderBy(recurringRevenueAgreements.startedAt).limit(5000),
+        ).orderBy(recurringRevenueAgreements.startedAt),
         db.select().from(recurringRevenueMovements).where(
           isNull(recurringRevenueMovements.voidedAt),
-        ).orderBy(recurringRevenueMovements.effectiveAt).limit(10000),
+        ).orderBy(recurringRevenueMovements.effectiveAt),
         db.select().from(deliveryCapacityRecords).where(and(
           isNull(deliveryCapacityRecords.voidedAt),
           ...(since ? [gt(deliveryCapacityRecords.periodEnd, since)] : []),
           lte(deliveryCapacityRecords.periodStart, now),
-        )).orderBy(deliveryCapacityRecords.periodStart).limit(5000),
+        )).orderBy(deliveryCapacityRecords.periodStart),
         db.select().from(acquisitionSpendEntries).where(and(
           isNull(acquisitionSpendEntries.voidedAt),
           ...(since ? [gt(acquisitionSpendEntries.occurredAt, since)] : []),
-        )).orderBy(acquisitionSpendEntries.occurredAt).limit(5000),
+        )).orderBy(acquisitionSpendEntries.occurredAt),
         db.select().from(acquisitionSpendEntries).where(
           isNull(acquisitionSpendEntries.voidedAt),
-        ).orderBy(acquisitionSpendEntries.occurredAt).limit(10000),
+        ).orderBy(acquisitionSpendEntries.occurredAt),
         db.select().from(directCostEntries).where(
           isNull(directCostEntries.voidedAt),
-        ).orderBy(directCostEntries.occurredAt).limit(20000),
+        ).orderBy(directCostEntries.occurredAt),
         db.select().from(costEvidenceAttestations).where(
           isNull(costEvidenceAttestations.voidedAt),
-        ).orderBy(costEvidenceAttestations.throughAt).limit(10000),
+        ).orderBy(costEvidenceAttestations.throughAt),
         db.select({
           id: leads.id,
           serviceInterest: leads.serviceInterest,
@@ -938,20 +933,21 @@ export function createCapitalOperatingRouter() {
         }).from(leads).where(and(
           isNull(leads.archivedAt),
           ...(since ? [gt(leads.createdAt, since)] : []),
-        )).orderBy(leads.createdAt).limit(10000),
+        )).orderBy(leads.createdAt),
         db.select().from(leadAttributionTouches)
           .where(eq(leadAttributionTouches.touchType, "last"))
-          .orderBy(leadAttributionTouches.capturedAt).limit(10000),
+          .orderBy(leadAttributionTouches.capturedAt),
         db.select().from(capitalBudgetCycles)
-          .orderBy(desc(capitalBudgetCycles.periodStart)).limit(200),
+          .orderBy(desc(capitalBudgetCycles.periodStart)),
         db.select().from(capitalBudgetAllocations)
-          .orderBy(desc(capitalBudgetAllocations.updatedAt)).limit(2000),
+          .orderBy(desc(capitalBudgetAllocations.updatedAt)),
       ]);
+
 
       const invoiceIds = allOpenInvoices.map((invoice) => invoice.id);
       const allInvoiceCollections = invoiceIds.length
         ? await db.select().from(cashCollections).where(and(
-            inArray(cashCollections.invoiceId, invoiceIds),
+            inArray(cashCollections.invoiceId, db.select({id:commercialInvoices.id}).from(commercialInvoices).where(isNull(commercialInvoices.voidedAt))),
             isNull(cashCollections.voidedAt),
           )).orderBy(cashCollections.receivedAt)
         : [];
@@ -984,17 +980,17 @@ export function createCapitalOperatingRouter() {
         };
         const amount = Number(invoice.amount);
         const collections = collectionsByInvoice.get(invoice.id) ?? [];
-        const collected = collections.reduce((sum, collection) => sum + Number(collection.amount), 0);
-        current.invoiced += amount;
-        current.collected += collected;
-        current.outstanding += Math.max(0, amount - collected);
+        const collected = collections.reduce((sum, collection) => moneyAdd(sum, collection.amount), 0);
+        current.invoiced = moneyAdd(current.invoiced, amount);
+        current.collected = moneyAdd(current.collected, collected);
+        current.outstanding = moneyAdd(current.outstanding, Math.max(0, moneySubtract(amount, collected)));
         for (const collection of collections) {
           const collectionAmount = Number(collection.amount);
           const dayLag = Math.max(0, (collection.receivedAt.getTime() - invoice.issuedAt.getTime()) / DAY_MS);
           current.weightedCollectionDayNumerator += collectionAmount * dayLag;
-          current.weightedCollectionAmount += collectionAmount;
+          current.weightedCollectionAmount = moneyAdd(current.weightedCollectionAmount, collectionAmount);
         }
-        if (collected + 0.005 >= amount && collections.length) {
+        if (moneyCompare(collected, amount) >= 0 && collections.length) {
           const finalCollectionAt = collections.reduce(
             (latest, collection) => collection.receivedAt.getTime() > latest.getTime() ? collection.receivedAt : latest,
             collections[0].receivedAt,
@@ -1016,13 +1012,13 @@ export function createCapitalOperatingRouter() {
       for (const invoice of allOpenInvoices) {
         if (invoice.status === "paid" || invoice.status === "void") continue;
         const collections = collectionsByInvoice.get(invoice.id) ?? [];
-        const collected = collections.reduce((sum, collection) => sum + Number(collection.amount), 0);
-        const outstanding = Math.max(0, Number(invoice.amount) - collected);
-        if (outstanding <= 0.005) continue;
+        const collected = collections.reduce((sum, collection) => moneyAdd(sum, collection.amount), 0);
+        const outstanding = Math.max(0, moneySubtract(invoice.amount, collected));
+        if (outstanding <= 0) continue;
         const daysOverdue = (now.getTime() - invoice.dueAt.getTime()) / DAY_MS;
         const bucket = bucketName(daysOverdue);
         const values = receivableBuckets.get(bucket) ?? new Map<string, number>();
-        values.set(invoice.currency, (values.get(invoice.currency) ?? 0) + outstanding);
+        values.set(invoice.currency, moneyAdd(values.get(invoice.currency) ?? 0, outstanding));
         receivableBuckets.set(bucket, values);
         receivableCounts.set(bucket, (receivableCounts.get(bucket) ?? 0) + 1);
       }
@@ -1072,13 +1068,13 @@ export function createCapitalOperatingRouter() {
         const endedBeforePeriod =
           agreement.endedAt && agreement.endedAt.getTime() < retentionStart.getTime();
         const beginningMrr = agreement.startedAt.getTime() < retentionStart.getTime() && !endedBeforePeriod
-          ? Math.max(0, initialMrr + prePeriodMovements.reduce((sum, movement) => sum + Number(movement.mrrDelta), 0))
+          ? Math.max(0, moneyAdd(initialMrr, prePeriodMovements.reduce((sum, movement) => moneyAdd(sum, movement.mrrDelta), 0)))
           : 0;
         if (beginningMrr > 0) {
-          row.beginningMrr += beginningMrr;
+          row.beginningMrr = moneyAdd(row.beginningMrr, beginningMrr);
           row.beginningLogos += 1;
         } else if (agreement.startedAt.getTime() >= retentionStart.getTime() && agreement.startedAt.getTime() <= now.getTime()) {
-          row.newMrr += initialMrr;
+          row.newMrr = moneyAdd(row.newMrr, initialMrr);
         }
         const periodMovements = movements.filter((movement) =>
           movement.effectiveAt.getTime() >= retentionStart.getTime() &&
@@ -1086,11 +1082,11 @@ export function createCapitalOperatingRouter() {
         if (beginningMrr > 0) {
           for (const movement of periodMovements) {
             const delta = Number(movement.mrrDelta);
-            if (movement.movementType === "expansion") row.expansionMrr += delta;
-            if (movement.movementType === "reactivation") row.reactivationMrr += delta;
-            if (movement.movementType === "contraction") row.contractionMrr += Math.abs(delta);
+            if (movement.movementType === "expansion") row.expansionMrr = moneyAdd(row.expansionMrr, delta);
+            if (movement.movementType === "reactivation") row.reactivationMrr = moneyAdd(row.reactivationMrr, delta);
+            if (movement.movementType === "contraction") row.contractionMrr = moneyAdd(row.contractionMrr, Math.abs(delta));
             if (movement.movementType === "churn") {
-              row.churnMrr += Math.abs(delta);
+              row.churnMrr = moneyAdd(row.churnMrr, Math.abs(delta));
               row.churnedLogos += 1;
             }
           }
@@ -1180,7 +1176,7 @@ export function createCapitalOperatingRouter() {
         const channel = channelByLead.get(invoice.leadId) ?? "unattributed";
         const service = invoice.serviceInterest || serviceByLead.get(invoice.leadId) || "unclassified";
         const row = ensureCashRow(channel, service, invoice.currency);
-        row.cashCollected += Number(collection.amount);
+        row.cashCollected = moneyAdd(row.cashCollected, Number(collection.amount));
         row.cashCollectingLeads.add(invoice.leadId);
         const eventKey = `${invoice.leadId}::${invoice.currency}`;
         const previousCashAt = latestCashEvent.get(eventKey);
@@ -1193,12 +1189,12 @@ export function createCapitalOperatingRouter() {
         const channel = channelByLead.get(cost.leadId) ?? "unattributed";
         const service = cost.serviceInterest || serviceByLead.get(cost.leadId) || "unclassified";
         const row = ensureCashRow(channel, service, cost.currency);
-        row.directCost += Number(cost.amount);
+        row.directCost = moneyAdd(row.directCost, Number(cost.amount));
       }
       for (const spend of spendRows) {
         if (!spend.serviceInterest) continue;
         const row = ensureCashRow(spend.channel, spend.serviceInterest, spend.currency);
-        row.acquisitionSpend += Number(spend.amount);
+        row.acquisitionSpend = moneyAdd(row.acquisitionSpend, Number(spend.amount));
       }
       for (const row of cashReturn.values()) {
         for (const leadId of row.cashCollectingLeads) {
@@ -1219,9 +1215,9 @@ export function createCapitalOperatingRouter() {
           ? round((row.completeCostLeads.size / row.cashCollectingLeads.size) * 100)
           : row.directCost > 0 ? 0 : 100;
         const completeCosts = row.cashCollectingLeads.size === row.completeCostLeads.size;
-        const cashGrossContribution = completeCosts ? row.cashCollected - row.directCost : null;
+        const cashGrossContribution = completeCosts ? moneySubtract(row.cashCollected, row.directCost) : null;
         const netCapitalReturn = cashGrossContribution !== null
-          ? cashGrossContribution - row.acquisitionSpend
+          ? moneySubtract(cashGrossContribution, row.acquisitionSpend)
           : null;
         const cashReturnMultiple = cashGrossContribution !== null && row.acquisitionSpend > 0
           ? round(cashGrossContribution / row.acquisitionSpend, 2)
@@ -1304,15 +1300,15 @@ export function createCapitalOperatingRouter() {
                 spend.serviceInterest === allocation.serviceInterest &&
                 spend.occurredAt.getTime() >= budget.periodStart.getTime() &&
                 spend.occurredAt.getTime() <= budget.periodEnd.getTime())
-              .reduce((sum, spend) => sum + Number(spend.amount), 0);
+              .reduce((sum, spend) => moneyAdd(sum, spend.amount), 0);
             const approved = Number(allocation.approvedAmount);
             return {
               ...allocation,
               actualSpend,
-              remainingApproved: Math.max(0, approved - actualSpend),
+              remainingApproved: Math.max(0, moneySubtract(approved, actualSpend)),
               approvedUtilizationPct: approved > 0 ? round((actualSpend / approved) * 100) : null,
-              recommendedVariance: actualSpend - Number(allocation.recommendedAmount),
-              approvedVariance: actualSpend - approved,
+              recommendedVariance: moneySubtract(actualSpend, allocation.recommendedAmount),
+              approvedVariance: moneySubtract(actualSpend, approved),
             };
           }),
         };

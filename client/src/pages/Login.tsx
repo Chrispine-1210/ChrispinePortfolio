@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useCustomAuth } from "@/hooks/useCustomAuth";
 import {
   Card,
@@ -21,7 +21,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    document.title = "Admin Login | Chrispine Mndala";
+    document.title = "Sign in | Chrispine Mndala";
     if (isAuthenticated) {
       navigate(user?.isAdmin ? "/admin" : "/dashboard");
     }
@@ -59,12 +59,10 @@ export default function Login() {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <div className="text-center space-y-2">
-            <CardTitle className="text-2xl">
-              Private operating workspace
-            </CardTitle>
+            <CardTitle className="text-2xl">Sign in to your account</CardTitle>
             <CardDescription>
-              Sign in to manage engineering records, projects, communications
-              and operating decisions.
+              Use your authorized account for membership or the operating
+              workspace.
             </CardDescription>
           </div>
         </CardHeader>
@@ -132,12 +130,20 @@ export default function Login() {
               )}
             </Button>
           </form>
+          <p className="mt-5 text-sm text-muted-foreground">
+            <Link
+              href="/forgot-password"
+              className="underline underline-offset-4"
+            >
+              Need help accessing your account?
+            </Link>
+          </p>
 
           {/* Info Notice */}
           <div className="mt-6 p-3 bg-primary/5 border border-primary/20 rounded-md">
             <p className="text-xs text-muted-foreground">
               <ArrowRight className="w-3 h-3 inline mr-1" />
-              Only authorized administrators can access this portal
+              Access follows the permissions assigned to your account
             </p>
           </div>
         </CardContent>

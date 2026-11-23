@@ -158,7 +158,7 @@ export function pendingBatch(
   return block(`${guard(t, before)} ${historyRead()}
  IF history IS DISTINCT FROM ${sqlValue(JSON.stringify(entries(applied)))}::jsonb THEN RAISE EXCEPTION 'HISTORY_MISMATCH'; END IF;
  ${pending.map((f) => `EXECUTE ${sqlValue(f.sql)}; INSERT INTO chrispine_migrations.history(file,sha256,origin) VALUES(${sqlValue(f.file)},${sqlValue(f.sha256)},'applied');`).join("\n")}
- ${["audit_events", "content_versions", "engineering_versions"].map((name) => `IF to_regclass('public.${name}') IS NOT NULL THEN REVOKE UPDATE,DELETE ON public.${name} FROM ${identifier(t.runtimeRole)}; END IF;`).join("\n")}
+ ${["audit_events", "content_versions", "engineering_versions", "financial_request_receipts", "billing_event_receipts"].map((name) => `IF to_regclass('public.${name}') IS NOT NULL THEN REVOKE UPDATE,DELETE ON public.${name} FROM ${identifier(t.runtimeRole)}; END IF;`).join("\n")}
  SELECT (${catalogArraySql}) INTO objects;
  IF objects IS DISTINCT FROM ${sqlValue(JSON.stringify(after))}::jsonb THEN RAISE EXCEPTION 'RESULT_SCHEMA_MISMATCH'; END IF;`);
 }
@@ -210,5 +210,6 @@ export function databaseRolePolicy(t: BatchTarget, catalog: unknown[]) {
  REVOKE UPDATE ON public.audit_events,public.content_versions FROM ${runtime};
  IF to_regclass('public.engineering_versions') IS NOT NULL THEN REVOKE UPDATE ON public.engineering_versions FROM ${runtime}; END IF;
  IF to_regclass('public.financial_request_receipts') IS NOT NULL THEN REVOKE UPDATE ON public.financial_request_receipts FROM ${runtime}; END IF;
+ IF to_regclass('public.billing_event_receipts') IS NOT NULL THEN REVOKE UPDATE ON public.billing_event_receipts FROM ${runtime}; END IF;
  END;`)};`;
 }

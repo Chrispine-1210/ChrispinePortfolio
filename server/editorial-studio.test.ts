@@ -298,7 +298,9 @@ describe("safe editorial documents", () => {
 });
 
 const database = new PGlite();
-vi.mock("./db.js", () => ({ db: contextualDatabase(drizzle(database, { schema })) }));
+vi.mock("./db.js", () => ({
+  db: contextualDatabase(drizzle(database, { schema })),
+}));
 let app: Express, adminCookie: string, financeCookie: string;
 beforeAll(async () => {
   vi.stubEnv("ADMIN_AUTH_MODE", "database");
@@ -308,8 +310,9 @@ beforeAll(async () => {
     .filter((n) => /^\d{4}_.*\.sql$/.test(n))
     .sort())
     await database.exec(await readFile(`migrations/${file}`, "utf8"));
-  const { getDatabaseAuthRuntime } =
-    await import("./security/database-auth-routes.js");
+  const { getDatabaseAuthRuntime } = await import(
+    "./security/database-auth-routes.js"
+  );
   async function cookie(role: string) {
     const {
       rows: [user],
@@ -363,11 +366,13 @@ describe("authenticated studio persistence and public image boundaries", () => {
     const projection = publicWritingPost(created.body);
     const cover = projection.featuredImage!;
     expect((await request(app).get(cover)).status).toBe(404);
+    let expectedVersion = created.body.currentVersion;
     for (const action of ["submit_review", "approve", "publish"]) {
       const r = await request(app)
         .post(`/api/admin/content/posts/${created.body.id}/transition`)
         .set("Cookie", adminCookie)
-        .send({ action });
+        .send({ action, expectedVersion });
+      expectedVersion = r.body.currentVersion;
       expect(r.status, JSON.stringify(r.body)).toBe(200);
     }
     const list = await request(app).get("/api/blog");
@@ -394,6 +399,7 @@ describe("authenticated studio persistence and public image boundaries", () => {
       .set("Cookie", adminCookie)
       .send({
         action: "archive",
+        expectedVersion,
         justification: "Synthetic fixture archived after verification",
       });
     expect(archived.status).toBe(200);

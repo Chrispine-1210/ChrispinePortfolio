@@ -67,6 +67,18 @@ export function financialHandler(handler: Handler) {
   });
 }
 
+// A financial report spans several queries. All totals must describe one
+// committed database snapshot, rather than a mixture of concurrent writes.
+export function financialReadHandler(handler: Handler) {
+  return asyncHandler(async (request, response, next) => {
+    response.setHeader("Cache-Control", "no-store");
+    return db.transaction(async transaction => {
+      await transaction.execute(sql`SET LOCAL statement_timeout='15000ms'`);
+      return handler(request, response, next);
+    }, {isolationLevel:"repeatable read",accessMode:"read only"});
+  });
+}
+
 export function createFinancialRequestRouter() {
   const router = Router();
   router.get("/api/admin/financial-requests/:key", requireAdminPermission("pipeline.financial.read"), asyncHandler(async (request, response) => {

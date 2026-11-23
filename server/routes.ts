@@ -17,7 +17,8 @@ import {
   insertExternalPostSchema,
   type BlogPost,
 } from "../shared/schema.js";
-import Stripe from "stripe";
+import { optionalPrincipal } from "./security/identity.js";
+import { premiumEntitlement } from "./billing.js";
 import { seedBlogPosts } from "./seed-data.js";
 import { enqueueNewsletterWelcome } from "./email/automations.js";
 import {
@@ -167,8 +168,10 @@ router.get(
       }
 
       // Enforce premium content access control
-      const user = (req as any).user;
-      if (post.isPremium && !user?.claims?.sub) {
+      const principal = post.isPremium ? await optionalPrincipal(req) : null;
+      const premiumAccess = Boolean(principal && (principal.permissions.includes("content.read") || await premiumEntitlement(principal.userId)));
+      if (post.isPremium) res.setHeader("Cache-Control", "private, no-store");
+      if (post.isPremium && !premiumAccess) {
         return res.status(403).json({
           message: "Premium subscription required to access this content",
           isPremium: true,
@@ -192,7 +195,8 @@ router.get(
     const post = hasDatabase()
       ? await storage.getPublishedBlogPostBySlug(req.params.slug)
       : fallbackBlogPosts.find((p) => p.slug === req.params.slug);
-    const premiumAccess = Boolean((req as any).user?.claims?.sub);
+    const principal = post?.isPremium ? await optionalPrincipal(req) : null;
+    const premiumAccess = Boolean(principal && (principal.permissions.includes("content.read") || await premiumEntitlement(principal.userId)));
     const image = post
       ? publishedImage(post, req.params.digest, premiumAccess)
       : null;
@@ -553,35 +557,10 @@ router.get(
   }),
 );
 
-router.post(
-  "/api/create-payment-intent",
-  asyncHandler(async (req: Request, res: Response) => {
-    try {
-      if (!process.env.STRIPE_SECRET_KEY) {
-        return res.status(500).json({ message: "Stripe not configured" });
-      }
-
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-      // Server-side pricing - don't trust client
-      const amount = 9; // $9/month
-
-      // Create payment intent
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount * 100, // Convert to cents
-        currency: "usd",
-        automatic_payment_methods: {
-          enabled: true,
-        },
-      });
-
-      res.json({ clientSecret: paymentIntent.client_secret });
-    } catch (error) {
-      console.error("Error creating payment intent:", error);
-      res.status(500).json({ message: "Failed to create payment intent" });
-    }
-  }),
-);
+router.post("/api/create-payment-intent", asyncHandler(async (request, response) => {
+  if (!await optionalPrincipal(request)) return response.status(401).json({ message: "Unauthorized" });
+  response.status(410).json({ message: "Use the governed membership checkout" });
+}));
 
 // Email Templates routes
 router.get(
@@ -644,44 +623,6 @@ router.get(
     } catch (error) {
       console.error("Error fetching external posts:", error);
       res.json([]);
-    }
-  }),
-);
-
-// Webhook to handle successful payments (raw body required)
-router.post(
-  "/api/stripe-webhook",
-  asyncHandler(async (req: Request, res: Response) => {
-    try {
-      if (!process.env.STRIPE_SECRET_KEY) {
-        return res.status(500).json({ message: "Stripe not configured" });
-      }
-
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-      const sig = req.headers["stripe-signature"];
-
-      if (!sig) {
-        return res.status(400).send("Missing signature");
-      }
-
-      const event = stripe.webhooks.constructEvent(
-        (req as any).rawBody,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET || "",
-      );
-
-      if (event.type === "payment_intent.succeeded") {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        const userId = paymentIntent.metadata.userId;
-
-        // Upgrade user to premium
-        await storage.updateUserPremiumStatus(userId, true);
-      }
-
-      res.json({ received: true });
-    } catch (error) {
-      console.error("Webhook error:", error);
-      res.status(400).send("Webhook error");
     }
   }),
 );

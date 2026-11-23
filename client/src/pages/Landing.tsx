@@ -1,82 +1,109 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
-  ArrowRight,
-  ArrowUpRight,
   Code2,
   Network,
   Wrench,
-  Briefcase,
+  BriefcaseBusiness,
+  Check,
+  BookOpen,
 } from "lucide-react";
 import {
   EditorialPage,
   ProjectReadingCard,
 } from "@/components/editorial/EditorialPage";
+import { editorialPhotos, PhotoCredit } from "@/components/EditorialPhoto";
 import { setSEO } from "@/lib/seoHelper";
 import type { PortfolioProject } from "@shared/schema";
-import { editorialPhotos, PhotoCredit } from "@/components/EditorialPhoto";
-import "@/styles/content-studio.css";
 import portrait from "@assets/portfolio-editorial/chrispine-portrait.webp";
-
-const practice = [
+import "@/styles/portfolio-evolution.css";
+const practices = [
   {
+    title: "Software & data",
     icon: Code2,
     photo: "code" as const,
-    title: "Software & data",
-    text: "Interfaces, APIs, relational records and the rules that turn a workflow into a working system.",
+    service: "enterprise-software",
+    question: "Make the workflow work.",
+    text: "Portals, APIs and relational records built around the decisions your team actually makes.",
+    outputs: [
+      "A clear workflow and data model",
+      "Roles, approvals and traceable records",
+      "A scoped path from build to handover",
+    ],
   },
   {
+    title: "Networks & infrastructure",
     icon: Network,
     photo: "network" as const,
-    title: "Networks & infrastructure",
-    text: "Connectivity, troubleshooting, servers and the discipline of keeping connected systems dependable.",
+    service: "network-infrastructure",
+    question: "Keep the operation connected.",
+    text: "Understand the fault, map the environment and design a network your team can maintain.",
+    outputs: [
+      "Network and device baseline",
+      "Prioritized fault and access controls",
+      "Monitoring and support responsibilities",
+    ],
   },
   {
+    title: "Hardware & repair",
     icon: Wrench,
     photo: "hardware" as const,
-    title: "Hardware & repair",
-    text: "Fault isolation, practical maintenance and learning what happens beneath the software.",
+    service: "managed-it",
+    question: "Find the cause beneath the symptom.",
+    text: "Practical diagnosis connects devices, connectivity and the people who depend on them.",
+    outputs: [
+      "Structured fault isolation",
+      "Repair or replacement options",
+      "Maintenance and operating guidance",
+    ],
   },
   {
-    icon: Briefcase,
-    photo: "planning" as const,
     title: "Business & operations",
-    text: "The people, stock, money, communication and accountability a technical solution has to serve.",
+    icon: BriefcaseBusiness,
+    photo: "planning" as const,
+    service: "business-systems",
+    question: "Turn scattered records into control.",
+    text: "Connect stock, staff, follow-up, reporting and accountability to a usable operating system.",
+    outputs: [
+      "Process and responsibility map",
+      "Decision-ready reporting requirements",
+      "A costed implementation boundary",
+    ],
   },
 ];
 export default function Landing() {
+  const [practice, setPractice] = useState(0);
+  const selected = practices[practice];
   const projects = useQuery<{
     data: PortfolioProject[];
     pagination: { total: number };
   }>({ queryKey: ["/api/portfolio/search?featured=true&limit=4&page=1"] });
   useEffect(() => {
     setSEO(
-      "Chrispine Mndala | An engineering journey from Malawi",
-      "Software, networks, hardware and business systems. Explore Chrispine Mndala’s work, engineering journal and practical journey building in Malawi.",
+      "Chrispine Mndala | Engineering that moves work forward",
+      "Software, networks and business systems by Chrispine Mndala in Malawi. Explore project casebooks, engineering practice and a clear path to working together.",
       "/",
     );
   }, []);
   return (
     <EditorialPage>
-      <header className="editorial-hero">
-        <div>
-          <span className="editorial-kicker">
-            Chrispine Mndala / Lilongwe, Malawi
-          </span>
+      <header className="evolution-hero">
+        <div className="evolution-hero-copy">
+          <p className="portfolio-overline">
+            Chrispine Mndala · Lilongwe, Malawi
+          </p>
           <h1>
             Rooted here.
             <br />
-            Building <em>further.</em>
+            Built to move
+            <br />
+            <em>work forward.</em>
           </h1>
-          <p className="editorial-lead">
-            Engineer. Operator. Entrepreneur. My work connects software,
-            networks and the everyday systems people depend on.
-          </p>
-          <p className="editorial-copy" style={{ marginTop: 20 }}>
-            This is my working universe: the projects I build, the problems I
-            investigate, the decisions I own and the lessons I carry into the
-            next attempt.
+          <p className="evolution-intro">
+            Software, networks and the operating systems behind a business. I
+            connect the technical detail to the people responsible for making it
+            work.
           </p>
           <div className="editorial-actions">
             <Link
@@ -84,21 +111,33 @@ export default function Landing() {
               href="/portfolio"
               data-testid="button-hero-primary"
             >
-              Explore my work <ArrowRight size={17} />
+              Explore the work
             </Link>
             <Link
               className="editorial-button secondary"
-              href="/journey"
+              href="/hire"
               data-testid="button-hero-secondary"
             >
-              Follow the journey
+              Discuss your project
             </Link>
           </div>
-          <p className="editorial-copy" style={{ marginTop: 25, fontSize: 13 }}>
-            Software · Networks · Hardware · Business systems
-          </p>
+          <div className="hero-discipline">
+            <span>Computer engineering</span>
+            <span>Business operations</span>
+            <span>Practical problem-solving</span>
+          </div>
         </div>
-        <figure className="editorial-portrait">
+        <figure className="evolution-portrait">
+          <div className="portrait-context">
+            <span>One connected practice</span>
+            <strong>
+              Engineer.
+              <br />
+              Operator.
+              <br />
+              Entrepreneur.
+            </strong>
+          </div>
           <img
             src={portrait}
             alt="Chrispine Mndala"
@@ -111,237 +150,284 @@ export default function Landing() {
           </figcaption>
         </figure>
       </header>
-      <section className="editorial-section" aria-labelledby="story-heading">
-        <div className="editorial-section-heading">
+      <div className="evolution-context-strip">
+        <p>Built with context.</p>
+        <span>Malawi-first perspective</span>
+        <span>Clear technical boundaries</span>
+        <span>Evidence before claims</span>
+      </div>
+      <section className="evolution-section" aria-labelledby="selected-work">
+        <div className="evolution-section-heading">
           <div>
-            <span className="editorial-eyebrow">
-              01 / The ground I build from
-            </span>
-            <h2 id="story-heading">The constraints are part of the story.</h2>
+            <p className="portfolio-overline">Selected work</p>
+            <h2 id="selected-work">
+              The problem. The decisions.
+              <br />
+              <em>The system behind them.</em>
+            </h2>
           </div>
-          <Link href="/about" className="editorial-text-link">
-            Meet the person behind the work <ArrowUpRight size={16} />
-          </Link>
-        </div>
-        <div className="universe-principles">
-          <article>
-            <figure className="practice-photo">
-              <img
-                src={editorialPhotos.planning.src}
-                alt={editorialPhotos.planning.alt}
-                loading="lazy"
-                decoding="async"
-              />
-              <figcaption>
-                <PhotoCredit photo="planning" />
-              </figcaption>
-            </figure>
-            <span className="editorial-eyebrow">Hands-on beginnings</span>
-            <h3>Learn the operation.</h3>
-            <p className="editorial-copy">
-              Stock controls, dispatch, staff coordination, compliance and
-              reporting taught me to look beyond a finished screen. A system has
-              to work for the people responsible for it.
-            </p>
-          </article>
-          <article>
-            <figure className="practice-photo">
-              <img
-                src={editorialPhotos.network.src}
-                alt={editorialPhotos.network.alt}
-                loading="lazy"
-                decoding="async"
-              />
-              <figcaption>
-                <PhotoCredit photo="network" />
-              </figcaption>
-            </figure>
-            <span className="editorial-eyebrow">Building with constraints</span>
-            <h3>Make the decisions count.</h3>
-            <p className="editorial-copy">
-              Working in Malawi means taking cost, connectivity, maintenance and
-              the available skills seriously. The useful question is what can be
-              built, sustained and improved here.
-            </p>
-          </article>
-          <article>
-            <figure className="practice-photo">
-              <img
-                src={editorialPhotos.writing.src}
-                alt={editorialPhotos.writing.alt}
-                loading="lazy"
-                decoding="async"
-              />
-              <figcaption>
-                <PhotoCredit photo="writing" />
-              </figcaption>
-            </figure>
-            <span className="editorial-eyebrow">Pride in the process</span>
-            <h3>Keep the evidence.</h3>
-            <p className="editorial-copy">
-              Progress includes attempts, corrections and unfinished questions.
-              I document the choices behind the work so each project becomes a
-              foundation for the next.
-            </p>
-          </article>
-        </div>
-      </section>
-      <section className="editorial-section" aria-labelledby="work-heading">
-        <div className="editorial-section-heading">
           <div>
-            <span className="editorial-eyebrow">02 / Selected work</span>
-            <h2 id="work-heading">The ideas, made tangible.</h2>
+            <p>
+              Follow the architecture, workflows and recorded evidence. A
+              project casebook shows the work and its limits.
+            </p>
+            <Link href="/portfolio" className="editorial-text-link">
+              View the full project library
+            </Link>
           </div>
-          <Link href="/portfolio" className="editorial-text-link">
-            Browse the project library <ArrowRight size={16} />
-          </Link>
         </div>
         {projects.isLoading ? (
-          <p role="status" className="editorial-copy">
+          <div className="project-loading" role="status">
             Loading published casebooks…
-          </p>
+          </div>
         ) : projects.isError ? (
           <div className="editorial-empty" role="alert">
-            <p className="editorial-copy">
-              The casebook collection could not be loaded.
-            </p>
+            <h3>The project library is temporarily unavailable.</h3>
             <button
-              className="editorial-text-link"
-              onClick={() => projects.refetch()}
+              className="editorial-button secondary"
+              onClick={() => void projects.refetch()}
             >
-              Try again
+              Reload casebooks
             </button>
           </div>
-        ) : (
-          <div className="editorial-project-grid">
-            {projects.data?.data.map((p, i) => (
-              <ProjectReadingCard key={p.id} project={p} index={i} />
+        ) : projects.data?.data.length ? (
+          <div className="editorial-project-grid evolution-project-grid">
+            {projects.data.data.map((project) => (
+              <ProjectReadingCard key={project.id} project={project} />
             ))}
+          </div>
+        ) : (
+          <div className="editorial-empty">
+            <h3>Casebooks will appear after publication.</h3>
+            <p>
+              Explore the engineering journal or discuss a problem you are
+              working on.
+            </p>
+            <Link href="/journey" className="editorial-text-link">
+              Open the journal
+            </Link>
           </div>
         )}
       </section>
       <section
-        className="editorial-section editorial-about-grid"
-        aria-labelledby="universe-heading"
+        className="practice-studio evolution-section"
+        aria-labelledby="practice-heading"
       >
-        <div>
-          <span className="editorial-eyebrow">03 / One connected practice</span>
-          <h2 id="universe-heading">
-            Code does not exist
-            <br />
-            on its own.
-          </h2>
-          <p className="editorial-copy" style={{ marginTop: 20 }}>
-            I work across the connections between technology and operations.
-            Security and embedded systems are expanding learning paths,
-            documented through authorized practice and experiments.
+        <div className="evolution-section-heading">
+          <div>
+            <p className="portfolio-overline">A connected practice</p>
+            <h2 id="practice-heading">
+              What needs to
+              <br />
+              <em>work better?</em>
+            </h2>
+          </div>
+          <p>
+            Start with the operating problem. Choose an area to see the kind of
+            work we can define together.
           </p>
         </div>
-        <div className="editorial-capabilities">
-          {practice.map(({ icon: Icon, title, text, photo }) => (
-            <article key={title}>
-              <figure className="practice-photo">
-                <img
-                  src={editorialPhotos[photo].src}
-                  alt={editorialPhotos[photo].alt}
-                  loading="lazy"
-                  decoding="async"
-                  width="600"
-                  height="375"
-                />
-                <figcaption>
-                  <PhotoCredit photo={photo} />
-                </figcaption>
-              </figure>
-              <Icon size={25} strokeWidth={1.5} />
-              <h3>{title}</h3>
-              <p className="editorial-copy">{text}</p>
+        <div className="practice-studio-grid">
+          <div
+            className="practice-selectors"
+            role="tablist"
+            aria-label="Areas of practice"
+            aria-orientation="vertical"
+          >
+            {practices.map(({ title, icon: Icon }, index) => (
+              <button
+                key={title}
+                id={`practice-tab-${index}`}
+                role="tab"
+                aria-selected={practice === index}
+                aria-controls={`practice-panel-${index}`}
+                onClick={() => setPractice(index)}
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    const next =
+                      (index +
+                        (event.key === "ArrowDown" ? 1 : -1) +
+                        practices.length) %
+                      practices.length;
+                    setPractice(next);
+                    document.getElementById(`practice-tab-${next}`)?.focus();
+                  }
+                }}
+                tabIndex={practice === index ? 0 : -1}
+              >
+                <Icon size={22} />
+                <span>{title}</span>
+                <span className="practice-selector-state">
+                  {practice === index ? "Selected" : "Explore"}
+                </span>
+              </button>
+            ))}
+          </div>
+          <div
+            role="tabpanel"
+            id={`practice-panel-${practice}`}
+            aria-labelledby={`practice-tab-${practice}`}
+            className="practice-detail"
+            tabIndex={0}
+          >
+            <figure>
+              <img
+                src={editorialPhotos[selected.photo].src}
+                alt={editorialPhotos[selected.photo].alt}
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>
+                <PhotoCredit photo={selected.photo} />
+              </figcaption>
+            </figure>
+            <div>
+              <h3>{selected.question}</h3>
+              <p>{selected.text}</p>
+              <ul>
+                {selected.outputs.map((output) => (
+                  <li key={output}>
+                    <Check size={16} />
+                    {output}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/hire?service=${selected.service}`}
+                className="editorial-text-link"
+              >
+                Discuss this area of work
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        className="evolution-story evolution-section"
+        aria-labelledby="story-heading"
+      >
+        <div>
+          <p className="portfolio-overline">The ground I build from</p>
+          <h2 id="story-heading">
+            The constraints
+            <br />
+            are part of
+            <br />
+            <em>the story.</em>
+          </h2>
+          <Link href="/about" className="editorial-text-link">
+            Meet the person behind the work
+          </Link>
+        </div>
+        <div>
+          <p className="story-opening">
+            Before a system is software, it is someone’s working day.
+          </p>
+          <p>
+            Stock, dispatch, staff coordination, compliance and reporting taught
+            me to look beyond a finished screen. A useful system has to serve
+            the people responsible for it.
+          </p>
+          <p>
+            Building in Malawi means taking cost, connectivity, maintenance and
+            available skills seriously. Those constraints shape the decisions,
+            and the work becomes stronger when the reasoning is visible.
+          </p>
+          <div className="story-principles">
+            <span>Understand the operation.</span>
+            <span>Make the decisions count.</span>
+            <span>Keep the evidence.</span>
+          </div>
+        </div>
+      </section>
+      <section className="evolution-section" aria-labelledby="method-heading">
+        <div className="evolution-section-heading">
+          <div>
+            <p className="portfolio-overline">From conversation to delivery</p>
+            <h2 id="method-heading">
+              A clear way
+              <br />
+              <em>to work together.</em>
+            </h2>
+          </div>
+          <p>
+            Scope, responsibilities and commercial terms are agreed before
+            delivery. Each stage should leave the next decision clearer.
+          </p>
+        </div>
+        <div className="evolution-method">
+          {[
+            {
+              title: "Understand",
+              text: "Map the people, problem, current tools and operating constraints.",
+            },
+            {
+              title: "Define",
+              text: "Agree the workflows, deliverables, risks and acceptance criteria.",
+            },
+            {
+              title: "Build & verify",
+              text: "Implement in controlled increments and test the real business rules.",
+            },
+            {
+              title: "Handover & improve",
+              text: "Document ownership, support needs and the next sensible improvement.",
+            },
+          ].map((stage) => (
+            <article key={stage.title}>
+              <h3>{stage.title}</h3>
+              <p>{stage.text}</p>
             </article>
           ))}
         </div>
       </section>
-      <section className="editorial-section" aria-labelledby="paths-heading">
-        <div className="editorial-section-heading">
-          <div>
-            <span className="editorial-eyebrow">
-              04 / The work between releases
-            </span>
-            <h2 id="paths-heading">A record that keeps moving.</h2>
-          </div>
+      <section className="evolution-learning">
+        <div>
+          <BookOpen size={30} />
+          <p className="portfolio-overline">The practice continues</p>
+          <h2>Keep the questions open.</h2>
           <p>
-            Different windows into the same journey, from the first question to
-            the system and the lessons after delivery.
+            Field notes, technical writing and public source make room for the
+            reasoning behind the result.
           </p>
         </div>
-        <div className="universe-path">
+        <nav aria-label="Explore the thinking">
           <Link href="/journey">
-            <img
-              className="path-photo"
-              src={editorialPhotos.writing.src}
-              alt={editorialPhotos.writing.alt}
-              loading="lazy"
-              decoding="async"
-            />
-            <span className="editorial-eyebrow">
-              Field journal <ArrowUpRight size={17} />
-            </span>
-            <h3>Observe. Test. Learn.</h3>
-            <p className="editorial-copy">
-              Reviewed field notes, troubleshooting, lab practice and linked
-              media as the journey develops.
-            </p>
+            <strong>Engineering journal</strong>
+            <span>Practice, experiments and lessons</span>
           </Link>
           <Link href="/blog">
-            <img
-              className="path-photo"
-              src={editorialPhotos.reading.src}
-              alt={editorialPhotos.reading.alt}
-              loading="lazy"
-              decoding="async"
-            />
-            <span className="editorial-eyebrow">
-              Writing <ArrowUpRight size={17} />
-            </span>
-            <h3>Explain the reasoning.</h3>
-            <p className="editorial-copy">
-              A place for considered technical explanations, development
-              reflections and practical perspectives.
-            </p>
+            <strong>Writing & research</strong>
+            <span>Technical explanations and references</span>
           </Link>
           <Link href="/github">
-            <img
-              className="path-photo"
-              src={editorialPhotos.code.src}
-              alt={editorialPhotos.code.alt}
-              loading="lazy"
-              decoding="async"
-            />
-            <span className="editorial-eyebrow">
-              Source & resources <ArrowUpRight size={17} />
-            </span>
-            <h3>Look beneath the surface.</h3>
-            <p className="editorial-copy">
-              Find the public source links and project evidence behind the work.
-            </p>
+            <strong>Source & repositories</strong>
+            <span>Look beneath the interface</span>
+          </Link>
+        </nav>
+      </section>
+      <section className="evolution-invitation">
+        <p className="portfolio-overline">Start with the real problem</p>
+        <h2>
+          What would change
+          <br />
+          if your systems
+          <br />
+          <em>worked together?</em>
+        </h2>
+        <div>
+          <p>
+            Tell me what is slowing the work down. We can define the technical
+            direction, the operating boundary and a practical next step.
+          </p>
+          <Link href="/hire" className="editorial-button">
+            Build a project brief
+          </Link>
+          <Link href="/contact" className="editorial-text-link">
+            Send a direct message
           </Link>
         </div>
-        <p className="editorial-copy" style={{ marginTop: 20, fontSize: 14 }}>
-          Editorial photographs illustrate the areas of practice. Photo credits:{" "}
-          <PhotoCredit photo="writing" />; <PhotoCredit photo="reading" />;{" "}
-          <PhotoCredit photo="code" />.
-        </p>
-      </section>
-      <section className="editorial-bridge">
-        <div>
-          <h2>Bring a real problem.</h2>
-          <p>
-            We can start with the people, the workflow and what needs to change.
-            Then define a technical direction that makes sense to operate.
-          </p>
-        </div>
-        <Link href="/hire" className="editorial-button">
-          Discuss a project <ArrowUpRight size={17} />
-        </Link>
       </section>
     </EditorialPage>
   );
